@@ -7,8 +7,11 @@ export interface PricingPlan {
   price: number;
   priceId?: string | null; // null for free plans
   type: 'free' | 'one-time' | 'subscription';
+  period?: 'month' | 'year';
   features: string[];
   popular?: boolean;
+  badge?: string;
+  discount?: string;
 }
 
 export const PRICING_PLANS: PricingPlan[] = [
@@ -19,59 +22,118 @@ export const PRICING_PLANS: PricingPlan[] = [
     priceId: null,
     type: 'free',
     features: [
-      '1 analysis per month',
-      'Basic photo ranking',
-      'Simple recommendations',
+      '5 practice sessions per month',
+      'Basic conversation practice',
+      'Simple accuracy scoring',
+      'Limited scenarios (2 scenarios)',
+      'Basic pronunciation feedback',
     ],
+    badge: 'Try Free',
   },
   {
-    id: 'basic',
-    name: 'Basic',
-    price: 9.99,
-    priceId: 'price_1So4aTKD0NAaawPxXkJP4ZWF',
-    type: 'one-time',
-    features: [
-      'Up to 10 photos',
-      'AI photo analysis',
-      'Top 6 selection',
-      'Bio feedback',
-      'PDF report',
-    ],
-  },
-  {
-    id: 'premium',
+    id: 'premium-monthly',
     name: 'Premium',
-    price: 19.99,
-    priceId: 'prod_Tlboj4wXTaRL3c',
-    type: 'one-time',
+    price: 20,
+    priceId: 'price_xxxxx_monthly_gbp', // Replace with actual Stripe Price ID
+    type: 'subscription',
+    period: 'month',
     popular: true,
     features: [
-      'Up to 20 photos',
-      'Everything in Basic',
-      '5 AI bio rewrites',
-      'Prompt improvements',
-      'Priority support',
+      'Unlimited practice sessions',
+      'Detailed phoneme-level analysis',
+      'All scenarios unlocked (TOEIC, Business, Interviews)',
+      'Progress analytics dashboard',
+      'Japanese-specific pronunciation tips',
+      'Spaced repetition recommendations',
+      'Weekly email progress reports',
+      '/r/ vs /l/ detection & practice',
+      '/th/ sound training',
+      'Word stress analysis',
+      'Fluency & rhythm feedback',
+      'Achievement badges & streaks',
     ],
+    badge: 'Most Popular',
   },
   {
-    id: 'pro',
-    name: 'Pro Monthly',
-    price: 29.99,
-    priceId: 'prod_TlbpnCv0LHeKhq',
+    id: 'premium-annual',
+    name: 'Premium Annual',
+    price: 199,
+    priceId: 'price_xxxxx_annual_gbp', // Replace with actual Stripe Price ID
     type: 'subscription',
+    period: 'year',
+    discount: 'Save 17%',
     features: [
-      'Unlimited analyses',
-      'All Premium features',
-      'A/B testing',
-      'Progress tracking',
-      'Cancel anytime',
+      'All Premium Monthly features',
+      'Priority support in Japanese & English',
+      'Early access to new features',
+      'TOEIC/TOEFL score prediction tool',
+      'Advanced progress analytics',
+      'Custom practice scenarios',
+      'Mouth position video guides',
+      '17% savings vs monthly (£40/year saved)',
     ],
+    badge: 'Best Value',
   },
 ];
+
+// Student discount pricing (20% off)
+export const STUDENT_DISCOUNT = {
+  code: 'STUDENT20',
+  percentOff: 20,
+  requiresVerification: true,
+  emailDomain: '.ac.jp', // Japanese university emails
+};
 
 // Determine which flow to use
 export function getPaymentFlow(plan: PricingPlan): PaymentFlowType {
   if (plan.type === 'free') return 'free';
   if (plan.type === 'subscription') return 'subscription-auth';
   return 'one-time-guest';
+}
+
+// Helper to format price display
+export function formatPrice(plan: PricingPlan): string {
+  if (plan.price === 0) return 'Free';
+  
+  if (plan.period === 'year') {
+    return `£${plan.price}/year`;
+  }
+  
+  if (plan.period === 'month') {
+    return `£${plan.price}/month`;
+  }
+  
+  return `£${plan.price}`;
+}
+
+// Helper to get monthly equivalent for annual plan
+export function getMonthlyEquivalent(plan: PricingPlan): number | null {
+  if (plan.period === 'year') {
+    return Math.round((plan.price / 12) * 100) / 100;
+  }
+  return null;
+}
+
+// Helper to calculate student pricing
+export function getStudentPrice(plan: PricingPlan): number {
+  if (plan.type === 'free') return 0;
+  return Math.round(plan.price * (1 - STUDENT_DISCOUNT.percentOff / 100) * 100) / 100;
+}
+
+// When converting to Japanese market (Phase 2)
+export const JPY_PRICING = {
+  'premium-monthly': 2980,
+  'premium-annual': 29800,
+};
+
+// Helper to get price in different currencies
+export function getPriceInCurrency(planId: string, currency: 'GBP' | 'JPY'): number {
+  const plan = PRICING_PLANS.find(p => p.id === planId);
+  if (!plan) return 0;
+  
+  if (currency === 'JPY') {
+    return JPY_PRICING[planId as keyof typeof JPY_PRICING] || 0;
+  }
+  
+  return plan.price;
 }

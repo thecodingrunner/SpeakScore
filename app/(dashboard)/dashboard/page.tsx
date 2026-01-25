@@ -1,300 +1,361 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
+import { useState } from 'react'
+import Link from 'next/link'
 import { 
-  LayoutDashboard, 
-  CreditCard, 
-  Settings, 
-  TrendingUp, 
-  Users, 
-  Activity,
-  ChevronRight,
-  Sparkles,
-  Zap,
-  Target,
-  BarChart3,
-  Calendar
-} from 'lucide-react';
+  Mic, Flame, Trophy, Target, ChevronRight, Star, 
+  Lock, CheckCircle, Circle, Calendar, TrendingUp,
+  Crown, Zap, Award
+} from 'lucide-react'
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  change?: string;
-  icon: React.ReactNode;
-  trend?: 'up' | 'down';
-}
+export default function DashboardPage() {
+  
+  // Mock data - replace with real data later
+  const user = {
+    name: 'Yuki',
+    streak: 7,
+    accuracyScore: 78,
+    level: 12,
+    xp: 2450,
+    xpToNextLevel: 3000,
+    dailyGoal: 10, // minutes
+    dailyProgress: 7, // minutes completed today
+  }
 
-interface QuickActionProps {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  onClick?: () => void;
-}
+  const lessons = [
+    {
+      id: 1,
+      title: '/r/ vs /l/ Sounds',
+      subtitle: 'Master the difference',
+      difficulty: 'Hard',
+      completed: true,
+      locked: false,
+      icon: '🔤',
+      accuracy: 85,
+      lessons: 5,
+    },
+    {
+      id: 2,
+      title: '/th/ Sounds Practice',
+      subtitle: 'Think, that, this',
+      difficulty: 'Very Hard',
+      completed: false,
+      locked: false,
+      icon: '👅',
+      accuracy: null,
+      lessons: 4,
+      current: true,
+    },
+    {
+      id: 3,
+      title: 'Word Stress Patterns',
+      subtitle: 'REcord vs reCORD',
+      difficulty: 'Medium',
+      completed: false,
+      locked: false,
+      icon: '📊',
+      accuracy: null,
+      lessons: 6,
+    },
+    {
+      id: 4,
+      title: 'Silent Vowels',
+      subtitle: 'Avoid extra syllables',
+      difficulty: 'Medium',
+      completed: false,
+      locked: true,
+      icon: '🤫',
+      accuracy: null,
+      lessons: 5,
+    },
+    {
+      id: 5,
+      title: 'Business English',
+      subtitle: 'Meeting scenarios',
+      difficulty: 'Hard',
+      completed: false,
+      locked: true,
+      icon: '💼',
+      accuracy: null,
+      lessons: 8,
+    },
+  ]
 
-interface ActivityItemProps {
-  title: string;
-  description: string;
-  time: string;
-  type: 'success' | 'info' | 'warning';
-}
-
-const StatCard = ({ title, value, change, icon, trend }: StatCardProps) => (
-  <div className="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 border border-base-300 group">
-    <div className="card-body">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm opacity-60 font-medium mb-1">{title}</p>
-          <h3 className="text-3xl font-bold tracking-tight">{value}</h3>
-          {change && (
-            <div className={`flex items-center gap-1 mt-2 text-sm font-medium ${
-              trend === 'up' ? 'text-success' : 'text-error'
-            }`}>
-              <TrendingUp className={`w-4 h-4 ${trend === 'down' ? 'rotate-180' : ''}`} />
-              <span>{change}</span>
-            </div>
-          )}
-        </div>
-        <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-          {icon}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const QuickAction = ({ title, description, icon, onClick }: QuickActionProps) => (
-  <button 
-    onClick={onClick}
-    className="card bg-base-100 hover:bg-base-200 shadow border border-base-300 hover:border-primary transition-all duration-200 text-left group"
-  >
-    <div className="card-body p-5">
-      <div className="flex items-start gap-4">
-        <div className="p-2.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-content transition-colors">
-          {icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">
-            {title}
-          </h4>
-          <p className="text-sm opacity-60 line-clamp-1">{description}</p>
-        </div>
-        <ChevronRight className="w-5 h-5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-      </div>
-    </div>
-  </button>
-);
-
-const ActivityItem = ({ title, description, time, type }: ActivityItemProps) => {
-  const colors = {
-    success: 'bg-success/10 text-success border-success/20',
-    info: 'bg-info/10 text-info border-info/20',
-    warning: 'bg-warning/10 text-warning border-warning/20'
-  };
+  const todayStats = [
+    { label: 'Practice Time', value: `${user.dailyProgress}m`, icon: Mic, color: 'text-primary' },
+    { label: 'Accuracy', value: `${user.accuracyScore}%`, icon: Target, color: 'text-success' },
+    { label: 'Streak', value: user.streak, icon: Flame, color: 'text-orange-500' },
+    { label: 'XP Earned', value: '120', icon: Star, color: 'text-warning' },
+  ]
 
   return (
-    <div className="flex gap-3 p-3 rounded-lg hover:bg-base-200/50 transition-colors group">
-      <div className={`w-2 h-2 rounded-full mt-2 ${colors[type].split(' ')[0]}`} />
-      <div className="flex-1 min-w-0">
-        <h5 className="font-medium text-sm group-hover:text-primary transition-colors">
-          {title}
-        </h5>
-        <p className="text-xs opacity-60 mt-0.5">{description}</p>
-        <p className="text-xs opacity-40 mt-1">{time}</p>
+    <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
+      {/* Welcome Section */}
+      <div className="mb-6">
+        <h1 className="text-3xl lg:text-4xl font-bold mb-2">
+          Welcome back, {user.name}! 👋
+        </h1>
+        <p className="text-base-content/70">
+          Keep your streak alive! You're on fire! 🔥
+        </p>
       </div>
-    </div>
-  );
-};
 
-export default function Dashboard() {
-  const [selectedPeriod, setSelectedPeriod] = useState('7d');
-
-  // Configurable mock data - replace with your actual data
-  const stats = [
-    {
-      title: 'Total Revenue',
-      value: '$12,426',
-      change: '+12.5% vs last period',
-      icon: <CreditCard className="w-6 h-6" />,
-      trend: 'up' as const
-    },
-    {
-      title: 'Active Users',
-      value: '2,847',
-      change: '+8.2% vs last period',
-      icon: <Users className="w-6 h-6" />,
-      trend: 'up' as const
-    },
-    {
-      title: 'Conversion Rate',
-      value: '3.24%',
-      change: '-0.4% vs last period',
-      icon: <Target className="w-6 h-6" />,
-      trend: 'down' as const
-    },
-    {
-      title: 'API Calls',
-      value: '1.2M',
-      change: '+23.1% vs last period',
-      icon: <Activity className="w-6 h-6" />,
-      trend: 'up' as const
-    }
-  ];
-
-  const quickActions = [
-    {
-      title: 'Create New Project',
-      description: 'Start a new project from scratch',
-      icon: <Sparkles className="w-5 h-5" />
-    },
-    {
-      title: 'Upgrade Plan',
-      description: 'Unlock more features and credits',
-      icon: <Zap className="w-5 h-5" />
-    },
-    {
-      title: 'View Analytics',
-      description: 'Deep dive into your metrics',
-      icon: <BarChart3 className="w-5 h-5" />
-    },
-    {
-      title: 'Schedule Meeting',
-      description: 'Book a call with our team',
-      icon: <Calendar className="w-5 h-5" />
-    }
-  ];
-
-  const activities = [
-    {
-      title: 'New user signup',
-      description: 'john.doe@example.com joined your workspace',
-      time: '2 minutes ago',
-      type: 'success' as const
-    },
-    {
-      title: 'Payment processed',
-      description: 'Monthly subscription renewed successfully',
-      time: '1 hour ago',
-      type: 'info' as const
-    },
-    {
-      title: 'API limit warning',
-      description: 'You\'ve used 80% of your monthly quota',
-      time: '3 hours ago',
-      type: 'warning' as const
-    },
-    {
-      title: 'Report generated',
-      description: 'Weekly analytics report is ready',
-      time: '5 hours ago',
-      type: 'success' as const
-    },
-    {
-      title: 'Integration updated',
-      description: 'Slack integration was successfully configured',
-      time: '1 day ago',
-      type: 'info' as const
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-base-200/50">
-      {/* Header */}
-      <div className="bg-base-100 border-b border-base-300 sticky top-0 z-10 backdrop-blur-sm bg-base-100/95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <LayoutDashboard className="w-6 h-6 text-primary" />
-              <h1 className="text-xl font-bold">Dashboard</h1>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Main Content - Left Column */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Daily Goal Progress */}
+          <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20">
+            <div className="card-body">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="card-title">Daily Goal</h2>
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  <span className="font-bold">{user.dailyProgress}/{user.dailyGoal} min</span>
+                </div>
+              </div>
+              
+              <div className="w-full bg-base-200 rounded-full h-4 mb-2">
+                <div 
+                  className="bg-gradient-to-r from-primary to-secondary h-4 rounded-full transition-all duration-500"
+                  style={{ width: `${(user.dailyProgress / user.dailyGoal) * 100}%` }}
+                ></div>
+              </div>
+              
+              <p className="text-sm text-base-content/70">
+                {user.dailyGoal - user.dailyProgress > 0 
+                  ? `Just ${user.dailyGoal - user.dailyProgress} more minutes to reach your goal!`
+                  : '🎉 Daily goal completed! Keep going!'}
+              </p>
             </div>
-            <div className="flex items-center gap-3">
-              {/* Period Selector */}
-              <div className="btn-group">
-                {['24h', '7d', '30d', '90d'].map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setSelectedPeriod(period)}
-                    className={`btn btn-sm ${selectedPeriod === period ? 'btn-primary' : 'btn-ghost'}`}
+          </div>
+
+          {/* Today's Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {todayStats.map((stat, idx) => {
+              const Icon = stat.icon
+              return (
+                <div key={idx} className="card bg-base-100 shadow-md">
+                  <div className="card-body p-4 items-center text-center">
+                    <Icon className={`w-6 h-6 ${stat.color} mb-1`} />
+                    <div className="text-2xl font-bold">{stat.value}</div>
+                    <div className="text-xs opacity-70">{stat.label}</div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Learning Path */}
+          <div className="card bg-base-100 shadow-xl">
+            <div className="card-body">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="card-title">Your Learning Path</h2>
+                <div className="badge badge-primary">Level {user.level}</div>
+              </div>
+
+              <div className="space-y-3">
+                {lessons.map((lesson, idx) => (
+                  <div
+                    key={lesson.id}
+                    className={`card ${
+                      lesson.current 
+                        ? 'bg-primary/10 border-2 border-primary' 
+                        : lesson.locked 
+                        ? 'bg-base-200 opacity-60' 
+                        : 'bg-base-200 hover:bg-base-300'
+                    } transition-all cursor-pointer`}
                   >
-                    {period}
-                  </button>
+                    <div className="card-body p-4">
+                      <div className="flex items-center gap-4">
+                        {/* Icon/Status */}
+                        <div className="text-4xl">{lesson.icon}</div>
+
+                        {/* Content */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold">{lesson.title}</h3>
+                            {lesson.completed && <CheckCircle className="w-5 h-5 text-success" />}
+                            {lesson.current && <Zap className="w-5 h-5 text-primary" />}
+                            {lesson.locked && <Lock className="w-5 h-5 text-base-content/30" />}
+                          </div>
+                          
+                          <p className="text-sm text-base-content/70">{lesson.subtitle}</p>
+                          
+                          <div className="flex items-center gap-3 mt-2">
+                            <div className={`badge badge-sm ${
+                              lesson.difficulty === 'Very Hard' ? 'badge-error' :
+                              lesson.difficulty === 'Hard' ? 'badge-warning' :
+                              'badge-info'
+                            }`}>
+                              {lesson.difficulty}
+                            </div>
+                            
+                            <span className="text-xs text-base-content/60">
+                              {lesson.lessons} lessons
+                            </span>
+                            
+                            {lesson.accuracy && (
+                              <span className="text-xs font-semibold text-success">
+                                {lesson.accuracy}% accuracy
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Action */}
+                        <div>
+                          {lesson.locked ? (
+                            <Lock className="w-6 h-6 text-base-content/30" />
+                          ) : lesson.completed ? (
+                            <Link 
+                              href={`/practice/${lesson.id}`}
+                              className="btn btn-ghost btn-sm"
+                            >
+                              Review
+                            </Link>
+                          ) : (
+                            <Link 
+                              href={`/practice/${lesson.id}`}
+                              className="btn btn-primary btn-sm"
+                            >
+                              {lesson.current ? 'Continue' : 'Start'}
+                              <ChevronRight className="w-4 h-4" />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Progress bar for current lesson */}
+                      {lesson.current && (
+                        <div className="mt-3">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-base-content/60">Lesson 2 of {lesson.lessons}</span>
+                            <span className="font-semibold">40%</span>
+                          </div>
+                          <progress className="progress progress-primary w-full" value="40" max="100"></progress>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
-              <button className="btn btn-ghost btn-circle">
-                <Settings className="w-5 h-5" />
-              </button>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-2">Welcome back! 👋</h2>
-          <p className="opacity-60">Here's what's happening with your account today.</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
-          ))}
-        </div>
-
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Column - Quick Actions & Chart */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Quick Actions */}
-            <div className="card bg-base-100 shadow-lg border border-base-300">
-              <div className="card-body">
-                <h3 className="card-title text-lg mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {quickActions.map((action, index) => (
-                    <QuickAction key={index} {...action} />
-                  ))}
-                </div>
+        {/* Right Sidebar */}
+        <div className="space-y-6">
+          {/* Level Progress */}
+          <div className="card bg-base-100 shadow-xl">
+            <div className="card-body">
+              <h3 className="card-title text-lg">Level Progress</h3>
+              
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold">Level {user.level}</span>
+                <span className="text-sm font-semibold">Level {user.level + 1}</span>
               </div>
+              
+              <progress 
+                className="progress progress-primary w-full h-3" 
+                value={user.xp} 
+                max={user.xpToNextLevel}
+              ></progress>
+              
+              <p className="text-xs text-center text-base-content/60 mt-2">
+                {user.xpToNextLevel - user.xp} XP to next level
+              </p>
             </div>
+          </div>
 
-            {/* Chart Placeholder */}
-            <div className="card bg-base-100 shadow-lg border border-base-300">
-              <div className="card-body">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="card-title text-lg">Performance Overview</h3>
-                  <div className="badge badge-primary badge-sm">Live</div>
+          {/* Quick Practice */}
+          <div className="card bg-gradient-to-br from-success/20 to-primary/20 border-2 border-success/30">
+            <div className="card-body">
+              <h3 className="card-title text-lg">Quick Practice</h3>
+              <p className="text-sm text-base-content/70 mb-3">
+                5-minute pronunciation drill
+              </p>
+              
+              <Link 
+                href={`/practice/quick`}
+                className="btn btn-success gap-2"
+              >
+                <Mic className="w-5 h-5" />
+                Start Now
+              </Link>
+            </div>
+          </div>
+
+          {/* Recent Achievements */}
+          <div className="card bg-base-100 shadow-xl">
+            <div className="card-body">
+              <h3 className="card-title text-lg">Recent Achievements</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="avatar">
+                    <div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center">
+                      <Flame className="w-6 h-6 text-warning" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">7-Day Streak</p>
+                    <p className="text-xs text-base-content/60">Keep it up!</p>
+                  </div>
                 </div>
-                <div className="h-64 flex items-center justify-center bg-base-200 rounded-lg border border-base-300">
-                  <div className="text-center opacity-40">
-                    <BarChart3 className="w-12 h-12 mx-auto mb-2" />
-                    <p className="text-sm">Chart component goes here</p>
-                    <p className="text-xs mt-1">Integrate your preferred charting library</p>
+
+                <div className="flex items-center gap-3">
+                  <div className="avatar">
+                    <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
+                      <Trophy className="w-6 h-6 text-success" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">/r/ vs /l/ Master</p>
+                    <p className="text-xs text-base-content/60">85% accuracy</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="avatar">
+                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Star className="w-6 h-6 text-primary" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Level 12</p>
+                    <p className="text-xs text-base-content/60">Leveled up!</p>
                   </div>
                 </div>
               </div>
+
+              <Link 
+                href={`/achievements`}
+                className="btn btn-ghost btn-sm mt-2"
+              >
+                View All
+                <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
 
-          {/* Sidebar - Activity Feed */}
-          <div className="lg:col-span-1">
-            <div className="card bg-base-100 shadow-lg border border-base-300 sticky top-24">
-              <div className="card-body">
-                <h3 className="card-title text-lg mb-4">Recent Activity</h3>
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                  {activities.map((activity, index) => (
-                    <ActivityItem key={index} {...activity} />
-                  ))}
-                </div>
-                <button className="btn btn-ghost btn-sm w-full mt-4">
-                  View All Activity
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+          {/* Upgrade CTA (for free users) */}
+          <div className="card bg-gradient-to-br from-primary to-secondary text-primary-content">
+            <div className="card-body">
+              <Crown className="w-8 h-8 mb-2" />
+              <h3 className="card-title">Upgrade to Premium</h3>
+              <p className="text-sm opacity-90 mb-3">
+                Unlock all scenarios, detailed analytics, and more!
+              </p>
+              <Link 
+                href={`/pricing`}
+                className="btn btn-accent"
+              >
+                Upgrade Now
+              </Link>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

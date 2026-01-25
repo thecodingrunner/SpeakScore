@@ -1,46 +1,58 @@
-import Link from 'next/link'
-import { ArrowRight, Check, Zap, Shield, Rocket } from 'lucide-react'
-import { BenefitsChecklistSection, ComparisonSection, FaqSection, FeaturesGridSection, FinalCTASection, HeroSection, HowItWorksSection, Navbar, PricingSection, TestimonialsSection, TrustBadgesSection, UrgencySection } from '../components/landing/LandingPageSections'
-import { BeforeAfterSection, VideoDemoSection, FinalCTASectionWithGuarantee } from '../components/landing/LandingPageSectionsAdditional';
-import Footer from '../components/global/Footer';
-import { SmartPricingCard } from '@/components/landing/StripePricingSection';
-import { PRICING_PLANS } from '@/lib/payment-flows';
+// Use absolute imports with @/ instead of relative paths
+import { 
+  BenefitsChecklistSection, 
+  ComparisonSection, 
+  FaqSection, 
+  FeaturesGridSection, 
+  FinalCTASection, 
+  HeroSection, 
+  HowItWorksSection, 
+  Navbar, 
+  PricingSection, 
+  PronounciationChallengesSection, 
+  TestimonialsSection, 
+  TrustBadgesSection 
+} from '@/components/landing/LandingPageSections'
+
+import { 
+  BeforeAfterSection, 
+  VideoDemoSection, 
+  FinalCTASectionWithGuarantee, 
+  SuccessStoriesCarousel, 
+  InteractivePronunciationDemo 
+} from '@/components/landing/LandingPageSectionsAdditional'
+
+import Footer from '@/components/global/Footer'
+import { SmartPricingCard } from '@/components/landing/StripePricingSection'
+import { PRICING_PLANS } from '@/lib/payment-flows'
 
 export default function LandingPage() {
-
   return (
     <div className='min-h-screen'>
-
       <Navbar />
 
-      {/* Awareness */}
+      {/* 1. HERO - First impression */}
       <HeroSection />
-      <FeaturesGridSection />
-      <BenefitsChecklistSection />
       
-      {/* Interest */}
+      {/* 2. FEATURES - What it does */}
+      <FeaturesGridSection />
+      
+      {/* 3. HOW IT WORKS - Build understanding */}
       <HowItWorksSection />
       
-      {/* Desire */}
-      <BeforeAfterSection />
-      <ComparisonSection />
+      {/* 4. BENEFITS - Why it matters */}
+      <BenefitsChecklistSection />
       
-      {/* Trust */}
-      <TestimonialsSection />
-      <VideoDemoSection />
-      
-      {/* Decision - CRITICAL ZONE */}
+      {/* 5. PRICING - Clear path to purchase */}
       <PricingSection />
-      {/* <SmartPricingCard plan={PRICING_PLANS[1]} /> */}
+      
+      {/* 6. FAQ - Remove objections */}
       <FaqSection />
       
-      {/* Conversion */}
-      <TrustBadgesSection />
-      <UrgencySection />
+      {/* 7. FINAL CTA - Last chance to convert */}
       <FinalCTASection />
 
       <Footer />
-
     </div>
   )
 }

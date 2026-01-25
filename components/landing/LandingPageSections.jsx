@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Check, Star, Camera, FileText, BarChart3, ArrowRight, Sparkles, Moon, Sun, Users, Zap, Award, TrendingUp, ChevronRight, Clock, Quote, Shield } from 'lucide-react';
+import { Check, Star, Mic, BarChart3, ArrowRight, Sparkles, Moon, Sun, Users, Zap, Award, TrendingUp, ChevronRight, Clock, Quote, Shield, Volume2, Target, Brain, Trophy, MessageCircle } from 'lucide-react';
 import { SmartPricingCard } from './StripePricingSection';
 import { PRICING_PLANS } from '@/lib/payment-flows';
 
@@ -12,16 +12,16 @@ const Navbar = () => {
       <div className="navbar bg-base-100 border-b border-base-300 px-4 lg:px-8 sticky top-0 z-40 backdrop-blur-lg bg-base-100/80">
         <div className="navbar-start">
           <div className="text-xl font-bold flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
-            ProfileAI
+            <Mic className="w-6 h-6 text-primary" />
+            SpeakScore
           </div>
         </div>
         <div className="navbar-end gap-2">
           <Link href="#pricing" className="btn btn-ghost btn-sm">
             Pricing
           </Link>
-          <Link href="/analyze" className="btn btn-primary btn-sm">
-            Try Now
+          <Link href="/practice" className="btn btn-primary btn-sm">
+            Start Practicing
           </Link>
         </div>
       </div>
@@ -33,31 +33,36 @@ const HeroSection = () => {
       <div className="hero min-h-[80vh] bg-base-200">
         <div className="hero-content text-center max-w-5xl px-4">
           <div className="max-w-3xl">
-            <div className="badge badge-primary badge-lg mb-4">AI-Powered Analysis</div>
+            <div className="badge badge-primary badge-lg mb-4">AI-Powered English Pronunciation Coach</div>
             <h1 className="text-5xl lg:text-6xl font-bold mb-6">
-              Get 3x More Matches with Optimized Photos
+              Perfect Your English Pronunciation with AI
             </h1>
             <p className="text-lg lg:text-xl mb-8 opacity-80">
-              Professional dating profile analysis in 5 minutes. AI analyzes your photos, 
-              scores attractiveness, and rewrites your bio for maximum appeal.
+              The only pronunciation coach designed for Japanese speakers. Get phoneme-level 
+              feedback on /r/ vs /l/, /th/ sounds, and word stress—AI that actually understands 
+              your Japanese→English challenges.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
-              <Link href="/analyze" className="btn btn-primary btn-lg gap-2">
-                Analyze My Profile
+              <Link href="/practice" className="btn btn-primary btn-lg gap-2">
+                Try Free Practice Session
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <button className="btn btn-outline btn-lg">
-                See Example
+                Watch Demo
               </button>
             </div>
             <div className="flex items-center justify-center gap-6 text-sm opacity-70">
               <div className="flex items-center gap-2">
                 <Check className="w-4 h-4" />
-                5 min results
+                5 free sessions
               </div>
               <div className="flex items-center gap-2">
                 <Check className="w-4 h-4" />
-                No signup required
+                No credit card
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                日本語サポート
               </div>
             </div>
           </div>
@@ -70,24 +75,24 @@ const FeaturesGridSection = () => {
 
     const features = [
         {
-          icon: <Camera className="w-6 h-6" />,
-          title: "AI Photo Analysis",
-          description: "Advanced facial recognition scores attractiveness and photo quality"
+          icon: <Mic className="w-6 h-6" />,
+          title: "Japanese-Specific Analysis",
+          description: "Detects /r/ vs /l/, /th/ sounds, and other phonemes Japanese speakers struggle with"
         },
         {
-          icon: <Star className="w-6 h-6" />,
-          title: "Smart Ranking",
-          description: "Get your top 6 photos with strategic positioning advice"
-        },
-        {
-          icon: <FileText className="w-6 h-6" />,
-          title: "Bio Optimization",
-          description: "AI-powered bio rewrites in multiple tones and styles"
+          icon: <MessageCircle className="w-6 h-6" />,
+          title: "AI Conversation Practice",
+          description: "TOEIC scenarios, business meetings, job interviews—practice what you actually need"
         },
         {
           icon: <BarChart3 className="w-6 h-6" />,
-          title: "Performance Scoring",
-          description: "Predict your swipe appeal with research-backed insights"
+          title: "Progress Tracking",
+          description: "Watch your pronunciation improve with detailed analytics and accuracy graphs"
+        },
+        {
+          icon: <Target className="w-6 h-6" />,
+          title: "Spaced Repetition",
+          description: "Focus on your problem sounds with smart practice scheduling"
         }
       ];
 
@@ -96,10 +101,10 @@ const FeaturesGridSection = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Everything You Need to Stand Out
+              Built for Japanese English Learners
             </h2>
             <p className="text-lg opacity-70 max-w-2xl mx-auto">
-              Comprehensive AI analysis covering every aspect of your profile
+              Unlike ChatGPT, we remember your progress and understand your specific challenges
             </p>
           </div>
           
@@ -124,18 +129,20 @@ const FeaturesGridSection = () => {
 const BenefitsChecklistSection = () => {
 
     const benefits = [
-        "AI-powered attractiveness scoring",
-        "Emotion & confidence analysis",
-        "Technical quality assessment",
-        "Top 6 photo selection strategy",
-        "Detailed cropping recommendations",
-        "Bio sentiment analysis",
-        "5+ AI-generated bio rewrites",
-        "Prompt optimization",
-        "Research-backed insights",
-        "Professional PDF report",
-        "Results in under 5 minutes",
-        "99% cheaper than a coach"
+        "Phoneme-level pronunciation scoring",
+        "/r/ vs /l/ detection and practice",
+        "/th/ (θ/ð) sound training",
+        "Word stress pattern analysis",
+        "Silent vowel correction",
+        "Fluency and rhythm feedback",
+        "TOEIC/TOEFL speaking scenarios",
+        "Business English practice",
+        "Job interview preparation",
+        "Daily practice streaks (連続日数)",
+        "Achievement badges (達成バッジ)",
+        "Progress analytics dashboard",
+        "Japanese UI & support",
+        "99% cheaper than English conversation schools"
       ];
 
     return (
@@ -143,10 +150,10 @@ const BenefitsChecklistSection = () => {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              What's Included
+              Everything You Need to Master English Pronunciation
             </h2>
             <p className="text-lg opacity-70">
-              Professional insights that used to cost hundreds
+              Professional coaching that used to cost ¥20,000/month at Eikaiwa schools
             </p>
           </div>
 
@@ -164,16 +171,16 @@ const BenefitsChecklistSection = () => {
           {/* Stats */}
           <div className="stats stats-vertical lg:stats-horizontal shadow w-full mt-12">
             <div className="stat place-items-center">
-              <div className="stat-title">Profiles Analyzed</div>
-              <div className="stat-value text-primary">10k+</div>
+              <div className="stat-title">Practice Sessions</div>
+              <div className="stat-value text-primary">50k+</div>
             </div>
             <div className="stat place-items-center">
-              <div className="stat-title">Avg Match Increase</div>
-              <div className="stat-value text-secondary">3x</div>
+              <div className="stat-title">Avg Accuracy Gain</div>
+              <div className="stat-value text-secondary">+35%</div>
             </div>
             <div className="stat place-items-center">
               <div className="stat-title">User Rating</div>
-              <div className="stat-value">4.9/5</div>
+              <div className="stat-value">4.8/5</div>
             </div>
           </div>
         </div>
@@ -185,29 +192,29 @@ const HowItWorksSection = () => {
     const steps = [
       {
         number: 1,
-        title: "Upload Your Photos",
-        description: "Add 3-20 photos from your profile or camera roll",
-        icon: <Users className="w-8 h-8" />,
-        time: "30 seconds"
+        title: "Choose Your Scenario",
+        description: "TOEIC test, business meeting, job interview, or free conversation",
+        icon: <MessageCircle className="w-8 h-8" />,
+        time: "10 seconds"
       },
       {
         number: 2,
-        title: "AI Analysis",
-        description: "Our AI scores attractiveness, emotions, and quality",
-        icon: <Zap className="w-8 h-8" />,
-        time: "2 minutes"
+        title: "Practice Speaking",
+        description: "AI conversation partner responds naturally to your English",
+        icon: <Mic className="w-8 h-8" />,
+        time: "5-10 minutes"
       },
       {
         number: 3,
-        title: "Get Recommendations",
-        description: "Receive detailed feedback and optimized bio rewrites",
-        icon: <Award className="w-8 h-8" />,
+        title: "Get Detailed Feedback",
+        description: "Phoneme-level scores, error patterns, and pronunciation tips",
+        icon: <BarChart3 className="w-8 h-8" />,
         time: "Instant"
       },
       {
         number: 4,
-        title: "Update & Match",
-        description: "Apply changes and watch your matches increase",
+        title: "Track Progress",
+        description: "Watch your accuracy improve day by day with streaks and badges",
         icon: <TrendingUp className="w-8 h-8" />,
         time: "Ongoing"
       }
@@ -221,7 +228,7 @@ const HowItWorksSection = () => {
               How It Works
             </h2>
             <p className="text-lg opacity-70">
-              Get professional results in just 5 minutes
+              Start improving your pronunciation in just 5 minutes
             </p>
           </div>
   
@@ -260,8 +267,8 @@ const HowItWorksSection = () => {
           </div>
   
           <div className="text-center mt-12">
-            <Link href="/analyze" className="btn btn-primary btn-lg gap-2">
-              Start Now - It's Fast!
+            <Link href="/practice" className="btn btn-primary btn-lg gap-2">
+              Start Free Practice Now
               <ChevronRight className="w-5 h-5" />
             </Link>
           </div>
@@ -276,10 +283,10 @@ const ComparisonSection = () => {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Why AI Analysis?
+              Why SpeakScore vs Traditional Methods?
             </h2>
             <p className="text-lg opacity-70">
-              Compare traditional services vs our solution
+              Compare our AI coach to traditional English learning options
             </p>
           </div>
 
@@ -287,39 +294,51 @@ const ComparisonSection = () => {
             <table className="table table-zebra">
               <thead>
                 <tr>
-                  <th>Service</th>
-                  <th>Price</th>
-                  <th>Time</th>
-                  <th>Coverage</th>
+                  <th>Method</th>
+                  <th>Price (Monthly)</th>
+                  <th>Pronunciation Focus</th>
+                  <th>Progress Tracking</th>
+                  <th>Availability</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Dating Coach</td>
-                  <td>$200-500</td>
-                  <td>2-4 weeks</td>
-                  <td>Subjective</td>
-                </tr>
-                <tr>
-                  <td>Photographer</td>
-                  <td>$300-800</td>
-                  <td>1-2 weeks</td>
-                  <td>Photos only</td>
-                </tr>
-                <tr>
-                  <td>Profile Writer</td>
-                  <td>$100-300</td>
-                  <td>3-7 days</td>
+                  <td>Eikaiwa Schools</td>
+                  <td>¥10,000-20,000</td>
                   <td>Generic</td>
+                  <td>Manual</td>
+                  <td>Fixed schedule</td>
+                </tr>
+                <tr>
+                  <td>Online Tutors</td>
+                  <td>¥3,000-12,000</td>
+                  <td>Teacher-dependent</td>
+                  <td>None</td>
+                  <td>Booking required</td>
+                </tr>
+                <tr>
+                  <td>ChatGPT</td>
+                  <td>$20 (~¥3,000)</td>
+                  <td>No pronunciation</td>
+                  <td>No memory</td>
+                  <td>24/7</td>
+                </tr>
+                <tr>
+                  <td>Duolingo</td>
+                  <td>¥1,200</td>
+                  <td>Basic only</td>
+                  <td>Simple streaks</td>
+                  <td>24/7</td>
                 </tr>
                 <tr className="bg-primary/10">
                   <td className="font-bold">
                     <Star className="inline w-4 h-4 mr-2" />
-                    Our AI Analysis
+                    SpeakScore
                   </td>
-                  <td className="font-bold text-success">$9.99-29.99</td>
-                  <td className="font-bold text-success">5 minutes</td>
-                  <td className="font-bold text-success">Comprehensive</td>
+                  <td className="font-bold text-success">£20 (~¥3,800)</td>
+                  <td className="font-bold text-success">Japanese-specific</td>
+                  <td className="font-bold text-success">Full analytics</td>
+                  <td className="font-bold text-success">24/7</td>
                 </tr>
               </tbody>
             </table>
@@ -327,7 +346,7 @@ const ComparisonSection = () => {
 
           <div className="alert alert-info mt-8">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>Save 95% of the cost and get 100x faster results</span>
+            <span>85% cheaper than Eikaiwa schools with better pronunciation tracking</span>
           </div>
         </div>
       </div>
@@ -337,33 +356,33 @@ const ComparisonSection = () => {
 const TestimonialsSection = () => {
     const testimonials = [
       {
-        name: "Sarah M.",
+        name: "Yuki T.",
         age: 28,
-        location: "NYC",
+        location: "Tokyo",
         rating: 5,
-        image: "👩‍💼", // Replace with actual image
-        quote: "Went from 2-3 matches a week to 15+. The AI's photo recommendations were spot-on. Worth every penny!",
-        result: "5x more matches",
+        image: "👩‍💼",
+        quote: "Finally fixed my /r/ and /l/ problem! The AI detected exactly when I was saying 'light' instead of 'right'. My TOEIC speaking score improved by 30 points.",
+        result: "TOEIC +30 points",
         verified: true
       },
       {
-        name: "James K.",
+        name: "Kenji M.",
         age: 32,
-        location: "LA",
+        location: "Osaka",
         rating: 5,
         image: "👨‍💻",
-        quote: "I had no idea my profile was so bad. The bio rewrites alone made a huge difference. Now I actually get replies!",
-        result: "3x response rate",
+        quote: "ビジネス英語の発音が自信持てるようになりました。Meeting scenarios helped me prepare for real presentations. Much better than my old conversation school.",
+        result: "Promoted at work",
         verified: true
       },
       {
-        name: "Emily R.",
-        age: 26,
-        location: "Chicago",
+        name: "Sakura I.",
+        age: 24,
+        location: "Yokohama",
         rating: 5,
-        image: "👩‍🎨",
-        quote: "The cropping suggestions were game-changing. Changed my main photo based on the AI's advice and my matches doubled overnight.",
-        result: "2x more matches",
+        image: "👩‍🎓",
+        quote: "Preparing for study abroad in the US. The /th/ sound practice is amazing—I can finally say 'think' and 'thank' correctly! My American friends noticed the difference.",
+        result: "Study abroad ready",
         verified: true
       }
     ];
@@ -372,16 +391,16 @@ const TestimonialsSection = () => {
       <div className="py-20 px-4 lg:px-8 bg-base-200">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <div className="badge badge-primary badge-lg mb-4">Trusted by 10,000+ Users</div>
+            <div className="badge badge-primary badge-lg mb-4">Trusted by 5,000+ Japanese Learners</div>
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Real Results from Real People
+              Real Results from Japanese English Learners
             </h2>
             <div className="flex items-center justify-center gap-2 mb-2">
               {[1,2,3,4,5].map(i => (
                 <Star key={i} className="w-5 h-5 fill-warning text-warning" />
               ))}
-              <span className="font-bold ml-2">4.9/5</span>
-              <span className="opacity-70">(2,847 reviews)</span>
+              <span className="font-bold ml-2">4.8/5</span>
+              <span className="opacity-70">(1,247 reviews)</span>
             </div>
           </div>
   
@@ -427,9 +446,9 @@ const TestimonialsSection = () => {
           </div>
   
           <div className="text-center mt-12">
-            <p className="text-sm opacity-70 mb-4">Join thousands of successful daters</p>
-            <Link href="/analyze" className="btn btn-primary">
-              Get Your Results
+            <p className="text-sm opacity-70 mb-4">Join thousands of successful English learners</p>
+            <Link href="/practice" className="btn btn-primary">
+              Start Your Journey
             </Link>
           </div>
         </div>
@@ -439,73 +458,19 @@ const TestimonialsSection = () => {
 
 const PricingSection = () => {
 
-    const pricingPlans = [
-        {
-          name: "Basic",
-          price: "9.99",
-          period: "one-time",
-          description: "Perfect for getting started",
-          features: [
-            "Up to 10 photos",
-            "Attractiveness scoring",
-            "Top 6 photo selection",
-            "Bio analysis",
-            "1 AI bio rewrite",
-            "PDF report"
-          ],
-          cta: "Get Started",
-          popular: false
-        },
-        {
-          name: "Premium",
-          price: "19.99",
-          period: "one-time",
-          description: "Most comprehensive analysis",
-          features: [
-            "Up to 20 photos",
-            "Everything in Basic",
-            "5 AI bio rewrites",
-            "Prompt improvements",
-            "Research insights",
-            "Priority processing"
-          ],
-          cta: "Get Premium",
-          popular: true
-        },
-        {
-          name: "Pro Monthly",
-          price: "29.99",
-          period: "per month",
-          description: "For continuous optimization",
-          features: [
-            "Unlimited analyses",
-            "All Premium features",
-            "Progress tracking",
-            "A/B testing",
-            "Analysis history",
-            "Cancel anytime"
-          ],
-          cta: "Start Pro",
-          popular: false
-        }
-      ];
-
-      console.log(PRICING_PLANS);
-      
-
     return (
       <div id="pricing" className="py-20 px-4 lg:px-8 bg-base-200">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Simple Pricing
+              Simple, Affordable Pricing
             </h2>
             <p className="text-lg opacity-70">
-              Choose the plan that fits your goals
+              Less than one conversation lesson at an Eikaiwa school
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {PRICING_PLANS.map((plan, idx) => (
                 <SmartPricingCard key={idx} plan={plan} />
             ))}
@@ -513,10 +478,10 @@ const PricingSection = () => {
 
           <div className="text-center mt-8 space-y-2">
             <p className="opacity-70">
-              All plans include 100% satisfaction guarantee
+              🎓 Students: 20% off with Japanese university email (.ac.jp)
             </p>
             <p className="text-sm opacity-60">
-              Questions? <Link href="/contact" className="link link-primary">Contact us</Link>
+              Questions? <Link href="/contact" className="link link-primary">お問い合わせ (Contact us)</Link>
             </p>
           </div>
         </div>
@@ -538,40 +503,50 @@ const FaqSection = () => {
             <div className="collapse collapse-arrow join-item border border-base-300">
               <input type="radio" name="faq-accordion" defaultChecked /> 
               <div className="collapse-title text-lg font-medium">
-                How does the AI analysis work?
+                How does SpeakScore understand Japanese pronunciation challenges?
               </div>
               <div className="collapse-content"> 
-                <p className="opacity-70">Our AI uses facial recognition to analyze attractiveness, emotions, and photo quality. It then ranks your photos and provides detailed recommendations based on dating research.</p>
+                <p className="opacity-70">Our AI uses Azure's pronunciation assessment specifically calibrated for Japanese→English learners. It detects common issues like /r/ vs /l/ confusion, /th/ sounds, and silent vowel additions that Japanese speakers struggle with.</p>
               </div>
             </div>
             
             <div className="collapse collapse-arrow join-item border border-base-300">
               <input type="radio" name="faq-accordion" /> 
               <div className="collapse-title text-lg font-medium">
-                Is my data private and secure?
+                Can I use SpeakScore to prepare for TOEIC/TOEFL?
               </div>
               <div className="collapse-content"> 
-                <p className="opacity-70">Yes! We delete all photos immediately after analysis. Your data is never stored or shared with third parties.</p>
+                <p className="opacity-70">Yes! We have dedicated TOEIC speaking test scenarios and TOEFL preparation conversations. Practice with realistic test formats and get feedback on pronunciation, fluency, and accuracy.</p>
               </div>
             </div>
             
             <div className="collapse collapse-arrow join-item border border-base-300">
               <input type="radio" name="faq-accordion" /> 
               <div className="collapse-title text-lg font-medium">
-                Can I try before buying?
+                Is the interface available in Japanese?
               </div>
               <div className="collapse-content"> 
-                <p className="opacity-70">Absolutely! You can see an example report before purchasing. Our Basic plan is also very affordable at just $9.99.</p>
+                <p className="opacity-70">Currently the interface is in English (we're building for English-speaking Japanese learners first). Japanese UI will launch in Month 2. Support is available in both English and Japanese now.</p>
               </div>
             </div>
 
             <div className="collapse collapse-arrow join-item border border-base-300">
               <input type="radio" name="faq-accordion" /> 
               <div className="collapse-title text-lg font-medium">
-                What apps does this work for?
+                How is this different from ChatGPT for pronunciation practice?
               </div>
               <div className="collapse-content"> 
-                <p className="opacity-70">Our analysis works for all dating apps: Tinder, Bumble, Hinge, Match, OkCupid, and more. The principles apply universally.</p>
+                <p className="opacity-70">ChatGPT doesn't track your progress, can't analyze pronunciation at the phoneme level, and doesn't remember your specific error patterns. SpeakScore remembers everything and focuses on YOUR Japanese→English challenges with detailed scoring.</p>
+              </div>
+            </div>
+
+            <div className="collapse collapse-arrow join-item border border-base-300">
+              <input type="radio" name="faq-accordion" /> 
+              <div className="collapse-title text-lg font-medium">
+                Can I cancel anytime?
+              </div>
+              <div className="collapse-content"> 
+                <p className="opacity-70">Absolutely! No contracts, no commitments. Cancel your subscription anytime from your account settings. You'll keep access until the end of your billing period.</p>
               </div>
             </div>
           </div>
@@ -585,40 +560,40 @@ const TrustBadgesSection = () => {
       <div className="py-16 px-4 lg:px-8 bg-base-200">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold mb-2">Your Privacy & Security</h3>
-            <p className="opacity-70">We take your data seriously</p>
+            <h3 className="text-2xl font-bold mb-2">Why Japanese Learners Choose Us</h3>
+            <p className="opacity-70">Designed specifically for your success</p>
           </div>
   
           <div className="grid md:grid-cols-4 gap-6">
             <div className="card bg-base-100 shadow-sm">
               <div className="card-body items-center text-center p-6">
-                <Shield className="w-8 h-8 text-success mb-2" />
-                <h4 className="font-bold text-sm">Secure Processing</h4>
-                <p className="text-xs opacity-70">Bank-level encryption</p>
+                <Target className="w-8 h-8 text-success mb-2" />
+                <h4 className="font-bold text-sm">Japanese-Specific</h4>
+                <p className="text-xs opacity-70">Built for your phoneme challenges</p>
               </div>
             </div>
   
             <div className="card bg-base-100 shadow-sm">
               <div className="card-body items-center text-center p-6">
-                <Zap className="w-8 h-8 text-warning mb-2" />
-                <h4 className="font-bold text-sm">Auto-Delete</h4>
-                <p className="text-xs opacity-70">Photos deleted immediately</p>
+                <Brain className="w-8 h-8 text-primary mb-2" />
+                <h4 className="font-bold text-sm">Remembers You</h4>
+                <p className="text-xs opacity-70">Tracks your unique patterns</p>
               </div>
             </div>
   
             <div className="card bg-base-100 shadow-sm">
               <div className="card-body items-center text-center p-6">
-                <Check className="w-8 h-8 text-success mb-2" />
-                <h4 className="font-bold text-sm">No Storage</h4>
-                <p className="text-xs opacity-70">We never save your data</p>
+                <Trophy className="w-8 h-8 text-warning mb-2" />
+                <h4 className="font-bold text-sm">TOEIC/TOEFL Ready</h4>
+                <p className="text-xs opacity-70">Test-specific scenarios</p>
               </div>
             </div>
   
             <div className="card bg-base-100 shadow-sm">
               <div className="card-body items-center text-center p-6">
-                <Award className="w-8 h-8 text-info mb-2" />
-                <h4 className="font-bold text-sm">Money Back</h4>
-                <p className="text-xs opacity-70">100% satisfaction guarantee</p>
+                <Shield className="w-8 h-8 text-info mb-2" />
+                <h4 className="font-bold text-sm">日本語サポート</h4>
+                <p className="text-xs opacity-70">Japanese language support</p>
               </div>
             </div>
           </div>
@@ -627,64 +602,62 @@ const TrustBadgesSection = () => {
     );
 }
 
-const UrgencySection = () => {
-const [timeLeft, setTimeLeft] = useState({
-    hours: 23,
-    minutes: 45,
-    seconds: 30
-});
-
-return (
-    <div className="py-12 px-4 lg:px-8 bg-gradient-to-r from-primary to-secondary">
-    <div className="max-w-4xl mx-auto">
-        <div className="card bg-base-100 shadow-2xl">
-        <div className="card-body items-center text-center">
-            <div className="badge badge-error badge-lg mb-4">Limited Time Offer</div>
-            <h3 className="card-title text-2xl lg:text-3xl mb-4">
-            Get 50% Off Premium Analysis
-            </h3>
-            <p className="mb-6 opacity-70">
-            First 100 users this month get our Premium plan for just $9.99
+const PronounciationChallengesSection = () => {
+    const challenges = [
+      { sound: "/r/ vs /l/", example: "right vs light, rock vs lock", difficulty: "Very Hard" },
+      { sound: "/th/ sounds", example: "think, that, this", difficulty: "Very Hard" },
+      { sound: "/f/ vs /h/", example: "fan vs hand, feel vs heel", difficulty: "Hard" },
+      { sound: "/v/ vs /b/", example: "vote vs boat, very vs berry", difficulty: "Hard" },
+      { sound: "Silent vowels", example: "desk not desk-u, test not test-o", difficulty: "Medium" },
+      { sound: "Word stress", example: "REcord vs reCORD", difficulty: "Medium" }
+    ];
+  
+    return (
+      <div className="py-20 px-4 lg:px-8 bg-base-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+              Pronunciation Challenges for Japanese Speakers
+            </h2>
+            <p className="text-lg opacity-70">
+              We understand your specific struggles—and we fix them
             </p>
-
-            <div className="grid grid-flow-col gap-5 text-center auto-cols-max mb-6">
-            <div className="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
-                <span className="countdown font-mono text-4xl">
-                <span style={{"--value": timeLeft.hours}}></span>
-                </span>
-                hours
+          </div>
+  
+          <div className="grid md:grid-cols-2 gap-4">
+            {challenges.map((challenge, idx) => (
+              <div key={idx} className="card bg-base-200 shadow-md">
+                <div className="card-body">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="card-title text-lg">{challenge.sound}</h3>
+                      <p className="text-sm opacity-70 mt-1">
+                        Examples: <span className="font-mono">{challenge.example}</span>
+                      </p>
+                    </div>
+                    <div className={`badge ${
+                      challenge.difficulty === 'Very Hard' ? 'badge-error' : 
+                      challenge.difficulty === 'Hard' ? 'badge-warning' : 
+                      'badge-info'
+                    }`}>
+                      {challenge.difficulty}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+  
+          <div className="alert alert-success mt-8">
+            <Volume2 className="w-6 h-6" />
+            <div>
+              <h4 className="font-bold">SpeakScore detects and scores ALL of these</h4>
+              <p className="text-sm">Get phoneme-level feedback on every challenging sound</p>
             </div>
-            <div className="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
-                <span className="countdown font-mono text-4xl">
-                <span style={{"--value": timeLeft.minutes}}></span>
-                </span>
-                min
-            </div>
-            <div className="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
-                <span className="countdown font-mono text-4xl">
-                <span style={{"--value": timeLeft.seconds}}></span>
-                </span>
-                sec
-            </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/analyze" className="btn btn-primary btn-lg">
-                Claim 50% Discount Now
-            </Link>
-            <div className="text-sm opacity-70 self-center">
-                <span className="font-bold">87/100</span> spots claimed
-            </div>
-            </div>
-
-            <div className="mt-4">
-            <progress className="progress progress-primary w-64" value="87" max="100"></progress>
-            </div>
+          </div>
         </div>
-        </div>
-    </div>
-    </div>
-);
+      </div>
+    );
 }
 
 const FinalCTASection = () => {
@@ -692,22 +665,22 @@ const FinalCTASection = () => {
       <div className="py-20 px-4 lg:px-8 bg-primary text-primary-content">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-            Ready to Transform Your Profile?
+            Ready to Perfect Your English Pronunciation?
           </h2>
           <p className="text-lg lg:text-xl mb-8 opacity-90">
-            Join thousands who've improved their dating success with AI
+            Join thousands of Japanese speakers improving their English with AI
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/analyze" className="btn btn-accent btn-lg gap-2">
-              Start Analysis Now
+            <Link href="/practice" className="btn btn-accent btn-lg gap-2">
+              Start Free Practice
               <ArrowRight className="w-5 h-5" />
             </Link>
             <button className="btn btn-outline btn-lg text-primary-content border-primary-content hover:bg-primary-content hover:text-primary">
-              View Example
+              Watch Demo
             </button>
           </div>
           <p className="text-sm mt-6 opacity-80">
-            No signup required • Instant results
+            5 free sessions • No credit card required • 日本語サポートあり
           </p>
         </div>
       </div>
@@ -725,6 +698,6 @@ export {
     PricingSection,
     FaqSection,
     TrustBadgesSection,
-    UrgencySection,
+    PronounciationChallengesSection,
     FinalCTASection
 }

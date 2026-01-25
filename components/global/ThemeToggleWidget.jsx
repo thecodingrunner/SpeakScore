@@ -4,14 +4,14 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const ThemeToggleWidget = () => {
-    const [theme, setTheme] = useState('lofi');
+    const [theme, setTheme] = useState('emerald');
 
     useEffect(() => {
       document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
   
     const toggleTheme = () => {
-      setTheme(theme === 'lofi' ? 'dark' : 'lofi');
+      setTheme(theme === 'emerald' ? 'forest' : 'emerald');
     };
 
     return (
@@ -21,7 +21,7 @@ const ThemeToggleWidget = () => {
           className="btn btn-circle btn-ghost"
           aria-label="Toggle theme"
         >
-          {theme === 'lofi' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          {theme === 'emerald' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
         </button>
       </div>
     )

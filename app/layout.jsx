@@ -9,9 +9,10 @@ export const metadata = {
 }
 
 export default function RootLayout({ children }) {
+
   return (
     <ClerkProvider>
-      <html lang="en" data-theme="lofi">
+      <html lang="en">
         <body>
           {/* <PHProvider> */}
             <ThemeToggleWidget />

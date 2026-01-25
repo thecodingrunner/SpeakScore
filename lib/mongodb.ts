@@ -1,46 +1,59 @@
 // lib/mongodb.ts
-import mongoose from 'mongoose'
+// MongoDB connection for SpeakScore database
+
+import { MongoClient } from 'mongodb';
 
 if (!process.env.MONGODB_URI) {
-  throw new Error('Please add MONGODB_URI to .env.local')
+  throw new Error('Please add your MongoDB URI to .env');
 }
 
-const MONGODB_URI = process.env.MONGODB_URI
+const uri = process.env.MONGODB_URI;
 
-interface MongooseCache {
-  conn: typeof mongoose | null
-  promise: Promise<typeof mongoose> | null
-}
+console.log(uri);
 
-let cached: MongooseCache = (global as any).mongoose
+const options = {};
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null }
-}
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
 
-async function connectDB() {
-  if (cached.conn) {
-    return cached.conn
+if (process.env.NODE_ENV === 'development') {
+  // In development mode, use a global variable to preserve the connection
+  // across module reloads caused by HMR (Hot Module Replacement)
+  let globalWithMongo = global as typeof globalThis & {
+    _mongoClientPromise?: Promise<MongoClient>;
+  };
+
+  if (!globalWithMongo._mongoClientPromise) {
+    client = new MongoClient(uri, options);
+    globalWithMongo._mongoClientPromise = client.connect();
   }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    }
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose
-    })
-  }
-
-  try {
-    cached.conn = await cached.promise
-  } catch (e) {
-    cached.promise = null
-    throw e
-  }
-
-  return cached.conn
+  clientPromise = globalWithMongo._mongoClientPromise;
+} else {
+  // In production mode, create a new client
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
 }
 
-export default connectDB
+export default clientPromise;
+
+// Helper to get database
+export async function getDatabase() {
+  const client = await clientPromise;
+  return client.db('speakscore'); // Your database name
+}
+
+// Helper to get specific collections
+export async function getSentencesCollection() {
+  const db = await getDatabase();
+  return db.collection('sentences');
+}
+
+export async function getUserProgressCollection() {
+  const db = await getDatabase();
+  return db.collection('user_progress');
+}
+
+export async function getUserSentenceHistoryCollection() {
+  const db = await getDatabase();
+  return db.collection('user_sentence_history');
+}
