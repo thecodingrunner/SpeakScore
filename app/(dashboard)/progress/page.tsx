@@ -1,79 +1,111 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   TrendingUp, Calendar, Target, Mic, ChevronDown,
-  Flame, Trophy, Star, BarChart3
+  Flame, Trophy, Star, BarChart3, RefreshCw
 } from 'lucide-react'
 
-export default function ProgressPage() {
-  const [timeRange, setTimeRange] = useState('week') // week, month, all
+interface Stats {
+  totalPracticeTime: number;
+  averageAccuracy: number;
+  streak: number;
+  lessonsCompleted: number;
+  xpEarned: number;
+  level: string;
+}
 
-  // Mock data - replace with real data later
-  const stats = {
-    totalPracticeTime: 145, // minutes
-    averageAccuracy: 78,
-    streak: 7,
-    lessonsCompleted: 12,
-    xpEarned: 1240,
-    pronunciationScores: {
-      rVsL: 85,
-      thSounds: 72,
-      wordStress: 81,
-      silentVowels: 0, // not started
-      fVsH: 0,
-      vVsB: 0,
-    },
+interface WeeklyDataPoint {
+  day: string;
+  date: string;
+  minutes: number;
+  accuracy: number;
+  sessions: number;
+}
+
+interface PhonemeBreakdown {
+  name: string;
+  score: number;
+  trend: string;
+  practiceCount: number;
+  color: string;
+}
+
+interface RecentSession {
+  id: string;
+  date: string;
+  time: string;
+  sentenceId: string;
+  lesson: string;
+  accuracy: number;
+  duration: number;
+  xp: number;
+  attempts: number;
+}
+
+export default function ProgressPage() {
+  const [timeRange, setTimeRange] = useState('week')
+  const [isLoading, setIsLoading] = useState(true)
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [weeklyData, setWeeklyData] = useState<WeeklyDataPoint[]>([])
+  const [pronunciationBreakdown, setPronunciationBreakdown] = useState<PhonemeBreakdown[]>([])
+  const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
+
+  useEffect(() => {
+    fetchProgressData()
+  }, [timeRange])
+
+  const fetchProgressData = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/progress/stats?range=${timeRange}`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch progress data')
+      }
+
+      const data = await response.json()
+      
+      setStats(data.stats)
+      setWeeklyData(data.weeklyData || [])
+      setPronunciationBreakdown(data.pronunciationBreakdown || [])
+      setRecentSessions(data.recentSessions || [])
+    } catch (error) {
+      console.error('Error fetching progress:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const weeklyData = [
-    { day: 'Mon', minutes: 15, accuracy: 75 },
-    { day: 'Tue', minutes: 20, accuracy: 78 },
-    { day: 'Wed', minutes: 25, accuracy: 80 },
-    { day: 'Thu', minutes: 18, accuracy: 76 },
-    { day: 'Fri', minutes: 22, accuracy: 82 },
-    { day: 'Sat', minutes: 0, accuracy: 0 },
-    { day: 'Sun', minutes: 30, accuracy: 85 },
-  ]
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+            <p className="mt-4 text-lg">Loading your progress...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-  const pronunciationProgress = [
-    { name: '/r/ vs /l/', score: stats.pronunciationScores.rVsL, trend: '+12%', color: 'success' },
-    { name: '/th/ sounds', score: stats.pronunciationScores.thSounds, trend: '+8%', color: 'warning' },
-    { name: 'Word Stress', score: stats.pronunciationScores.wordStress, trend: '+15%', color: 'success' },
-    { name: 'Silent Vowels', score: stats.pronunciationScores.silentVowels, trend: 'Not started', color: 'ghost' },
-  ]
+  if (!stats) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
+        <div className="alert alert-error">
+          <span>Failed to load progress data</span>
+          <button onClick={fetchProgressData} className="btn btn-sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
-  const recentSessions = [
-    {
-      id: 1,
-      date: 'Today',
-      time: '2:30 PM',
-      lesson: '/th/ Sounds Practice',
-      accuracy: 82,
-      duration: 15,
-      xp: 25,
-    },
-    {
-      id: 2,
-      date: 'Yesterday',
-      time: '6:45 PM',
-      lesson: '/r/ vs /l/ Review',
-      accuracy: 88,
-      duration: 20,
-      xp: 30,
-    },
-    {
-      id: 3,
-      date: '2 days ago',
-      time: '7:00 PM',
-      lesson: 'Word Stress Practice',
-      accuracy: 75,
-      duration: 18,
-      xp: 22,
-    },
-  ]
-
-  const maxMinutes = Math.max(...weeklyData.map(d => d.minutes))
+  const maxMinutes = Math.max(...weeklyData.map(d => d.minutes), 1)
+  const hasData = weeklyData.some(d => d.minutes > 0)
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
@@ -139,7 +171,7 @@ export default function ProgressPage() {
           <div className="card-body p-4 items-center text-center">
             <Trophy className="w-6 h-6 text-warning mb-1" />
             <div className="text-2xl font-bold">{stats.lessonsCompleted}</div>
-            <div className="text-xs opacity-70">Lessons Done</div>
+            <div className="text-xs opacity-70">Sentences Done</div>
           </div>
         </div>
 
@@ -152,215 +184,222 @@ export default function ProgressPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 mb-8">
-        {/* Weekly Practice Chart */}
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Practice Activity</h2>
-            <p className="text-sm text-base-content/60 mb-4">
-              Minutes practiced this week
-            </p>
-
-            {/* Bar chart */}
-            <div className="flex items-end justify-between gap-2 h-48">
-              {weeklyData.map((day, idx) => (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="tooltip" data-tip={`${day.minutes} min`}>
-                    <div 
-                      className={`w-full rounded-t-lg transition-all ${
-                        day.minutes > 0 
-                          ? 'bg-primary hover:bg-primary-focus' 
-                          : 'bg-base-300'
-                      }`}
-                      style={{ 
-                        height: `${day.minutes > 0 ? (day.minutes / maxMinutes * 100) : 5}%`,
-                        minHeight: day.minutes > 0 ? '20px' : '0'
-                      }}
-                    ></div>
-                  </div>
-                  <span className="text-xs font-semibold">{day.day}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="stats stats-horizontal shadow mt-4 bg-base-200">
-              <div className="stat px-4 py-2">
-                <div className="stat-title text-xs">This Week</div>
-                <div className="stat-value text-primary text-2xl">
-                  {weeklyData.reduce((sum, day) => sum + day.minutes, 0)}m
-                </div>
-              </div>
-              <div className="stat px-4 py-2">
-                <div className="stat-title text-xs">Daily Avg</div>
-                <div className="stat-value text-secondary text-2xl">
-                  {Math.round(weeklyData.reduce((sum, day) => sum + day.minutes, 0) / 7)}m
-                </div>
-              </div>
-            </div>
-          </div>
+      {!hasData && (
+        <div className="alert alert-info mb-8">
+          <span>Start practicing to see your progress charts!</span>
         </div>
+      )}
 
-        {/* Accuracy Trend */}
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Accuracy Trend</h2>
-            <p className="text-sm text-base-content/60 mb-4">
-              Your pronunciation accuracy over time
-            </p>
+      {hasData && (
+        <>
+          <div className="grid lg:grid-cols-2 gap-6 mb-8">
+            {/* Weekly Practice Chart */}
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title">Practice Activity</h2>
+                <p className="text-sm text-base-content/60 mb-4">
+                  Minutes practiced this week
+                </p>
 
-            {/* Line chart representation */}
-            <div className="flex items-end justify-between gap-1 h-48">
-              {weeklyData.map((day, idx) => (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="tooltip" data-tip={`${day.accuracy}%`}>
-                    <div className="relative w-full">
-                      {day.accuracy > 0 && (
-                        <>
-                          <div 
-                            className="w-full bg-success/20"
-                            style={{ height: `${(day.accuracy / 100) * 180}px` }}
-                          ></div>
-                          <div className="w-3 h-3 bg-success rounded-full absolute -top-1 left-1/2 -translate-x-1/2"></div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold">{day.day}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="stats stats-horizontal shadow mt-4 bg-base-200">
-              <div className="stat px-4 py-2">
-                <div className="stat-title text-xs">This Week</div>
-                <div className="stat-value text-success text-2xl">
-                  {Math.round(
-                    weeklyData.filter(d => d.accuracy > 0).reduce((sum, day) => sum + day.accuracy, 0) /
-                    weeklyData.filter(d => d.accuracy > 0).length
-                  )}%
-                </div>
-              </div>
-              <div className="stat px-4 py-2">
-                <div className="stat-title text-xs">Change</div>
-                <div className="stat-value text-success text-2xl">
-                  +7%
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Pronunciation Breakdown */}
-      <div className="card bg-base-100 shadow-xl mb-8">
-        <div className="card-body">
-          <h2 className="card-title mb-4">Pronunciation Breakdown</h2>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {pronunciationProgress.map((phoneme, idx) => (
-              <div key={idx} className="card bg-base-200">
-                <div className="card-body p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold">{phoneme.name}</h3>
-                    <div className="flex items-center gap-2">
-                      {phoneme.score > 0 && (
-                        <>
-                          <span className={`text-sm font-semibold text-${phoneme.color}`}>
-                            {phoneme.trend}
-                          </span>
-                          <TrendingUp className={`w-4 h-4 text-${phoneme.color}`} />
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {phoneme.score > 0 ? (
-                    <>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-3xl font-bold">{phoneme.score}%</span>
-                        <span className={`badge badge-${phoneme.color}`}>
-                          {phoneme.score >= 85 ? 'Excellent' : 
-                           phoneme.score >= 70 ? 'Good' : 
-                           'Needs Practice'}
-                        </span>
-                      </div>
-                      <progress 
-                        className={`progress progress-${phoneme.color} w-full`}
-                        value={phoneme.score} 
-                        max="100"
-                      ></progress>
-                    </>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-base-content/60 mb-2">
-                        Not started yet
-                      </p>
-                      <button className="btn btn-primary btn-sm">
-                        Start Learning
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Sessions */}
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title mb-4">Recent Sessions</h2>
-
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Date & Time</th>
-                  <th>Lesson</th>
-                  <th>Duration</th>
-                  <th>Accuracy</th>
-                  <th>XP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentSessions.map((session) => (
-                  <tr key={session.id} className="hover">
-                    <td>
-                      <div>
-                        <div className="font-semibold">{session.date}</div>
-                        <div className="text-sm opacity-60">{session.time}</div>
-                      </div>
-                    </td>
-                    <td>{session.lesson}</td>
-                    <td>{session.duration} min</td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <progress 
-                          className={`progress w-20 ${
-                            session.accuracy >= 85 ? 'progress-success' :
-                            session.accuracy >= 70 ? 'progress-warning' :
-                            'progress-error'
+                <div className="flex items-end justify-between gap-2 h-48">
+                  {weeklyData.map((day, idx) => (
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                      <div className="tooltip" data-tip={`${day.minutes} min\n${day.sessions} sessions`}>
+                        <div 
+                          className={`w-full rounded-t-lg transition-all cursor-pointer ${
+                            day.minutes > 0 
+                              ? 'bg-primary hover:bg-primary-focus' 
+                              : 'bg-base-300'
                           }`}
-                          value={session.accuracy} 
+                          style={{ 
+                            height: `${day.minutes > 0 ? (day.minutes / maxMinutes * 100) : 5}%`,
+                            minHeight: day.minutes > 0 ? '20px' : '0'
+                          }}
+                        ></div>
+                      </div>
+                      <span className="text-xs font-semibold">{day.day}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="stats stats-horizontal shadow mt-4 bg-base-200">
+                  <div className="stat px-4 py-2">
+                    <div className="stat-title text-xs">This Week</div>
+                    <div className="stat-value text-primary text-2xl">
+                      {weeklyData.reduce((sum, day) => sum + day.minutes, 0)}m
+                    </div>
+                  </div>
+                  <div className="stat px-4 py-2">
+                    <div className="stat-title text-xs">Daily Avg</div>
+                    <div className="stat-value text-secondary text-2xl">
+                      {Math.round(weeklyData.reduce((sum, day) => sum + day.minutes, 0) / 7)}m
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Accuracy Trend */}
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title">Accuracy Trend</h2>
+                <p className="text-sm text-base-content/60 mb-4">
+                  Your pronunciation accuracy over time
+                </p>
+
+                <div className="flex items-end justify-between gap-1 h-48">
+                  {weeklyData.map((day, idx) => (
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                      <div className="tooltip" data-tip={`${day.accuracy}%`}>
+                        <div className="relative w-full">
+                          {day.accuracy > 0 && (
+                            <>
+                              <div 
+                                className="w-full bg-success/20"
+                                style={{ height: `${(day.accuracy / 100) * 180}px` }}
+                              ></div>
+                              <div className="w-3 h-3 bg-success rounded-full absolute -top-1 left-1/2 -translate-x-1/2"></div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold">{day.day}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="stats stats-horizontal shadow mt-4 bg-base-200">
+                  <div className="stat px-4 py-2">
+                    <div className="stat-title text-xs">This Week</div>
+                    <div className="stat-value text-success text-2xl">
+                      {weeklyData.filter(d => d.accuracy > 0).length > 0
+                        ? Math.round(
+                            weeklyData.filter(d => d.accuracy > 0).reduce((sum, day) => sum + day.accuracy, 0) /
+                            weeklyData.filter(d => d.accuracy > 0).length
+                          )
+                        : 0}%
+                    </div>
+                  </div>
+                  <div className="stat px-4 py-2">
+                    <div className="stat-title text-xs">Best Day</div>
+                    <div className="stat-value text-success text-2xl">
+                      {Math.max(...weeklyData.map(d => d.accuracy))}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pronunciation Breakdown */}
+          {pronunciationBreakdown.length > 0 && (
+            <div className="card bg-base-100 shadow-xl mb-8">
+              <div className="card-body">
+                <h2 className="card-title mb-4">Pronunciation Breakdown</h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {pronunciationBreakdown.slice(0, 4).map((phoneme, idx) => (
+                    <div key={idx} className="card bg-base-200">
+                      <div className="card-body p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-bold">{phoneme.name}</h3>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-semibold text-${phoneme.color}`}>
+                              {phoneme.trend}
+                            </span>
+                            {phoneme.trend.includes('+') && (
+                              <TrendingUp className={`w-4 h-4 text-${phoneme.color}`} />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-3xl font-bold">{phoneme.score}%</span>
+                          <span className={`badge badge-${phoneme.color}`}>
+                            {phoneme.score >= 85 ? 'Excellent' : 
+                             phoneme.score >= 70 ? 'Good' : 
+                             'Needs Practice'}
+                          </span>
+                        </div>
+                        <progress 
+                          className={`progress progress-${phoneme.color} w-full`}
+                          value={phoneme.score} 
                           max="100"
                         ></progress>
-                        <span className="font-semibold">{session.accuracy}%</span>
+                        <p className="text-xs text-base-content/60 mt-2">
+                          Practiced {phoneme.practiceCount} times
+                        </p>
                       </div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 text-warning" />
-                        <span className="font-semibold">+{session.xp}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Recent Sessions */}
+          {recentSessions.length > 0 && (
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title mb-4">Recent Sessions</h2>
+
+                <div className="overflow-x-auto">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Date & Time</th>
+                        <th>Sentence</th>
+                        <th>Duration</th>
+                        <th>Accuracy</th>
+                        <th>XP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentSessions.map((session) => (
+                        <tr key={session.id} className="hover">
+                          <td>
+                            <div>
+                              <div className="font-semibold">{session.date}</div>
+                              <div className="text-sm opacity-60">{session.time}</div>
+                            </div>
+                          </td>
+                          <td>
+                            <div>
+                              <div className="font-mono text-sm">{session.sentenceId}</div>
+                              <div className="text-xs opacity-60">{session.attempts} attempts</div>
+                            </div>
+                          </td>
+                          <td>{session.duration} min</td>
+                          <td>
+                            <div className="flex items-center gap-2">
+                              <progress 
+                                className={`progress w-20 ${
+                                  session.accuracy >= 85 ? 'progress-success' :
+                                  session.accuracy >= 70 ? 'progress-warning' :
+                                  'progress-error'
+                                }`}
+                                value={session.accuracy} 
+                                max="100"
+                              ></progress>
+                              <span className="font-semibold">{session.accuracy}%</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 text-warning" />
+                              <span className="font-semibold">+{session.xp}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

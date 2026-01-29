@@ -1,5 +1,5 @@
 // lib/sentence-selector.ts
-// Smart sentence selection logic for practice sessions
+// Smart sentence selection with difficulty filtering
 
 import { getSentencesCollection, getUserProgressCollection, getUserSentenceHistoryCollection } from '@/lib/mongodb';
 
@@ -15,65 +15,239 @@ export async function getNextPracticeSentence(
   const userProgress = await userProgressCollection.findOne({ userId });
   const completedSentences = userProgress?.completedSentences || [];
   const weakPhonemes = userProgress?.weakPhonemes || [];
+  const userLevel = userProgress?.level || 'beginner';
 
-  // 2. Try to get unseen core content first
+  console.log(`🔍 Finding sentence for user ${userId}, scenario: ${scenario}`);
+  console.log(`   User level: ${userLevel}`);
+  console.log(`   Completed: ${completedSentences.length} sentences`);
+  console.log(`   Weak phonemes:`, weakPhonemes);
+
+  const dbScenario = mapScenarioName(scenario);
+
+  // 2. Try to get unseen CORE content matching user's level
   const unseenCoreSentences = await sentencesCollection
     .find({
-      scenario: scenario,
+      scenario: dbScenario,
       type: 'core',
-      id: { $nin: completedSentences } // Not in completed list
+      difficulty: getDifficultyRange(userLevel), // ✅ Filter by difficulty
+      id: { $nin: completedSentences }
     })
     .limit(10)
     .toArray();
 
+  console.log(`   Found ${unseenCoreSentences.length} unseen core sentences at ${userLevel} level`);
+
   if (unseenCoreSentences.length > 0) {
-    // Return first unseen core sentence
+    console.log(`   ✅ Returning core: ${unseenCoreSentences[0].id} (${unseenCoreSentences[0].difficulty})`);
     return unseenCoreSentences[0];
   }
 
-  // 3. Check for review sentences (spaced repetition)
+  // 3. If no sentences at user's level, try adjacent levels
+  console.log(`   ⚠️ No unseen sentences at ${userLevel}, trying adjacent levels...`);
+  
+  const adjacentLevels = getAdjacentLevels(userLevel);
+  const adjacentSentences = await sentencesCollection
+    .find({
+      scenario: dbScenario,
+      type: 'core',
+      difficulty: { $in: adjacentLevels },
+      id: { $nin: completedSentences }
+    })
+    .limit(10)
+    .toArray();
+
+  if (adjacentSentences.length > 0) {
+    console.log(`   ✅ Found sentence at adjacent level: ${adjacentSentences[0].difficulty}`);
+    return adjacentSentences[0];
+  }
+
+  // 4. Check for review sentences (spaced repetition)
   const now = new Date();
   const dueForReview = await historyCollection
     .find({
       userId: userId,
-      nextReview: { $lte: now }, // Due for review
+      nextReview: { $lte: now },
       mastered: false
     })
     .limit(5)
     .toArray();
 
-  // 30% chance to review if available
+  console.log(`   Found ${dueForReview.length} sentences due for review`);
+
   if (dueForReview.length > 0 && Math.random() < 0.3) {
     const reviewSentenceId = dueForReview[0].sentenceId;
     const reviewSentence = await sentencesCollection.findOne({ id: reviewSentenceId });
     
     if (reviewSentence) {
+      console.log(`   ✅ Returning review: ${reviewSentence.id}`);
       return reviewSentence;
     }
   }
 
-  // 4. Generate new AI sentence focused on weak phonemes
-  const targetPhoneme = weakPhonemes[0] || '/r/'; // Default to /r/
-  
-  const response = await fetch('/api/generate-sentence', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      phoneme: targetPhoneme,
-      difficulty: userProgress?.level || 'beginner',
-      scenario,
-      userId
-    })
-  });
+  // 5. User completed all core sentences at their level - time for AI content!
+  console.log(`   🤖 User completed core content at their level, checking for AI sentences...`);
 
-  const data = await response.json();
-  return data.sentence;
+  const targetPhoneme = weakPhonemes[0] || null;
+  const existingAI = await findMatchingAISentence(
+    sentencesCollection,
+    dbScenario,
+    targetPhoneme,
+    userLevel,
+    completedSentences
+  );
+
+  if (existingAI) {
+    console.log(`   ✅ Reusing AI sentence: ${existingAI.id} (used ${existingAI.usageCount || 0} times)`);
+    
+    await sentencesCollection.updateOne(
+      { id: existingAI.id },
+      { 
+        $inc: { usageCount: 1 },
+        $set: { lastUsed: new Date() }
+      }
+    );
+    
+    return existingAI;
+  }
+
+  // 6. No matching AI sentence exists - return null to trigger generation
+  console.log(`   🎲 No matching AI sentence found, returning null`);
+  return null;
 }
 
 /**
- * Get a batch of practice sentences for a scenario
- * Useful for pre-loading sentences in the UI
+ * Get difficulty range based on user level
  */
+function getDifficultyRange(userLevel: string): any {
+  switch (userLevel) {
+    case 'beginner':
+      return 'beginner'; // Only beginner sentences
+    case 'intermediate':
+      return { $in: ['beginner', 'intermediate'] }; // Beginner + intermediate
+    case 'advanced':
+      return { $in: ['intermediate', 'advanced'] }; // Intermediate + advanced
+    default:
+      return 'beginner';
+  }
+}
+
+/**
+ * Get adjacent difficulty levels for fallback
+ */
+function getAdjacentLevels(userLevel: string): string[] {
+  switch (userLevel) {
+    case 'beginner':
+      return ['intermediate']; // Try intermediate if no beginner left
+    case 'intermediate':
+      return ['beginner', 'advanced']; // Try both easier and harder
+    case 'advanced':
+      return ['intermediate']; // Try intermediate if no advanced left
+    default:
+      return ['beginner', 'intermediate'];
+  }
+}
+
+/**
+ * Find existing AI sentence that matches criteria
+ */
+async function findMatchingAISentence(
+  sentencesCollection: any,
+  scenario: string,
+  targetPhoneme: string | null,
+  difficulty: string,
+  completedSentences: string[]
+) {
+  const query: any = {
+    type: 'ai_generated',
+    scenario: scenario,
+    difficulty: difficulty,
+    id: { $nin: completedSentences }
+  };
+
+  if (targetPhoneme) {
+    query.phonemes = { $in: [targetPhoneme] };
+  }
+
+  const aiSentences = await sentencesCollection
+    .find(query)
+    .sort({ usageCount: 1, createdAt: -1 })
+    .limit(10)
+    .toArray();
+
+  if (aiSentences.length > 0) {
+    return aiSentences[0];
+  }
+
+  if (targetPhoneme) {
+    delete query.phonemes;
+    
+    const fallbackAI = await sentencesCollection
+      .find(query)
+      .sort({ usageCount: 1, createdAt: -1 })
+      .limit(5)
+      .toArray();
+
+    if (fallbackAI.length > 0) {
+      return fallbackAI[0];
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Level up user based on performance
+ */
+export async function checkAndLevelUp(userId: string) {
+  const userProgressCollection = await getUserProgressCollection();
+  const historyCollection = await getUserSentenceHistoryCollection();
+
+  const userProgress = await userProgressCollection.findOne({ userId });
+  if (!userProgress) return;
+
+  const currentLevel = userProgress.level || 'beginner';
+  
+  // Get last 20 practice sessions
+  const recentPractice = await historyCollection
+    .find({ userId })
+    .sort({ lastPracticed: -1 })
+    .limit(20)
+    .toArray();
+
+  if (recentPractice.length < 20) return; // Need at least 20 sessions
+
+  // Calculate average accuracy of recent sessions
+  const avgAccuracy = recentPractice.reduce((sum, session) => {
+    const sessionAvg = session.accuracyScores.reduce((a: number, b: number) => a + b, 0) / session.accuracyScores.length;
+    return sum + sessionAvg;
+  }, 0) / recentPractice.length;
+
+  console.log(`📊 User ${userId} recent average: ${avgAccuracy}%`);
+
+  // Level up conditions
+  let newLevel = currentLevel;
+  
+  if (currentLevel === 'beginner' && avgAccuracy >= 85 && userProgress.completedSentences?.length >= 30) {
+    newLevel = 'intermediate';
+  } else if (currentLevel === 'intermediate' && avgAccuracy >= 90 && userProgress.completedSentences?.length >= 100) {
+    newLevel = 'advanced';
+  }
+
+  if (newLevel !== currentLevel) {
+    console.log(`🎉 Level up! ${currentLevel} → ${newLevel}`);
+    
+    await userProgressCollection.updateOne(
+      { userId },
+      { 
+        $set: { 
+          level: newLevel,
+          updatedAt: new Date()
+        }
+      }
+    );
+  }
+}
+
 export async function getPracticeSentenceBatch(
   userId: string,
   scenario: string,
@@ -84,12 +258,15 @@ export async function getPracticeSentenceBatch(
 
   const userProgress = await userProgressCollection.findOne({ userId });
   const completedSentences = userProgress?.completedSentences || [];
+  const userLevel = userProgress?.level || 'beginner';
 
-  // Get unseen sentences
+  const dbScenario = mapScenarioName(scenario);
+
   const sentences = await sentencesCollection
     .find({
-      scenario: scenario,
+      scenario: dbScenario,
       type: 'core',
+      difficulty: getDifficultyRange(userLevel),
       id: { $nin: completedSentences }
     })
     .limit(count)
@@ -98,9 +275,6 @@ export async function getPracticeSentenceBatch(
   return sentences;
 }
 
-/**
- * Record a practice attempt
- */
 export async function recordPracticeAttempt(
   userId: string,
   sentenceId: string,
@@ -110,7 +284,8 @@ export async function recordPracticeAttempt(
   const historyCollection = await getUserSentenceHistoryCollection();
   const userProgressCollection = await getUserProgressCollection();
 
-  // Get existing history for this sentence
+  console.log(`📝 Recording attempt for user ${userId}, sentence ${sentenceId}, accuracy: ${accuracy}%`);
+
   const existingHistory = await historyCollection.findOne({
     userId,
     sentenceId
@@ -120,7 +295,6 @@ export async function recordPracticeAttempt(
   const nextReview = calculateNextReview(accuracy, existingHistory?.attempts || 0);
 
   if (existingHistory) {
-    // Update existing history - FIX: Properly type the $push operator
     await historyCollection.updateOne(
       { userId, sentenceId },
       {
@@ -132,15 +306,15 @@ export async function recordPracticeAttempt(
           updatedAt: now
         },
         $push: {
-          accuracyScores: accuracy as any // Type assertion to fix MongoDB types
+          accuracyScores: accuracy as any
         },
         $inc: {
           attempts: 1
         }
       }
     );
+    console.log(`   ✅ Updated existing history`);
   } else {
-    // Create new history entry
     await historyCollection.insertOne({
       userId,
       sentenceId,
@@ -154,13 +328,12 @@ export async function recordPracticeAttempt(
       createdAt: now,
       updatedAt: now
     });
+    console.log(`   ✅ Created new history entry`);
   }
 
-  // Update user progress
   const userProgress = await userProgressCollection.findOne({ userId });
   
   if (!userProgress) {
-    // Create user progress if doesn't exist
     await userProgressCollection.insertOne({
       userId,
       level: 'beginner',
@@ -173,8 +346,8 @@ export async function recordPracticeAttempt(
       createdAt: now,
       updatedAt: now
     });
+    console.log(`   ✅ Created user progress`);
   } else {
-    // Update existing progress
     const updateDoc: any = {
       $inc: {
         xp: calculateXP(accuracy)
@@ -185,12 +358,11 @@ export async function recordPracticeAttempt(
       }
     };
 
-    // Add to completed sentences if score is good enough
     if (accuracy >= 70 && !userProgress.completedSentences?.includes(sentenceId)) {
       updateDoc.$push = { completedSentences: sentenceId };
+      console.log(`   ✅ Marked sentence as completed`);
     }
 
-    // Update weak phonemes
     const currentWeakPhonemes = findWeakPhonemes(phonemeScores);
     if (currentWeakPhonemes.length > 0) {
       updateDoc.$set.weakPhonemes = currentWeakPhonemes;
@@ -200,33 +372,28 @@ export async function recordPracticeAttempt(
       { userId },
       updateDoc
     );
+    console.log(`   ✅ Updated user progress (+${calculateXP(accuracy)} XP)`);
   }
+
+  // Check if user should level up
+  await checkAndLevelUp(userId);
 }
 
-/**
- * Calculate next review date based on spaced repetition
- */
 function calculateNextReview(accuracy: number, attempts: number): Date {
   const now = new Date();
   let daysUntilReview = 1;
 
   if (accuracy >= 90) {
-    // Excellent - review in longer intervals
-    daysUntilReview = Math.min(30, Math.pow(2, attempts)); // 1, 2, 4, 8, 16, 30 days
+    daysUntilReview = Math.min(30, Math.pow(2, attempts));
   } else if (accuracy >= 70) {
-    // Good - moderate intervals
-    daysUntilReview = Math.min(7, attempts + 1); // 1, 2, 3, 4, 5, 6, 7 days
+    daysUntilReview = Math.min(7, attempts + 1);
   } else {
-    // Needs work - review soon
-    daysUntilReview = 1; // Tomorrow
+    daysUntilReview = 1;
   }
 
   return new Date(now.getTime() + daysUntilReview * 24 * 60 * 60 * 1000);
 }
 
-/**
- * Calculate XP based on accuracy
- */
 function calculateXP(accuracy: number): number {
   if (accuracy >= 90) return 50;
   if (accuracy >= 80) return 30;
@@ -234,12 +401,23 @@ function calculateXP(accuracy: number): number {
   return 10;
 }
 
-/**
- * Find weak phonemes from scores
- */
 function findWeakPhonemes(phonemeScores: Record<string, number>): string[] {
   return Object.entries(phonemeScores)
     .filter(([_, score]) => score < 75)
     .map(([phoneme, _]) => phoneme)
-    .slice(0, 3); // Top 3 weak phonemes
+    .slice(0, 3);
+}
+
+function mapScenarioName(frontendScenario: string): string {
+  const mapping: Record<string, string> = {
+    'quick': 'daily_drill',
+    'daily_drill': 'daily_drill',
+    'phonemes': 'phoneme_r_vs_l',
+    'phoneme_r_vs_l': 'phoneme_r_vs_l',
+    'toeic': 'toeic',
+    'business': 'business',
+    'interview': 'interview',
+    'phone': 'phone',
+  };
+  return mapping[frontendScenario] || frontendScenario;
 }

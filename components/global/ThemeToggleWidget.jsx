@@ -4,14 +4,14 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const ThemeToggleWidget = () => {
-    const [theme, setTheme] = useState('emerald');
+    const [theme, setTheme] = useState('lofi');
 
     useEffect(() => {
       document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
   
     const toggleTheme = () => {
-      setTheme(theme === 'emerald' ? 'forest' : 'emerald');
+      setTheme(theme === 'lofi' ? 'black' : 'lofi');
     };
 
     return (

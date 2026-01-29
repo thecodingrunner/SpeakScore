@@ -1,5 +1,6 @@
 // lib/mongodb.ts
 // MongoDB connection for SpeakScore database
+import 'dotenv/config';
 
 import { MongoClient } from 'mongodb';
 

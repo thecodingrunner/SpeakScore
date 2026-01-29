@@ -16,6 +16,7 @@
     "dotenv": "^17.2.3",
     "firebase": "^12.8.0",
     "microsoft-cognitiveservices-speech-sdk": "^1.47.0",
+    "mongodb": "^7.0.0",
     "mongoose": "^9.1.2",
     "next": "16.1.1",
     "openai": "^6.16.0",
