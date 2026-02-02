@@ -34,7 +34,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   const [audioSpeed, setAudioSpeed] = useState<'normal' | 'slow'>('normal')
   const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null)
   const [feedback, setFeedback] = useState<any>(null)
-  
+
   // Lesson tracking
   const [lessonAttempts, setLessonAttempts] = useState<LessonAttempt[]>([])
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0)
@@ -45,6 +45,11 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   // Get lesson config
   const lessonConfig = lessonId ? getLessonConfig(lessonId) : null
   const totalSentences = lessonConfig?.sentencesPerLesson || 10
+
+  useEffect(() => {
+    console.log("Sentence: ", sentence);
+    
+  }, [])
 
   // Unwrap params on mount
   React.useEffect(() => {
@@ -734,3 +739,63 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
     </div>
   )
 }
+
+// Attempt to make analysis more japanese-specific
+// {feedback?.wordScores && feedback.wordScores.length > 0 && (
+//   <div className="space-y-3 mb-6">
+//     <h3 className="font-bold text-lg">Word-by-Word Analysis:</h3>
+//     {feedback.wordScores.map((word: any, idx: number) => {
+//       // Find phoneme errors for this word
+//       const wordPhonemeErrors = feedback?.azureErrors?.filter(
+//         (err: any) => err.word.toLowerCase() === word.word.toLowerCase()
+//       ) || [];
+
+//       return (
+//         <div key={idx} className="card bg-base-200">
+//           <div className="card-body p-4">
+//             <div className="flex items-center justify-between mb-2">
+//               <span className="text-xl font-bold">
+//                 "{word.word}"
+//               </span>
+//               <span className={`font-bold text-lg ${
+//                 word.score >= 85 ? 'text-success' :
+//                 word.score >= 70 ? 'text-warning' :
+//                 'text-error'
+//               }`}>
+//                 {word.score}%
+//               </span>
+//             </div>
+//             <progress 
+//               className={`progress w-full ${
+//                 word.score >= 85 ? 'progress-success' :
+//                 word.score >= 70 ? 'progress-warning' :
+//                 'progress-error'
+//               }`}
+//               value={word.score} 
+//               max="100"
+//             />
+            
+//             {/* Show phoneme errors for this word */}
+//             {wordPhonemeErrors.length > 0 && (
+//               <div className="mt-3 space-y-1">
+//                 {wordPhonemeErrors.map((error: any, errorIdx: number) => (
+//                   <div key={errorIdx} className="flex items-center gap-2 text-xs">
+//                     <span className="badge badge-error badge-xs">{error.phoneme}</span>
+//                     <span className="text-error">{error.errorType}</span>
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+
+//             {/* Show if score was adjusted */}
+//             {word.originalScore && word.originalScore !== word.score && (
+//               <p className="text-xs text-base-content/60 mt-2 italic">
+//                 Score adjusted from {word.originalScore}% due to pronunciation errors
+//               </p>
+//             )}
+//           </div>
+//         </div>
+//       );
+//     })}
+//   </div>
+// )}

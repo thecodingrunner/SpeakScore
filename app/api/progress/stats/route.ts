@@ -1,5 +1,5 @@
 // app/api/progress/stats/route.ts
-// Get user progress statistics
+// FIXED: Better date calculations for "Yesterday" display
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
@@ -17,16 +17,16 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const timeRange = searchParams.get('range') || 'week'; // week, month, all
+    const timeRange = searchParams.get('range') || 'week';
+
+    console.log(`📊 Fetching progress stats for range: ${timeRange}`);
 
     const userProgressCollection = await getUserProgressCollection();
     const historyCollection = await getUserSentenceHistoryCollection();
 
-    // Get user progress
     const userProgress = await userProgressCollection.findOne({ userId });
 
     if (!userProgress) {
-      // New user - return empty stats
       return NextResponse.json({
         success: true,
         stats: {
@@ -52,10 +52,10 @@ export async function GET(request: NextRequest) {
     } else if (timeRange === 'month') {
       startDate.setMonth(now.getMonth() - 1);
     } else {
-      startDate.setFullYear(2020); // All time
+      startDate.setFullYear(2020);
     }
 
-    // Get all practice history in date range
+    // Get practice history in date range
     const practiceHistory = await historyCollection
       .find({
         userId: userId,
@@ -63,6 +63,8 @@ export async function GET(request: NextRequest) {
       })
       .sort({ lastPracticed: -1 })
       .toArray();
+
+    console.log(`   Found ${practiceHistory.length} practices in range`);
 
     // Calculate overall stats
     const totalAttempts = practiceHistory.reduce((sum, h) => sum + h.attempts, 0);
@@ -74,16 +76,15 @@ export async function GET(request: NextRequest) {
       ? Math.round(totalAccuracy / practiceHistory.length)
       : 0;
 
-    // Estimate practice time (assume ~1 minute per attempt)
-    const totalPracticeTime = totalAttempts * 1.5; // minutes
+    const totalPracticeTime = totalAttempts * 1.5;
 
     // Calculate weekly data
-    const weeklyData = calculateWeeklyData(practiceHistory);
+    const weeklyData = calculateWeeklyData(practiceHistory, timeRange);
 
-    // Calculate pronunciation breakdown by phoneme
+    // Calculate pronunciation breakdown
     const pronunciationBreakdown = calculatePhonemeBreakdown(practiceHistory);
 
-    // Get recent sessions (last 10 unique practice sessions)
+    // Get recent sessions
     const recentSessions = await getRecentSessions(historyCollection, userId, 10);
 
     return NextResponse.json({
@@ -110,15 +111,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * Calculate daily practice data for the week
- */
-function calculateWeeklyData(practiceHistory: any[]) {
+function calculateWeeklyData(practiceHistory: any[], timeRange: string) {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const weeklyData = [];
 
-  // Get last 7 days
-  for (let i = 6; i >= 0; i--) {
+  const numDays = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 90;
+
+  for (let i = numDays - 1; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     date.setHours(0, 0, 0, 0);
@@ -126,13 +125,11 @@ function calculateWeeklyData(practiceHistory: any[]) {
     const nextDate = new Date(date);
     nextDate.setDate(nextDate.getDate() + 1);
 
-    // Find practice sessions for this day
     const dayPractice = practiceHistory.filter(h => {
       const practiceDate = new Date(h.lastPracticed);
       return practiceDate >= date && practiceDate < nextDate;
     });
 
-    // Calculate stats for this day
     const attempts = dayPractice.reduce((sum, h) => sum + h.attempts, 0);
     const minutes = Math.round(attempts * 1.5);
     
@@ -157,9 +154,6 @@ function calculateWeeklyData(practiceHistory: any[]) {
   return weeklyData;
 }
 
-/**
- * Calculate average accuracy by phoneme
- */
 function calculatePhonemeBreakdown(practiceHistory: any[]) {
   const phonemeStats: Record<string, { scores: number[]; count: number }> = {};
 
@@ -175,13 +169,11 @@ function calculatePhonemeBreakdown(practiceHistory: any[]) {
     }
   });
 
-  // Convert to array and calculate averages
   const breakdown = Object.entries(phonemeStats).map(([phoneme, data]) => {
     const avgScore = Math.round(
       data.scores.reduce((sum, score) => sum + score, 0) / data.scores.length
     );
     
-    // Determine trend (simplified - compare recent vs older scores)
     const recentScores = data.scores.slice(-5);
     const olderScores = data.scores.slice(0, -5);
     let trend = 'stable';
@@ -202,13 +194,9 @@ function calculatePhonemeBreakdown(practiceHistory: any[]) {
     };
   });
 
-  // Sort by score (worst first for improvement focus)
   return breakdown.sort((a, b) => a.score - b.score);
 }
 
-/**
- * Get recent practice sessions
- */
 async function getRecentSessions(historyCollection: any, userId: string, limit: number) {
   const recentHistory = await historyCollection
     .find({ userId })
@@ -218,18 +206,21 @@ async function getRecentSessions(historyCollection: any, userId: string, limit: 
 
   return recentHistory.map((history: any) => {
     const latestAccuracy = history.accuracyScores[history.accuracyScores.length - 1] || 0;
-    const duration = Math.round(history.attempts * 1.5); // Estimate
+    const duration = Math.round(history.attempts * 1.5);
 
-    // Calculate XP earned
     let xp = 10;
     if (latestAccuracy >= 90) xp = 50;
     else if (latestAccuracy >= 80) xp = 30;
     else if (latestAccuracy >= 70) xp = 20;
 
-    // Format date
+    // ✅ FIX: Better date calculation for "Yesterday"
     const practiceDate = new Date(history.lastPracticed);
     const now = new Date();
-    const diffDays = Math.floor((now.getTime() - practiceDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Compare dates at midnight
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const practiceMidnight = new Date(practiceDate.getFullYear(), practiceDate.getMonth(), practiceDate.getDate());
+    const diffDays = Math.floor((nowMidnight.getTime() - practiceMidnight.getTime()) / (1000 * 60 * 60 * 24));
     
     let dateLabel = 'Today';
     if (diffDays === 1) dateLabel = 'Yesterday';
@@ -240,7 +231,7 @@ async function getRecentSessions(historyCollection: any, userId: string, limit: 
       date: dateLabel,
       time: practiceDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
       sentenceId: history.sentenceId,
-      lesson: 'Practice Session', // Could be enhanced with sentence text
+      lesson: 'Practice Session',
       accuracy: latestAccuracy,
       duration,
       xp,

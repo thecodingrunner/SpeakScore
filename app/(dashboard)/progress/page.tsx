@@ -70,6 +70,12 @@ export default function ProgressPage() {
       setWeeklyData(data.weeklyData || [])
       setPronunciationBreakdown(data.pronunciationBreakdown || [])
       setRecentSessions(data.recentSessions || [])
+      
+      console.log(`📊 Loaded ${timeRange} data:`, {
+        practices: data.weeklyData?.length,
+        phonemes: data.pronunciationBreakdown?.length,
+        sessions: data.recentSessions?.length
+      });
     } catch (error) {
       console.error('Error fetching progress:', error)
     } finally {
@@ -198,33 +204,55 @@ export default function ProgressPage() {
               <div className="card-body">
                 <h2 className="card-title">Practice Activity</h2>
                 <p className="text-sm text-base-content/60 mb-4">
-                  Minutes practiced this week
+                  Minutes practiced {timeRange === 'week' ? 'this week' : timeRange === 'month' ? 'this month' : 'all time'}
                 </p>
 
-                <div className="flex items-end justify-between gap-2 h-48">
-                  {weeklyData.map((day, idx) => (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="tooltip" data-tip={`${day.minutes} min\n${day.sessions} sessions`}>
-                        <div 
-                          className={`w-full rounded-t-lg transition-all cursor-pointer ${
-                            day.minutes > 0 
-                              ? 'bg-primary hover:bg-primary-focus' 
-                              : 'bg-base-300'
-                          }`}
-                          style={{ 
-                            height: `${day.minutes > 0 ? (day.minutes / maxMinutes * 100) : 5}%`,
-                            minHeight: day.minutes > 0 ? '20px' : '0'
-                          }}
-                        ></div>
+                {/* ✅ FIX: Scrollable chart container */}
+                <div className="overflow-x-auto pb-2">
+                  <div 
+                    className="flex items-end justify-between gap-1 h-48"
+                    style={{ minWidth: `${weeklyData.length * (timeRange === 'week' ? 50 : timeRange === 'month' ? 20 : 15)}px` }}
+                  >
+                    {weeklyData.map((day, idx) => (
+                      <div 
+                        key={idx} 
+                        className="flex flex-col items-center gap-2"
+                        style={{ 
+                          minWidth: timeRange === 'week' ? '40px' : timeRange === 'month' ? '16px' : '12px',
+                          flex: timeRange === 'week' ? '1' : '0 0 auto'
+                        }}
+                      >
+                        <div className="tooltip tooltip-top" data-tip={`${day.date}\n${day.minutes} min\n${day.sessions} sessions`}>
+                          <div 
+                            className={`w-full rounded-t-lg transition-all cursor-pointer ${
+                              day.minutes > 0 
+                                ? 'bg-primary hover:bg-primary-focus' 
+                                : 'bg-base-300'
+                            }`}
+                            style={{ 
+                              height: `${day.minutes > 0 ? Math.max((day.minutes / maxMinutes * 100), 10) : 5}%`,
+                              minHeight: day.minutes > 0 ? '20px' : '8px',
+                              minWidth: timeRange === 'week' ? '30px' : '10px'
+                            }}
+                          ></div>
+                        </div>
+                        {timeRange === 'week' && (
+                          <span className="text-xs font-semibold">{day.day}</span>
+                        )}
+                        {timeRange === 'month' && idx % 5 === 0 && (
+                          <span className="text-xs font-semibold">{new Date(day.date).getDate()}</span>
+                        )}
+                        {timeRange === 'all' && idx % 10 === 0 && (
+                          <span className="text-xs font-semibold">{new Date(day.date).getDate()}</span>
+                        )}
                       </div>
-                      <span className="text-xs font-semibold">{day.day}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
 
                 <div className="stats stats-horizontal shadow mt-4 bg-base-200">
                   <div className="stat px-4 py-2">
-                    <div className="stat-title text-xs">This Week</div>
+                    <div className="stat-title text-xs">Total</div>
                     <div className="stat-value text-primary text-2xl">
                       {weeklyData.reduce((sum, day) => sum + day.minutes, 0)}m
                     </div>
@@ -232,7 +260,7 @@ export default function ProgressPage() {
                   <div className="stat px-4 py-2">
                     <div className="stat-title text-xs">Daily Avg</div>
                     <div className="stat-value text-secondary text-2xl">
-                      {Math.round(weeklyData.reduce((sum, day) => sum + day.minutes, 0) / 7)}m
+                      {Math.round(weeklyData.reduce((sum, day) => sum + day.minutes, 0) / weeklyData.length)}m
                     </div>
                   </div>
                 </div>
@@ -247,30 +275,54 @@ export default function ProgressPage() {
                   Your pronunciation accuracy over time
                 </p>
 
-                <div className="flex items-end justify-between gap-1 h-48">
-                  {weeklyData.map((day, idx) => (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="tooltip" data-tip={`${day.accuracy}%`}>
-                        <div className="relative w-full">
-                          {day.accuracy > 0 && (
-                            <>
-                              <div 
-                                className="w-full bg-success/20"
-                                style={{ height: `${(day.accuracy / 100) * 180}px` }}
-                              ></div>
-                              <div className="w-3 h-3 bg-success rounded-full absolute -top-1 left-1/2 -translate-x-1/2"></div>
-                            </>
-                          )}
+                {/* ✅ FIX: Scrollable chart container */}
+                <div className="overflow-x-auto pb-2">
+                  <div 
+                    className="flex items-end justify-between gap-1 h-48"
+                    style={{ minWidth: `${weeklyData.length * (timeRange === 'week' ? 50 : timeRange === 'month' ? 20 : 15)}px` }}
+                  >
+                    {weeklyData.map((day, idx) => (
+                      <div 
+                        key={idx} 
+                        className="flex flex-col items-center gap-2"
+                        style={{ 
+                          minWidth: timeRange === 'week' ? '40px' : timeRange === 'month' ? '16px' : '12px',
+                          flex: timeRange === 'week' ? '1' : '0 0 auto'
+                        }}
+                      >
+                        <div className="tooltip tooltip-top" data-tip={`${day.date}\n${day.accuracy}%`}>
+                          <div className="relative w-full">
+                            {day.accuracy > 0 && (
+                              <>
+                                <div 
+                                  className="w-full bg-success/20"
+                                  style={{ 
+                                    height: `${Math.max((day.accuracy / 100) * 180, 20)}px`,
+                                    minWidth: timeRange === 'week' ? '30px' : '10px'
+                                  }}
+                                ></div>
+                                <div className="w-2 h-2 bg-success rounded-full absolute -top-1 left-1/2 -translate-x-1/2"></div>
+                              </>
+                            )}
+                          </div>
                         </div>
+                        {timeRange === 'week' && (
+                          <span className="text-xs font-semibold">{day.day}</span>
+                        )}
+                        {timeRange === 'month' && idx % 5 === 0 && (
+                          <span className="text-xs font-semibold">{new Date(day.date).getDate()}</span>
+                        )}
+                        {timeRange === 'all' && idx % 10 === 0 && (
+                          <span className="text-xs font-semibold">{new Date(day.date).getDate()}</span>
+                        )}
                       </div>
-                      <span className="text-xs font-semibold">{day.day}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
 
                 <div className="stats stats-horizontal shadow mt-4 bg-base-200">
                   <div className="stat px-4 py-2">
-                    <div className="stat-title text-xs">This Week</div>
+                    <div className="stat-title text-xs">Average</div>
                     <div className="stat-value text-success text-2xl">
                       {weeklyData.filter(d => d.accuracy > 0).length > 0
                         ? Math.round(
@@ -298,12 +350,12 @@ export default function ProgressPage() {
                 <h2 className="card-title mb-4">Pronunciation Breakdown</h2>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  {pronunciationBreakdown.slice(0, 4).map((phoneme, idx) => (
+                  {pronunciationBreakdown.slice(0, 6).map((phoneme, idx) => (
                     <div key={idx} className="card bg-base-200">
                       <div className="card-body p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-bold">{phoneme.name}</h3>
-                          <div className="flex items-center gap-2">
+                          <h3 className="font-bold truncate">{phoneme.name}</h3>
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             <span className={`text-sm font-semibold text-${phoneme.color}`}>
                               {phoneme.trend}
                             </span>
@@ -344,14 +396,14 @@ export default function ProgressPage() {
                 <h2 className="card-title mb-4">Recent Sessions</h2>
 
                 <div className="overflow-x-auto">
-                  <table className="table">
+                  <table className="table table-sm md:table-md">
                     <thead>
                       <tr>
                         <th>Date & Time</th>
                         <th>Sentence</th>
-                        <th>Duration</th>
+                        <th className="hidden md:table-cell">Duration</th>
                         <th>Accuracy</th>
-                        <th>XP</th>
+                        <th className="hidden sm:table-cell">XP</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -359,21 +411,21 @@ export default function ProgressPage() {
                         <tr key={session.id} className="hover">
                           <td>
                             <div>
-                              <div className="font-semibold">{session.date}</div>
-                              <div className="text-sm opacity-60">{session.time}</div>
+                              <div className="font-semibold text-sm">{session.date}</div>
+                              <div className="text-xs opacity-60">{session.time}</div>
                             </div>
                           </td>
                           <td>
                             <div>
-                              <div className="font-mono text-sm">{session.sentenceId}</div>
+                              <div className="font-mono text-xs truncate max-w-[120px] md:max-w-none">{session.sentenceId}</div>
                               <div className="text-xs opacity-60">{session.attempts} attempts</div>
                             </div>
                           </td>
-                          <td>{session.duration} min</td>
+                          <td className="hidden md:table-cell">{session.duration} min</td>
                           <td>
                             <div className="flex items-center gap-2">
                               <progress 
-                                className={`progress w-20 ${
+                                className={`progress w-16 md:w-20 ${
                                   session.accuracy >= 85 ? 'progress-success' :
                                   session.accuracy >= 70 ? 'progress-warning' :
                                   'progress-error'
@@ -381,13 +433,13 @@ export default function ProgressPage() {
                                 value={session.accuracy} 
                                 max="100"
                               ></progress>
-                              <span className="font-semibold">{session.accuracy}%</span>
+                              <span className="font-semibold text-sm">{session.accuracy}%</span>
                             </div>
                           </td>
-                          <td>
+                          <td className="hidden sm:table-cell">
                             <div className="flex items-center gap-1">
                               <Star className="w-4 h-4 text-warning" />
-                              <span className="font-semibold">+{session.xp}</span>
+                              <span className="font-semibold text-sm">+{session.xp}</span>
                             </div>
                           </td>
                         </tr>

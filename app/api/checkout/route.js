@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { createCheckoutSession, PRICING_PLANS } from '@/lib/stripe'
 import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
+import { log } from 'console'
 
 export async function POST(req) {
   try {
@@ -14,7 +15,9 @@ export async function POST(req) {
 
     const { plan } = await req.json() // 'pro' or 'enterprise'
 
-    if (!['basic', 'premium', 'pro'].includes(plan)) {
+    log(plan)
+
+    if (!['free', 'premium-monthly', 'premium-annual', 'premium'].includes(plan)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 

@@ -75,6 +75,30 @@ export interface LessonConfig {
       sentencesPerLesson: 20,
       estimatedMinutes: 15,
     },
+    business: {
+      id: 'business',
+      name: 'Business Meetings',
+      description: 'Practice professional meeting language',
+      scenario: 'business_meetings',
+      sentencesPerLesson: 15,
+      estimatedMinutes: 12,
+    },
+    interview: {
+      id: 'interview',
+      name: 'Job Interviews',
+      description: 'Prepare for job interview questions',
+      scenario: 'job_interviews',
+      sentencesPerLesson: 15,
+      estimatedMinutes: 12,
+    },
+    phone: {
+      id: 'phone',
+      name: 'Phone Calls',
+      description: 'Master telephone communication skills',
+      scenario: 'phone_calls',
+      sentencesPerLesson: 15,
+      estimatedMinutes: 12,
+    },
   };
   
   export function getLessonConfig(lessonId: string): LessonConfig {

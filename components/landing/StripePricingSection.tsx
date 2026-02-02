@@ -166,11 +166,11 @@ export function SmartPricingCard({ plan }: SmartPricingCardProps) {
         {renderCTA()}
 
         {/* Flow indicator (for debugging - remove in production) */}
-        {process.env.NODE_ENV === 'development' && (
+        {/* {process.env.NODE_ENV === 'development' && (
           <div className="text-xs opacity-50 mt-2">
             Flow: {flow}
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

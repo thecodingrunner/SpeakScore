@@ -1,5 +1,5 @@
 // app/api/achievements/route.ts
-// Get user achievements and track unlocks
+// FIXED: Properly saves achievement unlock dates
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
@@ -57,6 +57,14 @@ export async function GET(request: NextRequest) {
         return sum + (achievement?.xp || 0);
       }, 0);
 
+      const now = new Date();
+      const unlockDates: Record<string, Date> = {};
+      
+      // Create unlock date entries for each new achievement
+      newlyUnlocked.forEach(achievementId => {
+        unlockDates[`achievementUnlockDates.${achievementId}`] = now;
+      });
+
       await userProgressCollection.updateOne(
         { userId },
         {
@@ -67,12 +75,17 @@ export async function GET(request: NextRequest) {
             xp: xpFromNewAchievements
           },
           $set: {
-            updatedAt: new Date()
+            ...unlockDates, // ✅ FIX: Save unlock dates
+            updatedAt: now
           }
         }
       );
 
       console.log(`🏆 User ${userId} unlocked ${newlyUnlocked.length} achievements: +${xpFromNewAchievements} XP`);
+      newlyUnlocked.forEach(id => {
+        const ach = ACHIEVEMENTS.find(a => a.id === id);
+        console.log(`   - ${ach?.title} (+${ach?.xp} XP)`);
+      });
     }
 
     // Get updated progress
@@ -91,7 +104,11 @@ export async function GET(request: NextRequest) {
         if (unlockTimestamp) {
           const date = new Date(unlockTimestamp);
           const now = new Date();
-          const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+          
+          // ✅ FIX: Better date calculation
+          const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          const diffDays = Math.floor((nowMidnight.getTime() - dateMidnight.getTime()) / (1000 * 60 * 60 * 24));
           
           if (diffDays === 0) unlockedDate = 'Today';
           else if (diffDays === 1) unlockedDate = 'Yesterday';
@@ -128,9 +145,14 @@ export async function GET(request: NextRequest) {
     let recentlyUnlocked = 0;
     if (updatedProgress?.achievementUnlockDates) {
       recentlyUnlocked = Object.values(updatedProgress.achievementUnlockDates)
-        .filter((timestamp: any) => new Date(timestamp) >= sevenDaysAgo)
+        .filter((timestamp: any) => {
+          const date = new Date(timestamp);
+          return date >= sevenDaysAgo;
+        })
         .length;
     }
+
+    console.log(`📊 Achievement stats: ${unlockedAchievements.length}/${ACHIEVEMENTS.length}, ${recentlyUnlocked} recent`);
 
     return NextResponse.json({
       success: true,

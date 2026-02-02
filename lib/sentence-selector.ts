@@ -408,16 +408,31 @@ function findWeakPhonemes(phonemeScores: Record<string, number>): string[] {
     .slice(0, 3);
 }
 
+// Update the mapScenarioName function in sentence-selector.ts
+// Replace the existing function with this:
+
 function mapScenarioName(frontendScenario: string): string {
   const mapping: Record<string, string> = {
+    // Quick practice
     'quick': 'daily_drill',
     'daily_drill': 'daily_drill',
-    'phonemes': 'phoneme_r_vs_l',
+    
+    // Phoneme practices
+    'phonemes': 'phoneme_r_vs_l', // Generic fallback
     'phoneme_r_vs_l': 'phoneme_r_vs_l',
-    'toeic': 'toeic',
+    'phoneme_th_sounds': 'phoneme_th_sounds',
+    'phoneme_f_vs_h': 'phoneme_f_vs_h',
+    'phoneme_v_vs_b': 'phoneme_v_vs_b',
+    'phoneme_word_stress': 'phoneme_word_stress',
+    'phoneme_silent_letters': 'phoneme_silent_letters',
+    
+    // TOEIC & Pro scenarios
+    'toeic': 'toeic_speaking',
+    'toeic_speaking': 'toeic_speaking',
     'business': 'business',
     'interview': 'interview',
     'phone': 'phone',
   };
+  
   return mapping[frontendScenario] || frontendScenario;
 }

@@ -1,6 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useAuth } from '@clerk/nextjs'
 import { 
   Mic, Clock, Star, ChevronRight, Zap, BookOpen,
   Briefcase, GraduationCap, Phone, Users, MessageCircle, Lock,
@@ -8,36 +10,145 @@ import {
 } from 'lucide-react'
 
 export default function PracticePage() {
+  const { isSignedIn, userId } = useAuth()
+  const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'premium-monthly' | 'premium-annual'>('free')
+  const [loading, setLoading] = useState(true)
+
+  // Fetch user's subscription status
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!isSignedIn || !userId) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await fetch('/api/user')
+        const data = await response.json();
+
+        console.log("User Data: ", data);
+
+        if (data.plan) {
+          // Get subscription tier from user data
+          const tier = data.plan || 'free'
+          console.log("Subscription tier:", tier);
+          
+          setSubscriptionTier(tier)
+        }
+      } catch (error) {
+        console.error('Error fetching subscription:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSubscription()
+  }, [isSignedIn, userId])
+
+  // Check if user has access to a scenario
+  const hasAccess = (scenarioPremium: boolean) => {
+    if (!scenarioPremium) return true // Free scenarios are always accessible
+    return subscriptionTier === 'premium-monthly' || subscriptionTier === 'premium-annual'
+  }
+
+  useEffect(() => {
+    console.log("Subscription tier:", subscriptionTier);
+  }, [subscriptionTier])
 
   const scenarios = [
     {
-      id: 'quick',
+      id: 'daily_drill',
       title: 'Daily Drill',
-      description: 'Random pronunciation challenges',
+      description: 'Quick 5-minute warm-up practice',
       icon: <Zap className="w-8 h-8" />,
       duration: '5 min',
       difficulty: 'All Levels',
       color: 'from-success/20 to-success/5',
       borderColor: 'border-success',
       premium: false,
-      sentences: 15,
-      badge: null,
+      sentences: 50,
+      badge: 'QUICK',
     },
     {
-      id: 'phonemes',
-      title: 'Phoneme Lessons',
-      description: 'Master /r/ vs /l/, /th/, and more',
+      id: 'phoneme_r_vs_l',
+      title: '/r/ vs /l/ Sounds',
+      description: 'Right vs Light, Read vs Lead',
       icon: <BookOpen className="w-8 h-8" />,
       duration: '10-15 min',
-      difficulty: 'Beginner',
-      color: 'from-info/20 to-info/5',
-      borderColor: 'border-info',
+      difficulty: 'Hard',
+      color: 'from-warning/20 to-warning/5',
+      borderColor: 'border-warning',
       premium: false,
-      lessons: 6,
+      sentences: 50,
       badge: 'POPULAR',
     },
     {
-      id: 'toeic',
+      id: 'phoneme_th_sounds',
+      title: '/th/ Sounds',
+      description: 'Think, That, This, The',
+      icon: <BookOpen className="w-8 h-8" />,
+      duration: '10-15 min',
+      difficulty: 'Very Hard',
+      color: 'from-error/20 to-error/5',
+      borderColor: 'border-error',
+      premium: false,
+      sentences: 50,
+      badge: null,
+    },
+    {
+      id: 'phoneme_f_vs_h',
+      title: '/f/ vs /h/ Sounds',
+      description: 'Fish vs Hish, Fan vs Han',
+      icon: <BookOpen className="w-8 h-8" />,
+      duration: '10-15 min',
+      difficulty: 'Medium',
+      color: 'from-info/20 to-info/5',
+      borderColor: 'border-info',
+      premium: false,
+      sentences: 50,
+      badge: null,
+    },
+    {
+      id: 'phoneme_v_vs_b',
+      title: '/v/ vs /b/ Sounds',
+      description: 'Very vs Berry, Vote vs Boat',
+      icon: <BookOpen className="w-8 h-8" />,
+      duration: '10-15 min',
+      difficulty: 'Medium',
+      color: 'from-info/20 to-info/5',
+      borderColor: 'border-info',
+      premium: false,
+      sentences: 50,
+      badge: null,
+    },
+    {
+      id: 'phoneme_word_stress',
+      title: 'Word Stress Patterns',
+      description: 'REcord vs reCORD, PREsent vs preSENT',
+      icon: <BookOpen className="w-8 h-8" />,
+      duration: '10-15 min',
+      difficulty: 'Hard',
+      color: 'from-warning/20 to-warning/5',
+      borderColor: 'border-warning',
+      premium: false,
+      sentences: 50,
+      badge: null,
+    },
+    {
+      id: 'phoneme_silent_letters',
+      title: 'Silent Letters',
+      description: 'Knight, Psychology, Wednesday',
+      icon: <BookOpen className="w-8 h-8" />,
+      duration: '10-15 min',
+      difficulty: 'Medium',
+      color: 'from-info/20 to-info/5',
+      borderColor: 'border-info',
+      premium: false,
+      sentences: 50,
+      badge: null,
+    },
+    {
+      id: 'toeic_speaking',
       title: 'TOEIC Speaking',
       description: 'Official test format practice',
       icon: <GraduationCap className="w-8 h-8" />,
@@ -46,8 +157,8 @@ export default function PracticePage() {
       color: 'from-primary/20 to-primary/5',
       borderColor: 'border-primary',
       premium: false,
-      sentences: 20,
-      badge: 'FREE',
+      sentences: 50,
+      badge: 'TEST PREP',
     },
     {
       id: 'business',
@@ -59,7 +170,7 @@ export default function PracticePage() {
       color: 'from-warning/20 to-warning/5',
       borderColor: 'border-warning',
       premium: true,
-      sentences: 12,
+      sentences: 15,
       badge: null,
     },
     {
@@ -107,6 +218,186 @@ export default function PracticePage() {
     },
   ]
 
+  // Group scenarios
+  const freeScenarios = scenarios.filter(s => !s.premium)
+  const premiumScenarios = scenarios.filter(s => s.premium)
+
+  // Render scenario card
+  const renderScenarioCard = (scenario: typeof scenarios[0]) => {
+    const userHasAccess = hasAccess(scenario.premium)
+    const href = userHasAccess ? `/practice/${scenario.id}` : '/pricing'
+    
+    return (
+      <Link
+        key={scenario.id}
+        href={href}
+        className={`card bg-gradient-to-br ${scenario.color} border-2 ${scenario.borderColor} hover:shadow-xl transition-all cursor-pointer relative ${
+          !userHasAccess ? 'opacity-75 hover:opacity-100' : ''
+        }`}
+      >
+        <div className="card-body">
+          {/* Icon & Badges */}
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-3 rounded-full bg-base-100">
+              {scenario.icon}
+            </div>
+            <div className="flex flex-col gap-1 items-end">
+              {!userHasAccess && (
+                <div className="badge badge-warning gap-1">
+                  <Lock className="w-3 h-3" />
+                  Premium
+                </div>
+              )}
+              {scenario.badge && userHasAccess && (
+                <div className={`badge badge-sm ${
+                  scenario.badge === 'POPULAR' ? 'badge-primary' :
+                  scenario.badge === 'QUICK' ? 'badge-success' :
+                  scenario.badge === 'TEST PREP' ? 'badge-info' :
+                  'badge-ghost'
+                }`}>
+                  {scenario.badge}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Content */}
+          <h3 className="card-title text-lg">{scenario.title}</h3>
+          <p className="text-sm text-base-content/70 mb-4">
+            {scenario.description}
+          </p>
+
+          {/* Stats */}
+          <div className="flex items-center gap-4 text-sm mb-3">
+            <div className="flex items-center gap-1 opacity-70">
+              <Clock className="w-4 h-4" />
+              {scenario.duration}
+            </div>
+            <div className={`badge badge-sm ${
+              scenario.difficulty === 'All Levels' ? 'badge-ghost' :
+              scenario.difficulty === 'Easy' ? 'badge-success' :
+              scenario.difficulty === 'Medium' ? 'badge-info' :
+              scenario.difficulty === 'Hard' ? 'badge-warning' :
+              scenario.difficulty === 'Very Hard' ? 'badge-error' :
+              scenario.difficulty === 'Intermediate' ? 'badge-warning' :
+              scenario.difficulty === 'Advanced' ? 'badge-error' :
+              'badge-ghost'
+            }`}>
+              {scenario.difficulty}
+            </div>
+          </div>
+
+          {/* Sentence Count */}
+          <div className="text-xs text-base-content/60 mb-2">
+            📝 {scenario.sentences} practice sentences
+          </div>
+
+          {/* What You'll Practice */}
+          <div className="mt-2 pt-2 border-t border-base-300">
+            <p className="text-xs font-semibold mb-1">
+              {userHasAccess ? "What you'll practice:" : "Includes:"}
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {scenario.id === 'daily_drill' && (
+                <>
+                  <span className="badge badge-xs badge-outline">mixed phonemes</span>
+                  <span className="badge badge-xs badge-outline">warm-up</span>
+                </>
+              )}
+              {scenario.id === 'phoneme_r_vs_l' && (
+                <>
+                  <span className="badge badge-xs badge-outline">/r/ sound</span>
+                  <span className="badge badge-xs badge-outline">/l/ sound</span>
+                  <span className="badge badge-xs badge-outline">minimal pairs</span>
+                </>
+              )}
+              {scenario.id === 'phoneme_th_sounds' && (
+                <>
+                  <span className="badge badge-xs badge-outline">/θ/ voiceless</span>
+                  <span className="badge badge-xs badge-outline">/ð/ voiced</span>
+                  <span className="badge badge-xs badge-outline">tongue position</span>
+                </>
+              )}
+              {scenario.id === 'phoneme_f_vs_h' && (
+                <>
+                  <span className="badge badge-xs badge-outline">/f/ sound</span>
+                  <span className="badge badge-xs badge-outline">/h/ sound</span>
+                  <span className="badge badge-xs badge-outline">lip position</span>
+                </>
+              )}
+              {scenario.id === 'phoneme_v_vs_b' && (
+                <>
+                  <span className="badge badge-xs badge-outline">/v/ sound</span>
+                  <span className="badge badge-xs badge-outline">/b/ sound</span>
+                  <span className="badge badge-xs badge-outline">minimal pairs</span>
+                </>
+              )}
+              {scenario.id === 'phoneme_word_stress' && (
+                <>
+                  <span className="badge badge-xs badge-outline">stress patterns</span>
+                  <span className="badge badge-xs badge-outline">rhythm</span>
+                  <span className="badge badge-xs badge-outline">emphasis</span>
+                </>
+              )}
+              {scenario.id === 'phoneme_silent_letters' && (
+                <>
+                  <span className="badge badge-xs badge-outline">silent consonants</span>
+                  <span className="badge badge-xs badge-outline">silent vowels</span>
+                  <span className="badge badge-xs badge-outline">pronunciation</span>
+                </>
+              )}
+              {scenario.id === 'toeic_speaking' && (
+                <>
+                  <span className="badge badge-xs badge-outline">read aloud</span>
+                  <span className="badge badge-xs badge-outline">descriptions</span>
+                  <span className="badge badge-xs badge-outline">test format</span>
+                </>
+              )}
+              {scenario.id === 'business' && (
+                <>
+                  <span className="badge badge-xs badge-outline">meetings</span>
+                  <span className="badge badge-xs badge-outline">presentations</span>
+                  <span className="badge badge-xs badge-outline">negotiations</span>
+                </>
+              )}
+              {scenario.id === 'interview' && (
+                <>
+                  <span className="badge badge-xs badge-outline">self-intro</span>
+                  <span className="badge badge-xs badge-outline">common Q&A</span>
+                  <span className="badge badge-xs badge-outline">strengths</span>
+                </>
+              )}
+              {scenario.id === 'phone' && (
+                <>
+                  <span className="badge badge-xs badge-outline">greetings</span>
+                  <span className="badge badge-xs badge-outline">scheduling</span>
+                  <span className="badge badge-xs badge-outline">clarity</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Arrow or Upgrade prompt */}
+          <div className="flex justify-end mt-2">
+            {userHasAccess ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <span className="text-xs text-warning">Click to upgrade →</span>
+            )}
+          </div>
+        </div>
+      </Link>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
       {/* Header */}
@@ -115,6 +406,12 @@ export default function PracticePage() {
         <p className="text-base-content/70">
           Choose a scenario and start improving your pronunciation
         </p>
+        {subscriptionTier !== 'free' && (
+          <div className="badge badge-success gap-2 mt-2">
+            <Star className="w-3 h-3" />
+            {subscriptionTier.includes('premium') && 'Premium Member'}
+          </div>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -132,7 +429,7 @@ export default function PracticePage() {
                   <p className="opacity-90">Start with a quick 5-minute drill</p>
                 </div>
                 <Link 
-                  href={`/practice/quick`}
+                  href="/practice/daily_drill"
                   className="btn btn-accent gap-2"
                 >
                   Start Now
@@ -151,142 +448,33 @@ export default function PracticePage() {
             </div>
           </div>
 
-          {/* Scenarios Grid */}
+          {/* Free Scenarios */}
           <div>
-            <h2 className="text-2xl font-bold mb-4">Practice Scenarios</h2>
+            <h2 className="text-2xl font-bold mb-4">Free Practice Scenarios</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              {scenarios.map((scenario) => (
-                <Link
-                  key={scenario.id}
-                  href={scenario.premium ? `/pricing` : `/practice/${scenario.id}`}
-                  className={`card bg-gradient-to-br ${scenario.color} border-2 ${scenario.borderColor} hover:shadow-xl transition-all cursor-pointer relative`}
-                >
-                  <div className="card-body">
-                    {/* Icon & Badges */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className={`p-3 rounded-full bg-base-100`}>
-                        {scenario.icon}
-                      </div>
-                      <div className="flex flex-col gap-1 items-end">
-                        {scenario.premium && (
-                          <div className="badge badge-warning gap-1">
-                            <Lock className="w-3 h-3" />
-                            Premium
-                          </div>
-                        )}
-                        {scenario.badge && (
-                          <div className={`badge badge-sm ${
-                            scenario.badge === 'POPULAR' ? 'badge-primary' :
-                            scenario.badge === 'FREE' ? 'badge-success' :
-                            scenario.badge === 'NEW' ? 'badge-secondary' :
-                            'badge-ghost'
-                          }`}>
-                            {scenario.badge}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <h3 className="card-title text-lg">{scenario.title}</h3>
-                    <p className="text-sm text-base-content/70 mb-4">
-                      {scenario.description}
-                    </p>
-
-                    {/* Stats */}
-                    <div className="flex items-center gap-4 text-sm mb-3">
-                      <div className="flex items-center gap-1 opacity-70">
-                        <Clock className="w-4 h-4" />
-                        {scenario.duration}
-                      </div>
-                      <div className={`badge badge-sm ${
-                        scenario.difficulty === 'Beginner' ? 'badge-success' :
-                        scenario.difficulty === 'Intermediate' ? 'badge-warning' :
-                        scenario.difficulty === 'Advanced' ? 'badge-error' :
-                        'badge-ghost'
-                      }`}>
-                        {scenario.difficulty}
-                      </div>
-                    </div>
-
-                    {/* Sentence/Lesson Count */}
-                    <div className="text-xs text-base-content/60 mb-2">
-                      {scenario.sentences && (
-                        <span>📝 {scenario.sentences} practice sentences</span>
-                      )}
-                      {scenario.lessons && (
-                        <span>📚 {scenario.lessons} phoneme lessons</span>
-                      )}
-                    </div>
-
-                    {/* What You'll Practice */}
-                    {!scenario.premium && (
-                      <div className="mt-2 pt-2 border-t border-base-300">
-                        <p className="text-xs font-semibold mb-1">What you'll practice:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {scenario.id === 'quick' && (
-                            <>
-                              <span className="badge badge-xs badge-outline">/r/ vs /l/</span>
-                              <span className="badge badge-xs badge-outline">/th/</span>
-                              <span className="badge badge-xs badge-outline">word stress</span>
-                            </>
-                          )}
-                          {scenario.id === 'phonemes' && (
-                            <>
-                              <span className="badge badge-xs badge-outline">6 sound pairs</span>
-                              <span className="badge badge-xs badge-outline">step-by-step</span>
-                            </>
-                          )}
-                          {scenario.id === 'toeic' && (
-                            <>
-                              <span className="badge badge-xs badge-outline">read aloud</span>
-                              <span className="badge badge-xs badge-outline">describe pictures</span>
-                              <span className="badge badge-xs badge-outline">opinions</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Premium Preview */}
-                    {scenario.premium && (
-                      <div className="mt-2 pt-2 border-t border-base-300">
-                        <p className="text-xs font-semibold mb-1">Includes:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {scenario.id === 'business' && (
-                            <>
-                              <span className="badge badge-xs badge-outline">meeting phrases</span>
-                              <span className="badge badge-xs badge-outline">presentations</span>
-                              <span className="badge badge-xs badge-outline">negotiations</span>
-                            </>
-                          )}
-                          {scenario.id === 'interview' && (
-                            <>
-                              <span className="badge badge-xs badge-outline">self-intro</span>
-                              <span className="badge badge-xs badge-outline">common Q&A</span>
-                              <span className="badge badge-xs badge-outline">strengths</span>
-                            </>
-                          )}
-                          {scenario.id === 'phone' && (
-                            <>
-                              <span className="badge badge-xs badge-outline">greetings</span>
-                              <span className="badge badge-xs badge-outline">scheduling</span>
-                              <span className="badge badge-xs badge-outline">clarity</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Arrow */}
-                    <div className="flex justify-end mt-2">
-                      <ChevronRight className="w-5 h-5" />
-                    </div>
-                  </div>
-                </Link>
-              ))}
+              {freeScenarios.map(renderScenarioCard)}
             </div>
           </div>
+
+          {/* Premium Scenarios */}
+          {premiumScenarios.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-2xl font-bold">
+                  {subscriptionTier === 'free' ? 'Premium Scenarios' : 'Professional Scenarios'}
+                </h2>
+                {subscriptionTier === 'free' && (
+                  <div className="badge badge-warning gap-1">
+                    <Lock className="w-3 h-3" />
+                    Pro
+                  </div>
+                )}
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {premiumScenarios.map(renderScenarioCard)}
+              </div>
+            </div>
+          )}
 
           {/* Coming Soon - Conversation Mode */}
           <div className="card bg-gradient-to-br from-secondary/20 to-accent/20 border-2 border-secondary/50">
@@ -338,7 +526,7 @@ export default function PracticePage() {
                 <div>
                   <h4 className="font-bold text-sm mb-1">Pro Tip</h4>
                   <p className="text-xs text-base-content/70">
-                    Start with Phoneme Lessons to master specific sounds, then practice them in TOEIC scenarios!
+                    Master one phoneme at a time! Focus on /r/ vs /l/ before moving to /th/ sounds.
                   </p>
                 </div>
               </div>
@@ -379,7 +567,7 @@ export default function PracticePage() {
                 ))}
               </div>
               <Link 
-                href={`/progress`}
+                href="/progress"
                 className="btn btn-ghost btn-sm mt-2"
               >
                 View All
@@ -388,28 +576,30 @@ export default function PracticePage() {
             </div>
           </div>
 
-          {/* Upgrade CTA */}
-          <div className="card bg-gradient-to-br from-warning/20 to-warning/5 border-2 border-warning/30">
-            <div className="card-body">
-              <Star className="w-8 h-8 text-warning mb-2" />
-              <h3 className="card-title text-lg">Unlock Premium</h3>
-              <p className="text-sm text-base-content/70 mb-3">
-                Get access to Business, Interview, and Phone practice scenarios
-              </p>
-              <ul className="text-xs space-y-1 mb-3 text-base-content/70">
-                <li>✓ All practice scenarios</li>
-                <li>✓ Detailed analytics</li>
-                <li>✓ Priority support</li>
-                <li>✓ Early access to new features</li>
-              </ul>
-              <Link 
-                href={`/pricing`}
-                className="btn btn-warning btn-sm"
-              >
-                Upgrade Now
-              </Link>
+          {/* Upgrade CTA - Only show for free users */}
+          {subscriptionTier === 'free' && (
+            <div className="card bg-gradient-to-br from-warning/20 to-warning/5 border-2 border-warning/30">
+              <div className="card-body">
+                <Star className="w-8 h-8 text-warning mb-2" />
+                <h3 className="card-title text-lg">Unlock Premium</h3>
+                <p className="text-sm text-base-content/70 mb-3">
+                  Get access to Business, Interview, and Phone practice scenarios
+                </p>
+                <ul className="text-xs space-y-1 mb-3 text-base-content/70">
+                  <li>✓ All practice scenarios</li>
+                  <li>✓ Detailed analytics</li>
+                  <li>✓ Priority support</li>
+                  <li>✓ Early access to new features</li>
+                </ul>
+                <Link 
+                  href="/pricing"
+                  className="btn btn-warning btn-sm"
+                >
+                  Upgrade Now
+                </Link>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

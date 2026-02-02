@@ -34,7 +34,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: 'premium-monthly',
     name: 'Premium',
     price: 20,
-    priceId: 'price_xxxxx_monthly_gbp', // Replace with actual Stripe Price ID
+    priceId: process.env.STRIPE_PRO_MONTHLY_PRICE_ID || "price_1StTVXGZ3N75STJN4u0w2v4X",
     type: 'subscription',
     period: 'month',
     popular: true,
@@ -58,8 +58,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: 'premium-annual',
     name: 'Premium Annual',
     price: 199,
-    priceId: 'price_xxxxx_annual_gbp', // Replace with actual Stripe Price ID
-    type: 'subscription',
+    priceId: process.env.STRIPE_PRO_ANNUAL_PRICE_ID || "price_1StTW2GZ3N75STJNYbyf7mwq",
+    type: 'one-time',
     period: 'year',
     discount: 'Save 17%',
     features: [

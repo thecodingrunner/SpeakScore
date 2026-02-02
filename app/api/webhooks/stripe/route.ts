@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { upsertUser } from '@/lib/mongodb/users';
+import { log } from 'console';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -62,6 +63,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error('❌ No email found in session');
     return;
   }
+
+  log("Plan Id: ", planId)
 
   // Determine credits based on plan
   let credits = 0;

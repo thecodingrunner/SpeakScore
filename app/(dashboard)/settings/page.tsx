@@ -1,16 +1,43 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import useUserStore from '@/store/userStore'
-import { Crown, CreditCard, User, Bell, Shield, Globe, Target, Mic } from 'lucide-react'
+import { Crown, CreditCard, User, Bell, Shield, Globe, Target, Mic, Check, AlertCircle } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user, isLoaded } = useUser()
   const { subscriptionTier, subscriptionEndDate } = useUserStore()
   const [activeTab, setActiveTab] = useState('account')
   const [loading, setLoading] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  // Account settings
+  const [displayName, setDisplayName] = useState('')
+
+  // Practice settings
+  const [dailyGoal, setDailyGoal] = useState(10)
+  const [reminderEnabled, setReminderEnabled] = useState(true)
+  const [reminderTime, setReminderTime] = useState('18:00')
+  const [pronunciationFocus, setPronunciationFocus] = useState({
+    rVsL: true,
+    thSounds: true,
+    wordStress: false,
+    silentVowels: false,
+  })
+
+  // Notification settings
+  const [notifications, setNotifications] = useState({
+    progressUpdates: true,
+    achievementAlerts: true,
+    newFeatures: false,
+  })
+
+  // Language settings
+  const [interfaceLanguage, setInterfaceLanguage] = useState<'en' | 'ja'>('en')
+  const [practiceVoiceAccent, setPracticeVoiceAccent] = useState<'american' | 'british'>('american')
 
   const tabs = [
     { id: 'account', label: 'Account', icon: <User className="w-4 h-4" /> },
@@ -19,6 +46,157 @@ export default function SettingsPage() {
     { id: 'notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { id: 'language', label: 'Language', icon: <Globe className="w-4 h-4" /> },
   ]
+
+  // Load user settings on mount
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.fullName || '')
+      loadPracticeSettings()
+      loadNotificationSettings()
+      loadLanguageSettings()
+    }
+  }, [user])
+
+  const loadPracticeSettings = async () => {
+    try {
+      const response = await fetch('/api/user/practice-settings')
+      const data = await response.json()
+      if (data.success) {
+        setDailyGoal(data.settings.dailyGoalMinutes)
+        setReminderEnabled(data.settings.reminderEnabled)
+        setReminderTime(data.settings.reminderTime)
+        setPronunciationFocus(data.settings.pronunciationFocus)
+      }
+    } catch (error) {
+      console.error('Error loading practice settings:', error)
+    }
+  }
+
+  const loadNotificationSettings = async () => {
+    try {
+      const response = await fetch('/api/user/notifications')
+      const data = await response.json()
+      if (data.success) {
+        setNotifications(data.settings)
+      }
+    } catch (error) {
+      console.error('Error loading notification settings:', error)
+    }
+  }
+
+  const loadLanguageSettings = async () => {
+    try {
+      const response = await fetch('/api/user/language')
+      const data = await response.json()
+      if (data.success) {
+        setInterfaceLanguage(data.settings.interfaceLanguage)
+        setPracticeVoiceAccent(data.settings.practiceVoiceAccent)
+      }
+    } catch (error) {
+      console.error('Error loading language settings:', error)
+    }
+  }
+
+  const showSaveStatus = (status: 'success' | 'error', message?: string) => {
+    setSaveStatus(status)
+    if (message) setErrorMessage(message)
+    setTimeout(() => {
+      setSaveStatus('idle')
+      setErrorMessage('')
+    }, 3000)
+  }
+
+  const handleSaveProfile = async () => {
+    setSaveStatus('saving')
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        showSaveStatus('success')
+      } else {
+        showSaveStatus('error', data.error)
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      showSaveStatus('error', 'Failed to save profile')
+    }
+  }
+
+  const handleSavePracticeSettings = async () => {
+    setSaveStatus('saving')
+    try {
+      const response = await fetch('/api/user/practice-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dailyGoalMinutes: dailyGoal,
+          reminderEnabled,
+          reminderTime,
+          pronunciationFocus,
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        showSaveStatus('success')
+      } else {
+        showSaveStatus('error', data.error)
+      }
+    } catch (error) {
+      console.error('Error saving practice settings:', error)
+      showSaveStatus('error', 'Failed to save practice settings')
+    }
+  }
+
+  const handleSaveNotifications = async () => {
+    setSaveStatus('saving')
+    try {
+      const response = await fetch('/api/user/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notifications),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        showSaveStatus('success')
+      } else {
+        showSaveStatus('error', data.error)
+      }
+    } catch (error) {
+      console.error('Error saving notifications:', error)
+      showSaveStatus('error', 'Failed to save notification preferences')
+    }
+  }
+
+  const handleSaveLanguage = async () => {
+    setSaveStatus('saving')
+    try {
+      const response = await fetch('/api/user/language', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          interfaceLanguage,
+          practiceVoiceAccent,
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        showSaveStatus('success')
+      } else {
+        showSaveStatus('error', data.error)
+      }
+    } catch (error) {
+      console.error('Error saving language settings:', error)
+      showSaveStatus('error', 'Failed to save language preferences')
+    }
+  }
 
   const handleManageBilling = async () => {
     setLoading(true)
@@ -45,6 +223,33 @@ export default function SettingsPage() {
       </div>
     )
   }
+
+  const SaveButton = ({ onClick }: { onClick: () => void }) => (
+    <div className="flex items-center gap-3">
+      <button 
+        onClick={onClick}
+        disabled={saveStatus === 'saving'}
+        className="btn btn-primary"
+      >
+        {saveStatus === 'saving' && <span className="loading loading-spinner"></span>}
+        {saveStatus === 'saving' ? 'Saving...' : 'Save Changes'}
+      </button>
+      
+      {saveStatus === 'success' && (
+        <div className="flex items-center gap-2 text-success">
+          <Check className="w-5 h-5" />
+          <span>Saved successfully!</span>
+        </div>
+      )}
+      
+      {saveStatus === 'error' && (
+        <div className="flex items-center gap-2 text-error">
+          <AlertCircle className="w-5 h-5" />
+          <span>{errorMessage || 'Failed to save'}</span>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -96,7 +301,9 @@ export default function SettingsPage() {
                           </div>
                         </div>
                         <div>
-                          <button className="btn btn-primary btn-sm">Change Photo</button>
+                          <p className="text-sm text-base-content/60 mb-2">
+                            Profile photo is managed through Clerk
+                          </p>
                         </div>
                       </div>
 
@@ -106,8 +313,10 @@ export default function SettingsPage() {
                         </label>
                         <input
                           type="text"
-                          defaultValue={user?.fullName || ''}
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
                           className="input input-bordered"
+                          placeholder="Enter your name"
                         />
                       </div>
 
@@ -117,7 +326,7 @@ export default function SettingsPage() {
                         </label>
                         <input
                           type="email"
-                          defaultValue={user?.primaryEmailAddress?.emailAddress || ''}
+                          value={user?.primaryEmailAddress?.emailAddress || ''}
                           className="input input-bordered"
                           disabled
                         />
@@ -130,7 +339,7 @@ export default function SettingsPage() {
 
                       <div className="divider"></div>
 
-                      <button className="btn btn-primary">Save Changes</button>
+                      <SaveButton onClick={handleSaveProfile} />
                     </div>
                   </div>
                 )}
@@ -217,13 +426,14 @@ export default function SettingsPage() {
                         <h3 className="font-bold mb-3">Daily Goal</h3>
                         <div className="form-control">
                           <label className="label">
-                            <span className="label-text">Practice time goal (minutes/day)</span>
+                            <span className="label-text">Practice time goal: {dailyGoal} minutes/day</span>
                           </label>
                           <input 
                             type="range" 
                             min="5" 
                             max="60" 
-                            defaultValue="10" 
+                            value={dailyGoal}
+                            onChange={(e) => setDailyGoal(Number(e.target.value))}
                             className="range range-primary" 
                             step="5"
                           />
@@ -244,25 +454,45 @@ export default function SettingsPage() {
                         <div className="space-y-2">
                           <div className="form-control">
                             <label className="label cursor-pointer justify-start gap-4">
-                              <input type="checkbox" defaultChecked className="checkbox checkbox-primary" />
+                              <input 
+                                type="checkbox" 
+                                checked={pronunciationFocus.rVsL}
+                                onChange={(e) => setPronunciationFocus({...pronunciationFocus, rVsL: e.target.checked})}
+                                className="checkbox checkbox-primary" 
+                              />
                               <span className="label-text">/r/ vs /l/ sounds</span>
                             </label>
                           </div>
                           <div className="form-control">
                             <label className="label cursor-pointer justify-start gap-4">
-                              <input type="checkbox" defaultChecked className="checkbox checkbox-primary" />
+                              <input 
+                                type="checkbox" 
+                                checked={pronunciationFocus.thSounds}
+                                onChange={(e) => setPronunciationFocus({...pronunciationFocus, thSounds: e.target.checked})}
+                                className="checkbox checkbox-primary" 
+                              />
                               <span className="label-text">/th/ sounds (θ/ð)</span>
                             </label>
                           </div>
                           <div className="form-control">
                             <label className="label cursor-pointer justify-start gap-4">
-                              <input type="checkbox" className="checkbox checkbox-primary" />
+                              <input 
+                                type="checkbox" 
+                                checked={pronunciationFocus.wordStress}
+                                onChange={(e) => setPronunciationFocus({...pronunciationFocus, wordStress: e.target.checked})}
+                                className="checkbox checkbox-primary" 
+                              />
                               <span className="label-text">Word stress patterns</span>
                             </label>
                           </div>
                           <div className="form-control">
                             <label className="label cursor-pointer justify-start gap-4">
-                              <input type="checkbox" className="checkbox checkbox-primary" />
+                              <input 
+                                type="checkbox" 
+                                checked={pronunciationFocus.silentVowels}
+                                onChange={(e) => setPronunciationFocus({...pronunciationFocus, silentVowels: e.target.checked})}
+                                className="checkbox checkbox-primary" 
+                              />
                               <span className="label-text">Silent vowels</span>
                             </label>
                           </div>
@@ -275,7 +505,12 @@ export default function SettingsPage() {
                         <h3 className="font-bold mb-3">Reminder Settings</h3>
                         <div className="form-control">
                           <label className="label cursor-pointer justify-start gap-4">
-                            <input type="checkbox" defaultChecked className="checkbox checkbox-primary" />
+                            <input 
+                              type="checkbox" 
+                              checked={reminderEnabled}
+                              onChange={(e) => setReminderEnabled(e.target.checked)}
+                              className="checkbox checkbox-primary" 
+                            />
                             <div>
                               <span className="label-text font-semibold">Daily Practice Reminder</span>
                               <p className="text-sm text-base-content/60">
@@ -289,18 +524,22 @@ export default function SettingsPage() {
                           <label className="label">
                             <span className="label-text">Reminder time</span>
                           </label>
-                          <select className="select select-bordered">
-                            <option>7:00 AM</option>
-                            <option>12:00 PM</option>
-                            <option selected>6:00 PM</option>
-                            <option>9:00 PM</option>
+                          <select 
+                            className="select select-bordered"
+                            value={reminderTime}
+                            onChange={(e) => setReminderTime(e.target.value)}
+                          >
+                            <option value="07:00">7:00 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="18:00">6:00 PM</option>
+                            <option value="21:00">9:00 PM</option>
                           </select>
                         </div>
                       </div>
 
                       <div className="divider"></div>
 
-                      <button className="btn btn-primary">Save Preferences</button>
+                      <SaveButton onClick={handleSavePracticeSettings} />
                     </div>
                   </div>
                 )}
@@ -314,7 +553,12 @@ export default function SettingsPage() {
                       <div className="space-y-3">
                         <div className="form-control">
                           <label className="label cursor-pointer justify-start gap-4">
-                            <input type="checkbox" defaultChecked className="checkbox checkbox-primary" />
+                            <input 
+                              type="checkbox" 
+                              checked={notifications.progressUpdates}
+                              onChange={(e) => setNotifications({...notifications, progressUpdates: e.target.checked})}
+                              className="checkbox checkbox-primary" 
+                            />
                             <div>
                               <span className="label-text font-semibold">Progress Updates</span>
                               <p className="text-sm text-base-content/60">
@@ -326,7 +570,12 @@ export default function SettingsPage() {
 
                         <div className="form-control">
                           <label className="label cursor-pointer justify-start gap-4">
-                            <input type="checkbox" defaultChecked className="checkbox checkbox-primary" />
+                            <input 
+                              type="checkbox" 
+                              checked={notifications.achievementAlerts}
+                              onChange={(e) => setNotifications({...notifications, achievementAlerts: e.target.checked})}
+                              className="checkbox checkbox-primary" 
+                            />
                             <div>
                               <span className="label-text font-semibold">Achievement Alerts</span>
                               <p className="text-sm text-base-content/60">
@@ -338,7 +587,12 @@ export default function SettingsPage() {
 
                         <div className="form-control">
                           <label className="label cursor-pointer justify-start gap-4">
-                            <input type="checkbox" className="checkbox checkbox-primary" />
+                            <input 
+                              type="checkbox" 
+                              checked={notifications.newFeatures}
+                              onChange={(e) => setNotifications({...notifications, newFeatures: e.target.checked})}
+                              className="checkbox checkbox-primary" 
+                            />
                             <div>
                               <span className="label-text font-semibold">New Features</span>
                               <p className="text-sm text-base-content/60">
@@ -351,7 +605,7 @@ export default function SettingsPage() {
 
                       <div className="divider"></div>
 
-                      <button className="btn btn-primary">Save Preferences</button>
+                      <SaveButton onClick={handleSaveNotifications} />
                     </div>
                   </div>
                 )}
@@ -366,9 +620,13 @@ export default function SettingsPage() {
                         <label className="label">
                           <span className="label-text font-semibold">Interface Language</span>
                         </label>
-                        <select className="select select-bordered">
-                          <option>English</option>
-                          <option>日本語 (Japanese)</option>
+                        <select 
+                          className="select select-bordered"
+                          value={interfaceLanguage}
+                          onChange={(e) => setInterfaceLanguage(e.target.value as 'en' | 'ja')}
+                        >
+                          <option value="en">English</option>
+                          <option value="ja">日本語 (Japanese)</option>
                         </select>
                         <label className="label">
                           <span className="label-text-alt">
@@ -381,15 +639,19 @@ export default function SettingsPage() {
                         <label className="label">
                           <span className="label-text font-semibold">Practice Voice Accent</span>
                         </label>
-                        <select className="select select-bordered">
-                          <option>American English</option>
-                          <option>British English</option>
+                        <select 
+                          className="select select-bordered"
+                          value={practiceVoiceAccent}
+                          onChange={(e) => setPracticeVoiceAccent(e.target.value as 'american' | 'british')}
+                        >
+                          <option value="american">American English</option>
+                          <option value="british">British English</option>
                         </select>
                       </div>
 
                       <div className="divider"></div>
 
-                      <button className="btn btn-primary">Save Changes</button>
+                      <SaveButton onClick={handleSaveLanguage} />
                     </div>
                   </div>
                 )}
