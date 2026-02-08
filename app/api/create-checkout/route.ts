@@ -1,6 +1,6 @@
 // app/api/create-checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import Stripe from 'stripe';
 import { getUserByClerkId, upsertUser } from '@/lib/mongodb/users';
 
@@ -10,13 +10,12 @@ export async function POST(req: NextRequest) {
   try {
     const { priceId, planId, planType } = await req.json();
 
-        // 🔍 DEBUG: Log what we received
-        console.log('📦 Received checkout request:', {
-            priceId,
-            planId,
-            planType,
-          });
-        
+    console.log('📦 Received checkout request:', {
+      priceId,
+      planId,
+      planType,
+    });
+    
     const { userId } = await auth();
 
     if (!priceId || !planId || !planType) {
@@ -35,6 +34,13 @@ export async function POST(req: NextRequest) {
       ? `${process.env.NEXT_PUBLIC_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`
       : `${process.env.NEXT_PUBLIC_URL}/analyze?session_id={CHECKOUT_SESSION_ID}`;
 
+    // Initialize metadata first
+    const metadata: Record<string, string> = {
+      planId,
+      planType,
+      clerkUserId: userId || 'guest',
+    };
+
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       mode: planType === 'subscription' ? 'subscription' : 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
@@ -42,30 +48,61 @@ export async function POST(req: NextRequest) {
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/?canceled=true`,
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
-      metadata: {
-        planId,
-        planType,
-        clerkUserId: userId || 'guest',
-      },
+      metadata, // ← Now it's defined
     };
 
     // Link to existing Stripe customer if user is authenticated
     if (userId) {
-      const user = await getUserByClerkId(userId);
+      // Get the full user object to access email
+      const clerkUser = await currentUser();
+      const dbUser = await getUserByClerkId(userId);
       
-      if (user?.stripeCustomerId) {
-        sessionConfig.customer = user.stripeCustomerId;
+      // Get primary email from Clerk
+      const userEmail = clerkUser?.emailAddresses.find(
+        (email) => email.id === clerkUser.primaryEmailAddressId
+      )?.emailAddress;
+
+      console.log('👤 User info:', {
+        clerkUserId: userId,
+        email: userEmail,
+        hasStripeCustomer: !!dbUser?.stripeCustomerId
+      });
+
+      if (!userEmail) {
+        return NextResponse.json(
+          { error: 'No email found for user' },
+          { status: 400 }
+        );
+      }
+
+      // Add email to metadata
+      metadata.userEmail = userEmail;
+      
+      if (dbUser?.stripeCustomerId) {
+        // Use existing Stripe customer
+        sessionConfig.customer = dbUser.stripeCustomerId;
+        console.log('✅ Using existing Stripe customer:', dbUser.stripeCustomerId);
       } else {
-        // Will be created in webhook
-        sessionConfig.customer_email = undefined;
+        // Pre-fill email for new customers
+        sessionConfig.customer_email = userEmail;
+        console.log('✅ Will create new Stripe customer with email:', userEmail);
       }
     }
 
+    console.log('🚀 Creating Stripe session with config:', {
+      mode: sessionConfig.mode,
+      customer: sessionConfig.customer,
+      customer_email: sessionConfig.customer_email,
+      metadata: sessionConfig.metadata
+    });
+
     const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    console.log('✅ Checkout session created:', session.id);
 
     return NextResponse.json({ url: session.url, sessionId: session.id });
   } catch (error: any) {
-    console.error('Checkout error:', error);
+    console.error('❌ Checkout error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -4,23 +4,33 @@
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Mic, BarChart3, Trophy, Settings, Crown, Flame } from 'lucide-react'
-import useUserStore from '@/store/userStore'
+import { Home, Mic, BarChart3, Trophy, Settings, Crown, Flame, Lock } from 'lucide-react'
+import { useEffect } from 'react'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { subscriptionTier } = useUserStore()
+  const { subscriptionTier, isPro, loading } = useSubscription();
 
   const navigation = [
-    { name: 'Home', href: `/dashboard`, icon: Home },
-    { name: 'Practice', href: `/practice`, icon: Mic },
-    { name: 'Progress', href: `/progress`, icon: BarChart3 },
-    { name: 'Achievements', href: `/achievements`, icon: Trophy },
-    { name: 'Settings', href: `/settings`, icon: Settings },
+    { name: 'Home', href: `/dashboard`, icon: Home, requiresPro: false },
+    { name: 'Practice', href: `/practice`, icon: Mic, requiresPro: false },
+    { name: 'Progress', href: `/progress`, icon: BarChart3, requiresPro: true },
+    { name: 'Achievements', href: `/achievements`, icon: Trophy, requiresPro: true },
+    { name: 'Settings', href: `/settings`, icon: Settings, requiresPro: false },
   ]
 
   // Mock streak data - replace with real data later
   const streak = 7
+
+  const handleNavClick = (e: React.MouseEvent, item: typeof navigation[0]) => {
+    if (item.requiresPro && !isPro()) {
+      e.preventDefault()
+      // Optionally show a modal or toast here
+      // Or redirect to pricing page
+      window.location.href = '/pricing'
+    }
+  }
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -38,14 +48,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {navigation.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
+              const isLocked = item.requiresPro && !isPro()
+              
               return (
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className={`gap-2 ${isActive ? 'active' : ''}`}
+                    onClick={(e) => handleNavClick(e, item)}
+                    className={`gap-2 relative ${isActive ? 'active' : ''} ${
+                      isLocked ? 'opacity-60 cursor-not-allowed' : ''
+                    }`}
                   >
                     <Icon className="w-4 h-4" />
                     {item.name}
+                    {isLocked && (
+                      <Lock className="w-3 h-3 text-warning" />
+                    )}
                   </Link>
                 </li>
               )
@@ -61,12 +79,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* Subscription badge */}
-          <div className={`badge ${subscriptionTier === 'free' ? 'badge-ghost' : 'badge-primary'} gap-1`}>
-            {subscriptionTier !== 'free' && <Crown className="w-3 h-3" />}
-            {subscriptionTier === 'free' ? 'FREE' : 'PREMIUM'}
+          <div className={`badge ${!isPro() ? 'badge-ghost' : 'badge-primary'} gap-1`}>
+            {isPro() && <Crown className="w-3 h-3" />}
+            {!isPro() ? 'FREE' : 'PREMIUM'}
           </div>
 
-          {subscriptionTier === 'free' && (
+          {!isPro() && (
             <Link href={`/pricing`} className="btn btn-primary btn-sm">
               Upgrade
             </Link>
@@ -104,13 +122,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {navigation.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
+          const isLocked = item.requiresPro && !isPro()
+          
           return (
             <Link
               key={item.name}
               href={item.href}
-              className={isActive ? 'active' : ''}
+              onClick={(e) => handleNavClick(e, item)}
+              className={`relative ${isActive ? 'active' : ''} ${
+                isLocked ? 'opacity-60' : ''
+              }`}
             >
-              <Icon className="w-5 h-5" />
+              <div className="relative">
+                <Icon className="w-5 h-5" />
+                {isLocked && (
+                  <Lock className="w-2 h-2 text-warning absolute -top-1 -right-1" />
+                )}
+              </div>
               <span className="btm-nav-label text-xs">{item.name}</span>
             </Link>
           )

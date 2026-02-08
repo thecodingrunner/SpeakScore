@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  Mic, Volume2, RotateCcw, Check, ChevronLeft,
+  Mic, Volume2, RotateCcw, Check, ChevronLeft, X,
   Star, AlertCircle, Trophy, TrendingUp, Target, Award
 } from 'lucide-react'
 import { convertToWav } from '@/lib/audio-converter'
@@ -48,7 +48,6 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
 
   useEffect(() => {
     console.log("Sentence: ", sentence);
-    
   }, [])
 
   // Unwrap params on mount
@@ -64,7 +63,6 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
     if (lessonId && currentSentenceIndex < totalSentences) {
       fetchSentence(lessonId)
     } else if (lessonId && currentSentenceIndex >= totalSentences) {
-      // Lesson complete!
       setShowSummary(true)
     }
   }, [lessonId, currentSentenceIndex])
@@ -146,7 +144,6 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
       const recordStartTime = Date.now();
 
       mediaRecorder.addEventListener('stop', async () => {
-
         const recordDuration = Date.now() - recordStartTime;
 
         if (recordDuration < 1000) {
@@ -219,7 +216,6 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
       setFeedback(result)
       setShowFeedback(true)
 
-      // Store attempt in lesson history
       const phonemeScoresMap: Record<string, number> = {}
       if (result.phonemeScores && result.phonemeScores.length > 0) {
         result.phonemeScores.forEach((ps: any) => {
@@ -238,7 +234,6 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
 
       setLessonAttempts(prev => [...prev, attempt])
 
-      // Record attempt in database
       await fetch('/api/practice/record-attempt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -257,7 +252,6 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   }
 
   const handleNext = () => {
-    // Move to next sentence
     setCurrentSentenceIndex(prev => prev + 1)
     setCurrentStep(0)
     setShowFeedback(false)
@@ -285,7 +279,6 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
       return sum + 10
     }, 0)
 
-    // Calculate phoneme averages
     const phonemeScores: Record<string, number[]> = {}
     lessonAttempts.forEach(attempt => {
       Object.entries(attempt.phonemeScores).forEach(([phoneme, score]) => {
@@ -317,129 +310,133 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
 
   if (isLoading && !sentence) {
     return (
-      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+      <div className="h-[80vh] md:h-[90vh] bg-base-200 flex items-center justify-center">
         <div className="text-center">
           <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="mt-4 text-lg">Loading lesson...</p>
+          <p className="mt-4">Loading lesson...</p>
         </div>
       </div>
     )
   }
 
-  // Show lesson summary
+  // Show lesson summary - FIT IN VIEWPORT
   if (showSummary && lessonSummary) {
     return (
-      <div className="min-h-screen bg-base-200">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="card bg-base-100 shadow-2xl">
-            <div className="card-body p-8 lg:p-12">
-              {/* Trophy Header */}
-              <div className="text-center mb-8">
-                <div className="inline-block p-4 bg-warning/20 rounded-full mb-4">
-                  <Trophy className="w-16 h-16 text-warning" />
-                </div>
-                <h1 className="text-4xl font-bold mb-2">Lesson Complete!</h1>
-                <p className="text-xl text-base-content/70">{lessonSummary.lessonName}</p>
-              </div>
+      <div className="h-[80vh] md:h-[90vh] bg-base-200 overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="bg-base-100 border-b border-base-300 px-4 py-3">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <h2 className="font-bold text-lg">Lesson Complete</h2>
+            <button onClick={() => router.push('/practice')} className="btn btn-ghost btn-sm btn-circle">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="card bg-base-200">
-                  <div className="card-body p-4 text-center">
-                    <Target className="w-8 h-8 mx-auto mb-2 text-primary" />
-                    <p className="text-2xl font-bold">{lessonSummary.averageAccuracy}%</p>
-                    <p className="text-xs text-base-content/60">Average Score</p>
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-4 py-6">
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body p-6">
+                {/* Trophy Header */}
+                <div className="text-center mb-6">
+                  <div className="inline-block p-3 bg-warning/20 rounded-full mb-3">
+                    <Trophy className="w-12 h-12 text-warning" />
                   </div>
-                </div>
-                
-                <div className="card bg-base-200">
-                  <div className="card-body p-4 text-center">
-                    <Star className="w-8 h-8 mx-auto mb-2 text-warning" />
-                    <p className="text-2xl font-bold">+{lessonSummary.totalXP}</p>
-                    <p className="text-xs text-base-content/60">XP Earned</p>
-                  </div>
+                  <h1 className="text-3xl font-bold mb-1">Lesson Complete!</h1>
+                  <p className="text-base-content/70">{lessonSummary.lessonName}</p>
                 </div>
 
-                <div className="card bg-base-200">
-                  <div className="card-body p-4 text-center">
-                    <Check className="w-8 h-8 mx-auto mb-2 text-success" />
-                    <p className="text-2xl font-bold">{lessonSummary.totalSentences}</p>
-                    <p className="text-xs text-base-content/60">Sentences</p>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                  <div className="card bg-base-200">
+                    <div className="card-body p-3 text-center">
+                      <Target className="w-6 h-6 mx-auto mb-1 text-primary" />
+                      <p className="text-xl font-bold">{lessonSummary.averageAccuracy}%</p>
+                      <p className="text-xs text-base-content/60">Avg Score</p>
+                    </div>
+                  </div>
+                  
+                  <div className="card bg-base-200">
+                    <div className="card-body p-3 text-center">
+                      <Star className="w-6 h-6 mx-auto mb-1 text-warning" />
+                      <p className="text-xl font-bold">+{lessonSummary.totalXP}</p>
+                      <p className="text-xs text-base-content/60">XP Earned</p>
+                    </div>
+                  </div>
+
+                  <div className="card bg-base-200">
+                    <div className="card-body p-3 text-center">
+                      <Check className="w-6 h-6 mx-auto mb-1 text-success" />
+                      <p className="text-xl font-bold">{lessonSummary.totalSentences}</p>
+                      <p className="text-xs text-base-content/60">Sentences</p>
+                    </div>
+                  </div>
+
+                  <div className="card bg-base-200">
+                    <div className="card-body p-3 text-center">
+                      <TrendingUp className="w-6 h-6 mx-auto mb-1 text-info" />
+                      <p className="text-xl font-bold">{Math.floor(lessonSummary.timeSpent / 60)}m</p>
+                      <p className="text-xs text-base-content/60">Time</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="card bg-base-200">
-                  <div className="card-body p-4 text-center">
-                    <TrendingUp className="w-8 h-8 mx-auto mb-2 text-info" />
-                    <p className="text-2xl font-bold">{Math.floor(lessonSummary.timeSpent / 60)}m</p>
-                    <p className="text-xs text-base-content/60">Time Spent</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Strong Areas */}
-              {lessonSummary.strongPhonemes.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-success" />
-                    Strong Areas
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {lessonSummary.strongPhonemes.slice(0, 5).map((p, i) => (
-                      <div key={i} className="badge badge-success badge-lg gap-2">
-                        {p.phoneme} - {p.averageScore}%
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Areas to Improve */}
-              {lessonSummary.weakPhonemes.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-warning" />
-                    Areas to Improve
-                  </h3>
-                  <div className="space-y-2">
-                    {lessonSummary.weakPhonemes.slice(0, 3).map((p, i) => (
-                      <div key={i} className="card bg-base-200">
-                        <div className="card-body p-3 flex-row items-center justify-between">
-                          <span className="font-bold">{p.phoneme}</span>
-                          <div className="flex items-center gap-3">
-                            <progress 
-                              className="progress progress-warning w-32" 
-                              value={p.averageScore} 
-                              max="100"
-                            />
-                            <span className="text-sm font-bold text-warning">{p.averageScore}%</span>
+                {/* Strong & Weak Areas */}
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
+                  {lessonSummary.strongPhonemes.length > 0 && (
+                    <div>
+                      <h3 className="font-bold text-sm mb-2 flex items-center gap-2">
+                        <Award className="w-4 h-4 text-success" />
+                        Strong
+                      </h3>
+                      <div className="flex flex-wrap gap-1">
+                        {lessonSummary.strongPhonemes.slice(0, 3).map((p, i) => (
+                          <div key={i} className="badge badge-success badge-sm">
+                            {p.phoneme} {p.averageScore}%
                           </div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {/* Actions */}
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => router.push('/practice')}
-                  className="btn btn-outline flex-1"
-                >
-                  Back to Practice
-                </button>
-                <button 
-                  onClick={() => {
-                    setShowSummary(false)
-                    setCurrentSentenceIndex(0)
-                    setLessonAttempts([])
-                    setLessonStartTime(Date.now())
-                  }}
-                  className="btn btn-primary flex-1"
-                >
-                  Practice Again
-                </button>
+                  {lessonSummary.weakPhonemes.length > 0 && (
+                    <div>
+                      <h3 className="font-bold text-sm mb-2 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-warning" />
+                        Improve
+                      </h3>
+                      <div className="flex flex-wrap gap-1">
+                        {lessonSummary.weakPhonemes.slice(0, 3).map((p, i) => (
+                          <div key={i} className="badge badge-warning badge-sm">
+                            {p.phoneme} {p.averageScore}%
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => router.push('/practice')}
+                    className="btn btn-outline flex-1 btn-sm"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowSummary(false)
+                      setCurrentSentenceIndex(0)
+                      setLessonAttempts([])
+                      setLessonStartTime(Date.now())
+                    }}
+                    className="btn btn-primary flex-1 btn-sm"
+                  >
+                    Practice Again
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -450,10 +447,10 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
 
   if (!sentence) {
     return (
-      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+      <div className="h-[80vh] md:h-[90vh] bg-base-200 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-lg">No sentence available</p>
-          <button onClick={() => router.push('/practice')} className="btn btn-primary mt-4">
+          <p>No sentence available</p>
+          <button onClick={() => router.push('/practice')} className="btn btn-primary mt-4 btn-sm">
             Back to Practice
           </button>
         </div>
@@ -462,340 +459,254 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   }
 
   return (
-    <div className="min-h-screen bg-base-200">
-      {/* Header with Progress */}
-      <div className="bg-base-100 border-b border-base-300 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
+    <div className="h-[80vh] md:h-[90vh] bg-base-200 flex flex-col overflow-hidden">
+      {/* Header with Progress - Fixed */}
+      <div className="bg-base-100 border-b border-base-300 flex-shrink-0">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
             <button 
               onClick={() => router.push('/practice')}
-              className="btn btn-ghost btn-sm gap-2"
+              className="btn btn-ghost btn-sm btn-circle"
             >
-              <ChevronLeft className="w-4 h-4" />
-              Exit
+              <ChevronLeft className="w-5 h-5" />
             </button>
 
-            <div className="text-center flex-1">
-              <h2 className="font-bold text-lg">
-                {lessonConfig?.name || 'Practice'}
-              </h2>
+            <div className="text-center">
+              <h2 className="font-bold">{lessonConfig?.name || 'Practice'}</h2>
               <p className="text-xs text-base-content/60">
-                Sentence {currentSentenceIndex + 1} of {totalSentences}
+                {currentSentenceIndex + 1}/{totalSentences}
               </p>
             </div>
 
-            <div className="badge badge-primary">
+            <div className="badge badge-primary badge-sm">
               {sentence.difficulty}
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="flex items-center gap-3">
-            <progress 
-              className="progress progress-primary flex-1" 
-              value={currentSentenceIndex + 1} 
-              max={totalSentences}
-            />
-            <span className="text-sm font-semibold">
-              {Math.round(((currentSentenceIndex + 1) / totalSentences) * 100)}%
-            </span>
-          </div>
+          <progress 
+            className="progress progress-primary w-full h-2" 
+            value={currentSentenceIndex + 1} 
+            max={totalSentences}
+          />
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6 lg:py-12">
-        {!showFeedback ? (
-          <div className="card bg-base-100 shadow-2xl">
-            <div className="card-body p-6 lg:p-12">
-              {/* Step 1: Listen */}
-              {currentStep === 0 && (
-                <div className="text-center space-y-8">
-                  <div className="badge badge-primary badge-lg">Step 1: Listen</div>
-                  
-                  <h1 className="text-3xl lg:text-4xl font-bold">
-                    Listen to the native speaker
-                  </h1>
+      {/* Main Content - Flex grow with centered content */}
+      <div className="flex-1 flex items-center justify-center px-4 py-6 overflow-hidden">
+        <div className="w-full max-w-3xl">
+          {!showFeedback ? (
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body p-6 lg:p-8">
+                {/* Step 1: Listen */}
+                {currentStep === 0 && (
+                  <div className="text-center space-y-6">
+                    <div className="badge badge-primary">Step 1: Listen</div>
+                    
+                    <h1 className="text-2xl lg:text-3xl font-bold">
+                      Listen to the native speaker
+                    </h1>
 
-                  <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/30 max-w-2xl mx-auto">
-                    <div className="card-body">
-                      <p className="text-2xl lg:text-3xl font-bold">
-                        "{sentence.text}"
+                    <div className="card bg-primary/10 border-2 border-primary/30">
+                      <div className="card-body p-4">
+                        <p className="text-xl lg:text-2xl font-bold">
+                          "{sentence.text}"
+                        </p>
+                        <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+                          <span className="text-xs">Target sounds:</span>
+                          {sentence.phonemes.map((phoneme, i) => (
+                            <span key={i} className="badge badge-primary badge-sm">
+                              {phoneme}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-3">
+                      <button 
+                        onClick={handlePlayAudio}
+                        className="btn btn-circle btn-lg btn-primary"
+                      >
+                        <Volume2 className="w-7 h-7" />
+                      </button>
+                      
+                      <div className="btn-group btn-group-sm">
+                        <button 
+                          className={`btn btn-xs ${audioSpeed === 'normal' ? 'btn-active' : ''}`}
+                          onClick={() => setAudioSpeed('normal')}
+                        >
+                          Normal
+                        </button>
+                        <button 
+                          className={`btn btn-xs ${audioSpeed === 'slow' ? 'btn-active' : ''}`}
+                          onClick={() => setAudioSpeed('slow')}
+                        >
+                          Slow
+                        </button>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => setCurrentStep(1)}
+                      className="btn btn-primary gap-2"
+                    >
+                      Continue to Practice
+                      <ChevronLeft className="w-4 h-4 rotate-180" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Step 2: Practice (Record) */}
+                {currentStep === 1 && (
+                  <div className="text-center space-y-6">
+                    <div className="badge badge-warning">Step 2: Your Turn</div>
+                    
+                    <h1 className="text-2xl lg:text-3xl font-bold">
+                      Now say it yourself!
+                    </h1>
+
+                    <div className="card bg-primary/10 border-2 border-primary/30">
+                      <div className="card-body p-4">
+                        <p className="text-xl lg:text-2xl font-bold">
+                          "{sentence.text}"
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-3">
+                      <button
+                        onClick={handleRecordToggle}
+                        disabled={isLoading}
+                        className={`btn btn-circle w-24 h-24 ${
+                          isRecording 
+                            ? 'btn-error animate-pulse' 
+                            : 'btn-primary'
+                        }`}
+                      >
+                        <Mic className="w-10 h-10" />
+                      </button>
+
+                      <p className="text-sm font-semibold">
+                        {isRecording ? 'Recording... Tap to stop' : 'Tap to record'}
                       </p>
-                      <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-                        <span className="text-sm">Target sounds:</span>
-                        {sentence.phonemes.map((phoneme, i) => (
-                          <span key={i} className="badge badge-primary">
-                            {phoneme}
-                          </span>
-                        ))}
+
+                      {recordedAudio && !isRecording && (
+                        <div className="text-success font-semibold flex items-center gap-2 text-sm">
+                          <Check className="w-4 h-4" />
+                          Recording complete!
+                        </div>
+                      )}
+                    </div>
+
+                    {recordedAudio && !isRecording && (
+                      <div className="flex gap-3 justify-center">
+                        <button 
+                          onClick={handleTryAgain}
+                          className="btn btn-ghost btn-sm gap-2"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          Try Again
+                        </button>
+                        <button 
+                          onClick={handleSubmit}
+                          disabled={isLoading}
+                          className="btn btn-primary btn-sm gap-2"
+                        >
+                          {isLoading ? (
+                            <>
+                              <span className="loading loading-spinner loading-xs" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            <>
+                              Check Pronunciation
+                              <Check className="w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Feedback Screen - Compact
+            <div className="card bg-base-100 shadow-xl max-h-full overflow-y-auto">
+              <div className="card-body p-6">
+                <div className="text-center mb-4">
+                  <div className="radial-progress text-primary text-4xl font-bold mb-3" 
+                       style={{"--value": feedback?.accuracy || 0, "--size": "8rem", "--thickness": "0.75rem"} as React.CSSProperties}
+                       role="progressbar">
+                    {feedback?.accuracy || 0}%
+                  </div>
+                  <h2 className="text-xl font-bold">
+                    {(feedback?.accuracy || 0) >= 85 ? 'Excellent!' : (feedback?.accuracy || 0) >= 70 ? 'Good job!' : 'Keep practicing!'}
+                  </h2>
+                </div>
+
+                {feedback?.wordScores && feedback.wordScores.length > 0 && (
+                  <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                    <h3 className="font-bold text-sm">Word Scores:</h3>
+                    {feedback.wordScores.map((word: any, idx: number) => (
+                      <div key={idx} className="card bg-base-200">
+                        <div className="card-body p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-bold text-sm">"{word.word}"</span>
+                            <span className={`font-bold text-sm ${
+                              word.score >= 85 ? 'text-success' :
+                              word.score >= 70 ? 'text-warning' : 'text-error'
+                            }`}>
+                              {word.score}%
+                            </span>
+                          </div>
+                          <progress 
+                            className={`progress progress-sm w-full ${
+                              word.score >= 85 ? 'progress-success' :
+                              word.score >= 70 ? 'progress-warning' : 'progress-error'
+                            }`}
+                            value={word.score} 
+                            max="100"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {(feedback?.xpEarned || 0) > 0 && (
+                  <div className="card bg-warning/20 border border-warning/30 mb-4">
+                    <div className="card-body p-3 flex-row items-center justify-center gap-2">
+                      <Star className="w-6 h-6 text-warning" />
+                      <div>
+                        <p className="font-bold text-sm">+{feedback.xpEarned} XP</p>
                       </div>
                     </div>
                   </div>
+                )}
 
-                  <div className="flex flex-col items-center gap-4">
-                    <button 
-                      onClick={handlePlayAudio}
-                      className="btn btn-circle btn-lg btn-primary"
-                    >
-                      <Volume2 className="w-8 h-8" />
-                    </button>
-                    
-                    <div className="btn-group">
-                      <button 
-                        className={`btn btn-sm ${audioSpeed === 'normal' ? 'btn-active' : ''}`}
-                        onClick={() => setAudioSpeed('normal')}
-                      >
-                        Normal
-                      </button>
-                      <button 
-                        className={`btn btn-sm ${audioSpeed === 'slow' ? 'btn-active' : ''}`}
-                        onClick={() => setAudioSpeed('slow')}
-                      >
-                        Slow
-                      </button>
-                    </div>
-                  </div>
-
+                <div className="flex gap-3">
                   <button 
-                    onClick={() => setCurrentStep(1)}
-                    className="btn btn-primary gap-2 mt-6"
+                    onClick={handleTryAgain}
+                    className="btn btn-outline flex-1 btn-sm gap-2"
                   >
-                    Continue to Practice
+                    <RotateCcw className="w-4 h-4" />
+                    Try Again
+                  </button>
+                  <button 
+                    onClick={handleNext}
+                    className="btn btn-primary flex-1 btn-sm gap-2"
+                  >
+                    {currentSentenceIndex + 1 >= totalSentences ? 'Finish' : 'Next'}
                     <ChevronLeft className="w-4 h-4 rotate-180" />
                   </button>
                 </div>
-              )}
-
-              {/* Step 2: Practice (Record) */}
-              {currentStep === 1 && (
-                <div className="text-center space-y-8">
-                  <div className="badge badge-warning badge-lg">Step 2: Your Turn</div>
-                  
-                  <h1 className="text-3xl lg:text-4xl font-bold">
-                    Now say it yourself!
-                  </h1>
-
-                  <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/30 max-w-2xl mx-auto">
-                    <div className="card-body">
-                      <p className="text-2xl lg:text-3xl font-bold">
-                        "{sentence.text}"
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-center gap-4">
-                    <button
-                      onClick={handleRecordToggle}
-                      disabled={isLoading}
-                      className={`btn btn-circle w-32 h-32 ${
-                        isRecording 
-                          ? 'btn-error animate-pulse' 
-                          : 'btn-primary'
-                      }`}
-                    >
-                      <Mic className="w-12 h-12" />
-                    </button>
-
-                    <p className="text-sm font-semibold">
-                      {isRecording ? 'Recording... Tap to stop' : 'Tap to record'}
-                    </p>
-
-                    {isRecording && (
-                      <div className="flex gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <div
-                            key={i}
-                            className="w-2 bg-error rounded-full animate-pulse"
-                            style={{
-                              height: `${20 + Math.random() * 40}px`,
-                              animationDelay: `${i * 0.1}s`,
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {recordedAudio && !isRecording && (
-                      <div className="text-success font-semibold flex items-center gap-2">
-                        <Check className="w-5 h-5" />
-                        Recording complete!
-                      </div>
-                    )}
-                  </div>
-
-                  {recordedAudio && !isRecording && (
-                    <div className="flex gap-3 justify-center">
-                      <button 
-                        onClick={handleTryAgain}
-                        className="btn btn-ghost gap-2"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                        Try Again
-                      </button>
-                      <button 
-                        onClick={handleSubmit}
-                        disabled={isLoading}
-                        className="btn btn-primary gap-2"
-                      >
-                        {isLoading ? (
-                          <>
-                            <span className="loading loading-spinner loading-sm" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            Check My Pronunciation
-                            <Check className="w-4 h-4" />
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          // Feedback Screen
-          <div className="card bg-base-100 shadow-2xl">
-            <div className="card-body p-6 lg:p-12">
-              <div className="text-center mb-8">
-                <div className="radial-progress text-primary text-6xl font-bold mb-4" 
-                     style={{"--value": feedback?.accuracy || 0, "--size": "12rem", "--thickness": "1rem"} as React.CSSProperties}
-                     role="progressbar">
-                  {feedback?.accuracy || 0}%
-                </div>
-                <h2 className="text-2xl font-bold">
-                  {(feedback?.accuracy || 0) >= 85 ? 'Excellent!' : (feedback?.accuracy || 0) >= 70 ? 'Good job!' : (feedback?.accuracy || 0) > 0 ? 'Keep practicing!' : 'Let\'s try again!'}
-                </h2>
-              </div>
-
-              {feedback?.wordScores && feedback.wordScores.length > 0 && (
-                <div className="space-y-3 mb-6">
-                  <h3 className="font-bold text-lg">Word Pronunciation:</h3>
-                  {feedback.wordScores.map((word: any, idx: number) => (
-                    <div key={idx} className="card bg-base-200">
-                      <div className="card-body p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xl font-bold">
-                            "{word.word}"
-                          </span>
-                          <span className={`font-bold text-lg ${
-                            word.score >= 85 ? 'text-success' :
-                            word.score >= 70 ? 'text-warning' :
-                            'text-error'
-                          }`}>
-                            {word.score}%
-                          </span>
-                        </div>
-                        <progress 
-                          className={`progress w-full ${
-                            word.score >= 85 ? 'progress-success' :
-                            word.score >= 70 ? 'progress-warning' :
-                            'progress-error'
-                          }`}
-                          value={word.score} 
-                          max="100"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {(feedback?.xpEarned || 0) > 0 && (
-                <div className="card bg-gradient-to-r from-warning/20 to-success/20 border-2 border-warning/30 mb-6">
-                  <div className="card-body p-4 flex-row items-center justify-center gap-3">
-                    <Star className="w-8 h-8 text-warning" />
-                    <div>
-                      <p className="font-bold">+{feedback.xpEarned} XP</p>
-                      <p className="text-xs text-base-content/60">Keep practicing!</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button 
-                  onClick={handleTryAgain}
-                  className="btn btn-outline flex-1 gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Try Again
-                </button>
-                <button 
-                  onClick={handleNext}
-                  className="btn btn-primary flex-1 gap-2"
-                >
-                  {currentSentenceIndex + 1 >= totalSentences ? 'Finish Lesson' : 'Next Sentence'}
-                  <ChevronLeft className="w-4 h-4 rotate-180" />
-                </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )
 }
-
-// Attempt to make analysis more japanese-specific
-// {feedback?.wordScores && feedback.wordScores.length > 0 && (
-//   <div className="space-y-3 mb-6">
-//     <h3 className="font-bold text-lg">Word-by-Word Analysis:</h3>
-//     {feedback.wordScores.map((word: any, idx: number) => {
-//       // Find phoneme errors for this word
-//       const wordPhonemeErrors = feedback?.azureErrors?.filter(
-//         (err: any) => err.word.toLowerCase() === word.word.toLowerCase()
-//       ) || [];
-
-//       return (
-//         <div key={idx} className="card bg-base-200">
-//           <div className="card-body p-4">
-//             <div className="flex items-center justify-between mb-2">
-//               <span className="text-xl font-bold">
-//                 "{word.word}"
-//               </span>
-//               <span className={`font-bold text-lg ${
-//                 word.score >= 85 ? 'text-success' :
-//                 word.score >= 70 ? 'text-warning' :
-//                 'text-error'
-//               }`}>
-//                 {word.score}%
-//               </span>
-//             </div>
-//             <progress 
-//               className={`progress w-full ${
-//                 word.score >= 85 ? 'progress-success' :
-//                 word.score >= 70 ? 'progress-warning' :
-//                 'progress-error'
-//               }`}
-//               value={word.score} 
-//               max="100"
-//             />
-            
-//             {/* Show phoneme errors for this word */}
-//             {wordPhonemeErrors.length > 0 && (
-//               <div className="mt-3 space-y-1">
-//                 {wordPhonemeErrors.map((error: any, errorIdx: number) => (
-//                   <div key={errorIdx} className="flex items-center gap-2 text-xs">
-//                     <span className="badge badge-error badge-xs">{error.phoneme}</span>
-//                     <span className="text-error">{error.errorType}</span>
-//                   </div>
-//                 ))}
-//               </div>
-//             )}
-
-//             {/* Show if score was adjusted */}
-//             {word.originalScore && word.originalScore !== word.score && (
-//               <p className="text-xs text-base-content/60 mt-2 italic">
-//                 Score adjusted from {word.originalScore}% due to pronunciation errors
-//               </p>
-//             )}
-//           </div>
-//         </div>
-//       );
-//     })}
-//   </div>
-// )}

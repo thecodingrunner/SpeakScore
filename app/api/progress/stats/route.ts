@@ -1,6 +1,4 @@
 // app/api/progress/stats/route.ts
-// FIXED: Better date calculations for "Yesterday" display
-
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getUserProgressCollection, getUserSentenceHistoryCollection } from '@/lib/mongodb';
@@ -39,7 +37,8 @@ export async function GET(request: NextRequest) {
         },
         weeklyData: [],
         pronunciationBreakdown: [],
-        recentSessions: []
+        recentSessions: [],
+        lessonSessions: []
       });
     }
 
@@ -84,8 +83,8 @@ export async function GET(request: NextRequest) {
     // Calculate pronunciation breakdown
     const pronunciationBreakdown = calculatePhonemeBreakdown(practiceHistory);
 
-    // Get recent sessions
-    const recentSessions = await getRecentSessions(historyCollection, userId, 10);
+    // Get recent sessions grouped by lesson
+    const lessonSessions = await getLessonSessions(historyCollection, userId, 10);
 
     return NextResponse.json({
       success: true,
@@ -99,7 +98,7 @@ export async function GET(request: NextRequest) {
       },
       weeklyData,
       pronunciationBreakdown,
-      recentSessions
+      lessonSessions
     });
 
   } catch (error: any) {
@@ -197,45 +196,119 @@ function calculatePhonemeBreakdown(practiceHistory: any[]) {
   return breakdown.sort((a, b) => a.score - b.score);
 }
 
-async function getRecentSessions(historyCollection: any, userId: string, limit: number) {
-  const recentHistory = await historyCollection
+// Helper function to extract lesson name from sentenceId
+function extractLessonName(sentenceId: string): string {
+  const scenarioMap: Record<string, string> = {
+    'daily_drill': 'Daily Drill',
+    'phoneme_r_vs_l': '/r/ vs /l/ Sounds',
+    'phoneme_th_sounds': '/th/ Sounds',
+    'phoneme_f_vs_h': '/f/ vs /h/ Sounds',
+    'toeic_speaking': 'TOEIC Speaking',
+    'phoneme_v_vs_b': '/v/ vs /b/ Sounds',
+    'phoneme_word_stress': 'Word Stress',
+    'phoneme_silent_letters': 'Silent Letters',
+    'business': 'Business Meetings',
+    'interview': 'Job Interviews',
+    'phone': 'Phone Calls',
+  };
+
+  for (const [key, name] of Object.entries(scenarioMap)) {
+    if (sentenceId.includes(key)) {
+      return name;
+    }
+  }
+
+  return 'Practice Session';
+}
+
+// NEW: Get lesson sessions grouped by lesson/scenario
+async function getLessonSessions(historyCollection: any, userId: string, limit: number) {
+  const allHistory = await historyCollection
     .find({ userId })
     .sort({ lastPracticed: -1 })
-    .limit(limit)
     .toArray();
 
-  return recentHistory.map((history: any) => {
-    const latestAccuracy = history.accuracyScores[history.accuracyScores.length - 1] || 0;
-    const duration = Math.round(history.attempts * 1.5);
+  // Group by lesson
+  const lessonGroups: Record<string, any[]> = {};
 
-    let xp = 10;
-    if (latestAccuracy >= 90) xp = 50;
-    else if (latestAccuracy >= 80) xp = 30;
-    else if (latestAccuracy >= 70) xp = 20;
-
-    // ✅ FIX: Better date calculation for "Yesterday"
-    const practiceDate = new Date(history.lastPracticed);
-    const now = new Date();
+  allHistory.forEach((history: any) => {
+    const lessonId = history.sentenceId.split('_sentence_')[0] || history.sentenceId;
     
-    // Compare dates at midnight
-    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const practiceMidnight = new Date(practiceDate.getFullYear(), practiceDate.getMonth(), practiceDate.getDate());
-    const diffDays = Math.floor((nowMidnight.getTime() - practiceMidnight.getTime()) / (1000 * 60 * 60 * 24));
-    
-    let dateLabel = 'Today';
-    if (diffDays === 1) dateLabel = 'Yesterday';
-    else if (diffDays > 1) dateLabel = `${diffDays} days ago`;
-
-    return {
-      id: history._id.toString(),
-      date: dateLabel,
-      time: practiceDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-      sentenceId: history.sentenceId,
-      lesson: 'Practice Session',
-      accuracy: latestAccuracy,
-      duration,
-      xp,
-      attempts: history.attempts
-    };
+    if (!lessonGroups[lessonId]) {
+      lessonGroups[lessonId] = [];
+    }
+    lessonGroups[lessonId].push(history);
   });
+
+  // Convert to lesson sessions
+  const lessonSessions = Object.entries(lessonGroups)
+    .map(([lessonId, histories]) => {
+      // Calculate lesson-level stats
+      const totalAttempts = histories.reduce((sum, h) => sum + h.attempts, 0);
+      const allAccuracyScores = histories.flatMap(h => h.accuracyScores);
+      const avgAccuracy = allAccuracyScores.length > 0
+        ? Math.round(allAccuracyScores.reduce((a, b) => a + b, 0) / allAccuracyScores.length)
+        : 0;
+      
+      const duration = Math.round(totalAttempts * 1.5);
+      const sentencesCompleted = histories.length;
+      const mostRecentPractice = histories[0].lastPracticed;
+
+      // Calculate XP based on average accuracy
+      let xp = 10 * sentencesCompleted;
+      if (avgAccuracy >= 90) xp = 50 * sentencesCompleted;
+      else if (avgAccuracy >= 80) xp = 30 * sentencesCompleted;
+      else if (avgAccuracy >= 70) xp = 20 * sentencesCompleted;
+
+      // Aggregate phoneme scores
+      const phonemeScores: Record<string, number[]> = {};
+      histories.forEach(h => {
+        if (h.phonemeScores) {
+          Object.entries(h.phonemeScores).forEach(([phoneme, score]) => {
+            if (!phonemeScores[phoneme]) {
+              phonemeScores[phoneme] = [];
+            }
+            phonemeScores[phoneme].push(score as number);
+          });
+        }
+      });
+
+      // Average phoneme scores
+      const avgPhonemeScores: Record<string, number> = {};
+      Object.entries(phonemeScores).forEach(([phoneme, scores]) => {
+        avgPhonemeScores[phoneme] = Math.round(
+          scores.reduce((a, b) => a + b, 0) / scores.length
+        );
+      });
+
+      // Date formatting
+      const practiceDate = new Date(mostRecentPractice);
+      const now = new Date();
+      const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const practiceMidnight = new Date(practiceDate.getFullYear(), practiceDate.getMonth(), practiceDate.getDate());
+      const diffDays = Math.floor((nowMidnight.getTime() - practiceMidnight.getTime()) / (1000 * 60 * 60 * 24));
+      
+      let dateLabel = 'Today';
+      if (diffDays === 1) dateLabel = 'Yesterday';
+      else if (diffDays > 1) dateLabel = `${diffDays} days ago`;
+
+      return {
+        id: lessonId,
+        lessonId,
+        lessonName: extractLessonName(lessonId),
+        date: dateLabel,
+        time: practiceDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+        accuracy: avgAccuracy,
+        duration,
+        xp,
+        sentencesCompleted,
+        totalAttempts,
+        phonemeScores: avgPhonemeScores,
+        lastPracticed: mostRecentPractice
+      };
+    })
+    .sort((a, b) => new Date(b.lastPracticed).getTime() - new Date(a.lastPracticed).getTime())
+    .slice(0, limit);
+
+  return lessonSessions;
 }

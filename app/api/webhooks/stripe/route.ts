@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { upsertUser } from '@/lib/mongodb/users';
-import { log } from 'console';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -56,15 +55,23 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const { planId, planType, clerkUserId } = session.metadata || {};
-  const email = session.customer_details?.email;
+  const { planId, planType, clerkUserId, userEmail  } = session.metadata || {};
+  // const email = session.customer_details?.email;
+
+  const email = userEmail || session.customer_details?.email;
+
+  console.log('📦 Checkout session metadata:', {
+    planId,
+    planType,
+    clerkUserId,
+    email,
+    subscriptionId: session.subscription
+  });
 
   if (!email) {
     console.error('❌ No email found in session');
     return;
   }
-
-  log("Plan Id: ", planId)
 
   // Determine credits based on plan
   let credits = 0;
@@ -74,57 +81,72 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     credits = -1; // Unlimited
   }
 
-  // FIXED: Split into filter and userData
+  const userData = {
+    clerkId: clerkUserId !== 'guest' ? clerkUserId : undefined,
+    stripeCustomerId: session.customer as string,
+    plan: planId || 'free',
+    creditsRemaining: credits,
+    subscriptionId: session.subscription as string | undefined,
+    subscriptionStatus: planType === 'subscription' ? 'active' : undefined,
+    isGuest: clerkUserId === 'guest',
+  };
+
+  console.log('💾 Upserting user with data:', userData);
+
   await upsertUser(
-    { email }, // filter
-    {
-      clerkId: clerkUserId !== 'guest' ? clerkUserId : undefined,
-      stripeCustomerId: session.customer as string,
-      plan: planId || 'basic',
-      creditsRemaining: credits,
-      subscriptionId: session.subscription as string | undefined,
-      subscriptionStatus: planType === 'subscription' ? 'active' : undefined,
-      isGuest: clerkUserId === 'guest',
-    } // userData
+    { email },
+    userData
   );
 
-  console.log(`✅ User created/updated for ${email}`);
+  console.log(`✅ User created/updated for ${email} with plan: ${planId}`);
 }
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
-  // FIXED: Split into filter and userData
+  console.log('🔄 Subscription update:', {
+    id: subscription.id,
+    status: subscription.status,
+    customer: subscription.customer
+  });
+
   await upsertUser(
-    { stripeCustomerId: subscription.customer as string }, // filter
+    { stripeCustomerId: subscription.customer as string },
     {
       subscriptionStatus: subscription.status,
       creditsRemaining: subscription.status === 'active' ? -1 : 0,
-    } // userData
+    }
   );
 
-  console.log(`✅ Subscription updated: ${subscription.id}`);
+  console.log(`✅ Subscription updated: ${subscription.id} - Status: ${subscription.status}`);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  // FIXED: Split into filter and userData
+  console.log('🗑️ Subscription deleted:', subscription.id);
+
   await upsertUser(
-    { stripeCustomerId: subscription.customer as string }, // filter
+    { stripeCustomerId: subscription.customer as string },
     {
       subscriptionStatus: 'canceled',
       creditsRemaining: 0,
-    } // userData
+      plan: 'free',
+    }
   );
 
   console.log(`✅ Subscription canceled: ${subscription.id}`);
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
-  // FIXED: Split into filter and userData
+  console.log('💰 Invoice payment succeeded:', {
+    id: invoice.id,
+    customer: invoice.customer,
+    amount: invoice.amount_paid
+  });
+
   await upsertUser(
-    { stripeCustomerId: invoice.customer as string }, // filter
+    { stripeCustomerId: invoice.customer as string },
     {
       creditsRemaining: -1,
       subscriptionStatus: 'active',
-    } // userData
+    }
   );
 
   console.log(`✅ Invoice paid: ${invoice.id}`);

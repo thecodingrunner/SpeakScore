@@ -8,7 +8,6 @@ import {
   HeroSection, 
   HowItWorksSection, 
   Navbar, 
-  PricingSection, 
   PronounciationChallengesSection, 
   TestimonialsSection, 
   TrustBadgesSection 
@@ -23,8 +22,9 @@ import {
 } from '@/components/landing/LandingPageSectionsAdditional'
 
 import Footer from '@/components/global/Footer'
-import { SmartPricingCard } from '@/components/landing/StripePricingSection'
+// import { SmartPricingCard } from '@/components/landing/StripePricingSection'
 import { PRICING_PLANS } from '@/lib/payment-flows'
+import PricingSection from '@/components/landing/StripePricingSection'
 
 export default function LandingPage() {
   return (

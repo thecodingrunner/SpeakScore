@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 import ThemeToggleWidget from '../components/global/ThemeToggleWidget'
+import { SubscriptionProvider } from '@/contexts/SubscriptionContext'
 // import { PHProvider } from './providers'
 
 export const metadata = {
@@ -12,11 +13,13 @@ export default function RootLayout({ children }) {
 
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body suppressHydrationWarning>
+      <html lang="en" data-theme="light" className='scroll-smooth'>
+        <body suppressHydrationWarning >
           {/* <PHProvider> */}
             <ThemeToggleWidget />
-            {children}
+            <SubscriptionProvider>
+              {children}
+            </SubscriptionProvider>
           {/* </PHProvider> */}
         </body>
       </html>

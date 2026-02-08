@@ -38,7 +38,7 @@
     "app/analyze/page.jsx",
     "next.config.js",
     "app/layout.jsx"
-, "lib/stripe.js", "app/api/checkout/route.js", "app/pricing/page.js"  ],
+, "lib/stripe.js", "app/api/checkout/route.js", "app/pricing/page.tsx"  ],
   "exclude": [
     "node_modules"
   ]

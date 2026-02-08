@@ -8,7 +8,6 @@ import {
   Crown, Zap, Award, RefreshCw
 } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
-import { log } from 'console'
 
 // Icon mapping for achievements
 const iconMap: Record<string, any> = {
@@ -70,63 +69,128 @@ export default function DashboardPage() {
 
   useEffect(() => {
     console.log("Stats: ", stats);
-    
   }, [stats])
 
-  // Lesson scenarios (static - could be moved to DB later)
-  const lessons = [
-    {
-      id: 'quick',
-      title: 'Daily Drill',
-      subtitle: 'Quick 5-minute practice',
-      difficulty: 'Easy',
-      icon: '⚡',
-      scenario: 'daily_drill',
-      lessons: 10,
-    },
-    {
-      id: 'phoneme_r_vs_l',
-      title: '/r/ vs /l/ Sounds',
-      subtitle: 'Master the difference',
-      difficulty: 'Hard',
-      icon: '🔤',
-      scenario: 'phoneme_r_vs_l',
-      lessons: 15,
-    },
-    {
-      id: 'phoneme_th_sounds',
-      title: '/th/ Sounds Practice',
-      subtitle: 'Think, that, this',
-      difficulty: 'Very Hard',
-      icon: '👅',
-      scenario: 'phoneme_th_sounds',
-      lessons: 15,
-    },
-    {
-      id: 'toeic',
-      title: 'TOEIC Speaking',
-      subtitle: 'Test preparation',
-      difficulty: 'Hard',
-      icon: '📝',
-      scenario: 'toeic',
-      lessons: 20,
-      locked: true, // Pro only
-    },
-    {
-      id: 'business',
-      title: 'Business English',
-      subtitle: 'Meeting scenarios',
-      difficulty: 'Medium',
-      icon: '💼',
-      scenario: 'business',
-      lessons: 15,
-      locked: true, // Pro only
-    },
-  ]
+// Lesson scenarios
+const lessons = [
+  // FREE LESSONS
+  {
+    id: 'daily_drill',
+    title: 'Daily Drill',
+    subtitle: 'Quick 5-minute warm-up practice',
+    difficulty: 'All Levels',
+    icon: '⚡',
+    scenario: 'daily_drill',
+    lessons: 50,
+    locked: false,
+  },
+  {
+    id: 'phoneme_r_vs_l',
+    title: '/r/ vs /l/ Sounds',
+    subtitle: 'Right vs Light, Read vs Lead',
+    difficulty: 'Hard',
+    icon: '🔤',
+    scenario: 'phoneme_r_vs_l',
+    lessons: 50,
+    locked: false,
+  },
+  {
+    id: 'phoneme_th_sounds',
+    title: '/th/ Sounds',
+    subtitle: 'Think, That, This, The',
+    difficulty: 'Very Hard',
+    icon: '👅',
+    scenario: 'phoneme_th_sounds',
+    lessons: 50,
+    locked: false,
+  },
+  {
+    id: 'phoneme_f_vs_h',
+    title: '/f/ vs /h/ Sounds',
+    subtitle: 'Fish vs Hish, Fan vs Han',
+    difficulty: 'Medium',
+    icon: '🗣️',
+    scenario: 'phoneme_f_vs_h',
+    lessons: 50,
+    locked: false,
+  },
+  {
+    id: 'toeic_speaking',
+    title: 'TOEIC Speaking',
+    subtitle: 'Official test format practice',
+    difficulty: 'Intermediate',
+    icon: '📝',
+    scenario: 'toeic_speaking',
+    lessons: 50,
+    locked: false,
+  },
+  
+  // PREMIUM LESSONS
+  {
+    id: 'phoneme_v_vs_b',
+    title: '/v/ vs /b/ Sounds',
+    subtitle: 'Very vs Berry, Vote vs Boat',
+    difficulty: 'Medium',
+    icon: '🎵',
+    scenario: 'phoneme_v_vs_b',
+    lessons: 50,
+    locked: true,
+  },
+  {
+    id: 'phoneme_word_stress',
+    title: 'Word Stress Patterns',
+    subtitle: 'REcord vs reCORD, PREsent vs preSENT',
+    difficulty: 'Hard',
+    icon: '🎯',
+    scenario: 'phoneme_word_stress',
+    lessons: 50,
+    locked: true,
+  },
+  {
+    id: 'phoneme_silent_letters',
+    title: 'Silent Letters',
+    subtitle: 'Knight, Psychology, Wednesday',
+    difficulty: 'Medium',
+    icon: '🤫',
+    scenario: 'phoneme_silent_letters',
+    lessons: 50,
+    locked: true,
+  },
+  {
+    id: 'business',
+    title: 'Business Meetings',
+    subtitle: 'Professional meeting phrases',
+    difficulty: 'Intermediate',
+    icon: '💼',
+    scenario: 'business',
+    lessons: 15,
+    locked: true,
+  },
+  {
+    id: 'interview',
+    title: 'Job Interviews',
+    subtitle: 'Common interview questions',
+    difficulty: 'Advanced',
+    icon: '🤝',
+    scenario: 'interview',
+    lessons: 15,
+    locked: true,
+  },
+  {
+    id: 'phone',
+    title: 'Phone Calls',
+    subtitle: 'Clear phone communication',
+    difficulty: 'Intermediate',
+    icon: '📞',
+    scenario: 'phone',
+    lessons: 10,
+    locked: true,
+  },
+]
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
+      <div className="max-w-7xl mx-auto px-3 py-4 lg:px-4 lg:py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -139,7 +203,7 @@ export default function DashboardPage() {
 
   if (!stats) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
+      <div className="max-w-7xl mx-auto px-3 py-4 lg:px-4 lg:py-8">
         <div className="alert alert-error">
           <span>Failed to load dashboard</span>
           <button onClick={fetchDashboardStats} className="btn btn-sm">
@@ -162,41 +226,41 @@ export default function DashboardPage() {
   const levelLabel = stats.user.level.charAt(0).toUpperCase() + stats.user.level.slice(1)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
+    <div className="max-w-7xl mx-auto px-3 py-4 lg:px-4 lg:py-8 pb-24 lg:pb-8">
       {/* Welcome Section */}
-      <div className="mb-6">
-        <h1 className="text-3xl lg:text-4xl font-bold mb-2">
+      <div className="mb-4 lg:mb-6">
+        <h1 className="text-2xl lg:text-4xl font-bold mb-1 lg:mb-2">
           Welcome back, {userName}! 👋
         </h1>
-        <p className="text-base-content/70">
+        <p className="text-sm lg:text-base text-base-content/70">
           {stats.user.streak > 0 
-            ? `Keep your ${stats.user.streak}-day streak alive! You're on fire! 🔥`
+            ? `${stats.user.streak}-day streak! Keep it alive! 🔥`
             : "Start practicing to build your streak!"}
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Main Content - Left Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
           {/* Daily Goal Progress */}
           <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20">
-            <div className="card-body">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="card-title">Daily Goal</h2>
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary" />
+            <div className="card-body p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-2 lg:mb-3">
+                <h2 className="font-bold lg:text-xl">Daily Goal</h2>
+                <div className="flex items-center gap-1 lg:gap-2 text-sm lg:text-base">
+                  <Target className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
                   <span className="font-bold">{stats.user.dailyProgress}/{stats.user.dailyGoal} min</span>
                 </div>
               </div>
               
-              <div className="w-full bg-base-200 rounded-full h-4 mb-2">
+              <div className="w-full bg-base-200 rounded-full h-3 lg:h-4 mb-2">
                 <div 
-                  className="bg-gradient-to-r from-primary to-secondary h-4 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-primary to-secondary h-3 lg:h-4 rounded-full transition-all duration-500"
                   style={{ width: `${Math.min((stats.user.dailyProgress / stats.user.dailyGoal) * 100, 100)}%` }}
                 ></div>
               </div>
               
-              <p className="text-sm text-base-content/70">
+              <p className="text-xs lg:text-sm text-base-content/70">
                 {stats.user.dailyProgress >= stats.user.dailyGoal
                   ? '🎉 Daily goal completed! Keep going!'
                   : `Just ${stats.user.dailyGoal - stats.user.dailyProgress} more minutes to reach your goal!`}
@@ -205,15 +269,15 @@ export default function DashboardPage() {
           </div>
 
           {/* Today's Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-2 lg:gap-4">
             {todayStatsData.map((stat, idx) => {
               const Icon = stat.icon
               return (
                 <div key={idx} className="card bg-base-100 shadow-md">
-                  <div className="card-body p-4 items-center text-center">
-                    <Icon className={`w-6 h-6 ${stat.color} mb-1`} />
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-xs opacity-70">{stat.label}</div>
+                  <div className="card-body p-3 lg:p-4 items-center text-center">
+                    <Icon className={`w-5 h-5 lg:w-6 lg:h-6 ${stat.color} mb-1`} />
+                    <div className="text-lg lg:text-2xl font-bold">{stat.value}</div>
+                    <div className="text-[10px] lg:text-xs opacity-70">{stat.label}</div>
                   </div>
                 </div>
               )
@@ -222,13 +286,13 @@ export default function DashboardPage() {
 
           {/* Learning Path */}
           <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="card-title">Your Learning Path</h2>
-                <div className="badge badge-primary">{levelLabel}</div>
+            <div className="card-body p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <h2 className="font-bold lg:text-xl">Your Learning Path</h2>
+                <div className="badge badge-primary badge-sm lg:badge-md">{levelLabel}</div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2 lg:space-y-3">
                 {lessons.map((lesson) => (
                   <div
                     key={lesson.id}
@@ -238,22 +302,22 @@ export default function DashboardPage() {
                         : 'bg-base-200 hover:bg-base-300'
                     } transition-all ${!lesson.locked ? 'cursor-pointer' : ''}`}
                   >
-                    <div className="card-body p-4">
-                      <div className="flex items-center gap-4">
+                    <div className="card-body p-3 lg:p-4">
+                      <div className="flex items-center gap-3 lg:gap-4">
                         {/* Icon */}
-                        <div className="text-4xl">{lesson.icon}</div>
+                        <div className="text-3xl lg:text-4xl flex-shrink-0">{lesson.icon}</div>
 
                         {/* Content */}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold">{lesson.title}</h3>
-                            {lesson.locked && <Lock className="w-5 h-5 text-base-content/30" />}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 lg:gap-2 mb-0.5 lg:mb-1">
+                            <h3 className="font-bold text-sm lg:text-base">{lesson.title}</h3>
+                            {lesson.locked && <Lock className="w-3 h-3 lg:w-4 lg:h-4 text-base-content/30 flex-shrink-0" />}
                           </div>
                           
-                          <p className="text-sm text-base-content/70">{lesson.subtitle}</p>
+                          <p className="text-xs lg:text-sm text-base-content/70 line-clamp-1 lg:line-clamp-none">{lesson.subtitle}</p>
                           
-                          <div className="flex items-center gap-3 mt-2">
-                            <div className={`badge badge-sm ${
+                          <div className="flex items-center gap-2 lg:gap-3 mt-1 lg:mt-2">
+                            <div className={`badge badge-xs lg:badge-sm ${
                               lesson.difficulty === 'Very Hard' ? 'badge-error' :
                               lesson.difficulty === 'Hard' ? 'badge-warning' :
                               lesson.difficulty === 'Medium' ? 'badge-info' :
@@ -262,26 +326,26 @@ export default function DashboardPage() {
                               {lesson.difficulty}
                             </div>
                             
-                            <span className="text-xs text-base-content/60">
+                            <span className="text-[10px] lg:text-xs text-base-content/60">
                               {lesson.lessons} sentences
                             </span>
                           </div>
                         </div>
 
                         {/* Action */}
-                        <div>
+                        <div className="flex-shrink-0">
                           {lesson.locked ? (
                             <div className="flex flex-col items-center">
-                              <Lock className="w-6 h-6 text-base-content/30 mb-1" />
-                              <span className="text-xs badge badge-ghost">Pro</span>
+                              <Lock className="w-5 h-5 lg:w-6 lg:h-6 text-base-content/30 mb-0.5 lg:mb-1" />
+                              <span className="text-[9px] lg:text-xs badge badge-ghost badge-xs">Pro</span>
                             </div>
                           ) : (
                             <Link 
                               href={`/practice/${lesson.scenario}`}
-                              className="btn btn-primary btn-sm"
+                              className="btn btn-primary btn-xs lg:btn-sm gap-1"
                             >
                               Start
-                              <ChevronRight className="w-4 h-4" />
+                              <ChevronRight className="w-3 h-3 lg:w-4 lg:h-4" />
                             </Link>
                           )}
                         </div>
@@ -294,8 +358,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="space-y-6">
+        {/* Right Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block space-y-6">
           {/* Level Progress */}
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
@@ -417,7 +481,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Upgrade CTA (for free users) */}
+          {/* Upgrade CTA */}
           <div className="card bg-gradient-to-br from-primary to-secondary text-primary-content">
             <div className="card-body">
               <Crown className="w-8 h-8 mb-2" />

@@ -2,6 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Lofi theme - Light mode (default) */
+  :root,
+  [data-theme="light"],
+  [data-theme="lofi"] {
+    color-scheme: light;
+    --b1: 98% 0.001 106.423;
+    --b2: 97% 0.001 106.424;
+    --b3: 92% 0.003 48.717;
+    --bc: 21% 0.006 56.043;
+    
+    --p: 70% 0.191 22.216;
+    --pc: 25% 0.092 26.042;
+    
+    --s: 70% 0.022 261.325;
+    --sc: 13% 0.028 261.692;
+    
+    --a: 70% 0.165 254.624;
+    --ac: 28% 0.091 267.935;
+    
+    --n: 44% 0.011 73.639;
+    --nc: 98% 0.001 106.423;
+    
+    --in: 60% 0.126 221.723;
+    --inc: 98% 0.019 200.873;
+    
+    --su: 62% 0.194 149.214;
+    --suc: 98% 0.018 155.826;
+    
+    --wa: 64% 0.222 41.116;
+    --wac: 98% 0.016 73.684;
+    
+    --er: 58% 0.253 17.585;
+    --erc: 96% 0.015 12.422;
+    
+    --rounded-box: 0.75rem;    /* Cards, containers - moderate roundness */
+    --rounded-btn: 1.25rem;    /* Buttons - friendly and inviting */
+    --rounded-badge: 1rem;     /* Badges - soft but not too round */
+    --border-btn: 1px;
+  }
+
+  /* Business theme - Dark mode */
+  [data-theme="dark"],
+  [data-theme="business"] {
+    color-scheme: dark;
+    --b1: 24.353% 0 0;
+    --b2: 22.648% 0 0;
+    --b3: 20.944% 0 0;
+    --bc: 84.87% 0 0;
+    
+    --p: 41.703% 0.099 251.473;
+    --pc: 88.34% 0.019 251.473;
+    
+    --s: 64.092% 0.027 229.389;
+    --sc: 12.818% 0.005 229.389;
+    
+    --a: 67.271% 0.167 35.791;
+    --ac: 13.454% 0.033 35.791;
+    
+    --n: 27.441% 0.013 253.041;
+    --nc: 85.488% 0.002 253.041;
+    
+    --in: 62.616% 0.143 240.033;
+    --inc: 12.523% 0.028 240.033;
+    
+    --su: 70.226% 0.094 156.596;
+    --suc: 14.045% 0.018 156.596;
+    
+    --wa: 77.482% 0.115 81.519;
+    --wac: 15.496% 0.023 81.519;
+    
+    --er: 51.61% 0.146 29.674;
+    --erc: 90.322% 0.029 29.674;
+    
+    --rounded-box: 0.75rem;    /* Cards, containers - moderate roundness */
+    --rounded-btn: 1.25rem;    /* Buttons - friendly and inviting */
+    --rounded-badge: 1rem;     /* Badges - soft but not too round */
+    --border-btn: 1px;
+  }
+}
+
+
 /* app/globals.css */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
