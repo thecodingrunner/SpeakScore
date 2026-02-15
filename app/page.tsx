@@ -1,58 +1,65 @@
-// Use absolute imports with @/ instead of relative paths
-import { 
-  BenefitsChecklistSection, 
-  ComparisonSection, 
-  FaqSection, 
-  FeaturesGridSection, 
-  FinalCTASection, 
-  HeroSection, 
-  HowItWorksSection, 
-  Navbar, 
-  PronounciationChallengesSection, 
-  TestimonialsSection, 
-  TrustBadgesSection 
-} from '@/components/landing/LandingPageSections'
+// app/page.tsx (or wherever your landing page lives)
+import {
+  Navbar,
+  HeroSection,
+  SocialProofBar,
+  FeaturesGridSection,
+  HowItWorksSection,
+  BenefitsChecklistSection,
+  ComparisonSection,
+  TestimonialsSection,
+  FaqSection,
+  TrustBadgesSection,
+  PronounciationChallengesSection,
+  BeforeAfterSection,
+  FinalCTASection,
+} from '@/components/landing/LandingPageSectionsNew';
 
-import { 
-  BeforeAfterSection, 
-  VideoDemoSection, 
-  FinalCTASectionWithGuarantee, 
-  SuccessStoriesCarousel, 
-  InteractivePronunciationDemo 
-} from '@/components/landing/LandingPageSectionsAdditional'
-
-import Footer from '@/components/global/Footer'
-// import { SmartPricingCard } from '@/components/landing/StripePricingSection'
-import { PRICING_PLANS } from '@/lib/payment-flows'
-import PricingSection from '@/components/landing/StripePricingSection'
+import Footer from '@/components/global/Footer';
+import PricingSection from '@/components/landing/StripePricingSection';
 
 export default function LandingPage() {
   return (
-    <div className='min-h-screen'>
+    <div className="min-h-screen bg-base-100">
       <Navbar />
 
-      {/* 1. HERO - First impression */}
+      {/* 1. HERO — First impression with Koko mascot */}
       <HeroSection />
-      
-      {/* 2. FEATURES - What it does */}
+
+      {/* 2. SOCIAL PROOF — Instant credibility strip */}
+      <SocialProofBar />
+
+      {/* 3. FEATURES — What makes us special */}
       <FeaturesGridSection />
-      
-      {/* 3. HOW IT WORKS - Build understanding */}
+
+      {/* 4. PRONUNCIATION CHALLENGES — Show we understand the pain */}
+      <PronounciationChallengesSection />
+
+      {/* 5. HOW IT WORKS — Build understanding */}
       <HowItWorksSection />
-      
-      {/* 4. BENEFITS - Why it matters */}
-      <BenefitsChecklistSection />
-      
-      {/* 5. PRICING - Clear path to purchase */}
+
+      {/* 6. BEFORE/AFTER — Visual proof of results */}
+      <BeforeAfterSection />
+
+      {/* 7. TESTIMONIALS — Social proof from real learners */}
+      <TestimonialsSection />
+
+      {/* 8. COMPARISON — Why us vs alternatives */}
+      <ComparisonSection />
+
+      {/* 9. TRUST BADGES — Quick reassurance strip */}
+      <TrustBadgesSection />
+
+      {/* 10. PRICING — Clear path to purchase */}
       <PricingSection />
-      
-      {/* 6. FAQ - Remove objections */}
+
+      {/* 11. FAQ — Remove objections */}
       <FaqSection />
-      
-      {/* 7. FINAL CTA - Last chance to convert */}
+
+      {/* 12. FINAL CTA — Last chance to convert */}
       <FinalCTASection />
 
       <Footer />
     </div>
-  )
+  );
 }

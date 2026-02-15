@@ -1,95 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* Lofi theme - Light mode (default) */
+  /* ═══════════════════════════════════════════
+     SAKURA LIGHT — Warm, playful, welcoming
+     Inspired by cherry blossoms & Japanese pastels
+     ═══════════════════════════════════════════ */
   :root,
-  [data-theme="light"],
-  [data-theme="lofi"] {
+  [data-theme="light"] {
     color-scheme: light;
-    --b1: 98% 0.001 106.423;
-    --b2: 97% 0.001 106.424;
-    --b3: 92% 0.003 48.717;
-    --bc: 21% 0.006 56.043;
-    
-    --p: 70% 0.191 22.216;
-    --pc: 25% 0.092 26.042;
-    
-    --s: 70% 0.022 261.325;
-    --sc: 13% 0.028 261.692;
-    
-    --a: 70% 0.165 254.624;
-    --ac: 28% 0.091 267.935;
-    
-    --n: 44% 0.011 73.639;
-    --nc: 98% 0.001 106.423;
-    
-    --in: 60% 0.126 221.723;
-    --inc: 98% 0.019 200.873;
-    
-    --su: 62% 0.194 149.214;
-    --suc: 98% 0.018 155.826;
-    
-    --wa: 64% 0.222 41.116;
-    --wac: 98% 0.016 73.684;
-    
-    --er: 58% 0.253 17.585;
-    --erc: 96% 0.015 12.422;
-    
-    --rounded-box: 0.75rem;    /* Cards, containers - moderate roundness */
-    --rounded-btn: 1.25rem;    /* Buttons - friendly and inviting */
-    --rounded-badge: 1rem;     /* Badges - soft but not too round */
-    --border-btn: 1px;
+
+    /* Base backgrounds — warm cream tones, not sterile white */
+    --b1: 97.5% 0.005 60;        /* Warm cream base */
+    --b2: 95% 0.008 55;          /* Slightly deeper cream */
+    --b3: 91% 0.012 50;          /* Soft warm gray */
+    --bc: 25% 0.02 45;           /* Warm dark brown text */
+
+    /* Primary — Sakura coral/pink */
+    --p: 65% 0.19 15;            /* Warm coral-pink */
+    --pc: 98% 0.005 60;          /* Cream white on primary */
+
+    /* Secondary — Soft lavender-mauve */
+    --s: 72% 0.1 310;            /* Gentle lavender */
+    --sc: 20% 0.05 310;          /* Dark on secondary */
+
+    /* Accent — Warm peach-gold */
+    --a: 78% 0.12 65;            /* Peachy gold */
+    --ac: 25% 0.06 65;           /* Dark on accent */
+
+    /* Neutral — Warm gray-brown */
+    --n: 40% 0.015 50;           /* Warm mid-gray */
+    --nc: 97% 0.003 60;          /* Light on neutral */
+
+    /* Semantic */
+    --in: 65% 0.15 235;          /* Sky blue info */
+    --inc: 97% 0.01 235;
+    --su: 68% 0.16 155;          /* Mint green success */
+    --suc: 97% 0.01 155;
+    --wa: 78% 0.16 70;           /* Warm amber warning */
+    --wac: 25% 0.05 70;
+    --er: 60% 0.22 25;           /* Soft red error */
+    --erc: 97% 0.01 25;
+
+    /* Friendly, rounded design tokens */
+    --rounded-box: 1.25rem;
+    --rounded-btn: 1.5rem;
+    --rounded-badge: 1rem;
+    --border-btn: 1.5px;
   }
 
-  /* Business theme - Dark mode */
-  [data-theme="dark"],
-  [data-theme="business"] {
+  /* ═══════════════════════════════════════════
+     SAKURA DARK — Cozy evening study mode
+     Deep warm tones, not cold blue-black
+     ═══════════════════════════════════════════ */
+  [data-theme="dark"] {
     color-scheme: dark;
-    --b1: 24.353% 0 0;
-    --b2: 22.648% 0 0;
-    --b3: 20.944% 0 0;
-    --bc: 84.87% 0 0;
-    
-    --p: 41.703% 0.099 251.473;
-    --pc: 88.34% 0.019 251.473;
-    
-    --s: 64.092% 0.027 229.389;
-    --sc: 12.818% 0.005 229.389;
-    
-    --a: 67.271% 0.167 35.791;
-    --ac: 13.454% 0.033 35.791;
-    
-    --n: 27.441% 0.013 253.041;
-    --nc: 85.488% 0.002 253.041;
-    
-    --in: 62.616% 0.143 240.033;
-    --inc: 12.523% 0.028 240.033;
-    
-    --su: 70.226% 0.094 156.596;
-    --suc: 14.045% 0.018 156.596;
-    
-    --wa: 77.482% 0.115 81.519;
-    --wac: 15.496% 0.023 81.519;
-    
-    --er: 51.61% 0.146 29.674;
-    --erc: 90.322% 0.029 29.674;
-    
-    --rounded-box: 0.75rem;    /* Cards, containers - moderate roundness */
-    --rounded-btn: 1.25rem;    /* Buttons - friendly and inviting */
-    --rounded-badge: 1rem;     /* Badges - soft but not too round */
-    --border-btn: 1px;
+
+    /* Base — Deep warm charcoal, cozy not cold */
+    --b1: 18% 0.012 45;          /* Deep warm charcoal */
+    --b2: 15% 0.01 45;           /* Deeper */
+    --b3: 22% 0.014 45;          /* Slightly lighter cards */
+    --bc: 90% 0.008 60;          /* Warm off-white text */
+
+    /* Primary — Brighter sakura for dark bg */
+    --p: 72% 0.17 12;            /* Lighter coral-pink */
+    --pc: 15% 0.06 12;           /* Dark on primary */
+
+    /* Secondary — Lighter lavender */
+    --s: 78% 0.08 310;           /* Soft lavender glow */
+    --sc: 15% 0.04 310;
+
+    /* Accent — Warm golden peach */
+    --a: 80% 0.1 65;             /* Warm peach */
+    --ac: 20% 0.05 65;
+
+    /* Neutral */
+    --n: 30% 0.01 50;
+    --nc: 90% 0.005 60;
+
+    /* Semantic */
+    --in: 70% 0.12 235;
+    --inc: 15% 0.03 235;
+    --su: 72% 0.14 155;
+    --suc: 15% 0.03 155;
+    --wa: 80% 0.14 70;
+    --wac: 18% 0.04 70;
+    --er: 65% 0.2 25;
+    --erc: 15% 0.03 25;
+
+    --rounded-box: 1.25rem;
+    --rounded-btn: 1.5rem;
+    --rounded-badge: 1rem;
+    --border-btn: 1.5px;
   }
 }
 
+/* ═══════════════════════════════════════════
+   GLOBAL TYPOGRAPHY
+   Nunito for Latin, Zen Maru Gothic for JP
+   ═══════════════════════════════════════════ */
+body {
+  font-family: 'Nunito', 'Zen Maru Gothic', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
 
-/* app/globals.css */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Nunito', 'Zen Maru Gothic', system-ui, sans-serif;
+  font-weight: 800;
+}
+
+/* Japanese text helper */
+.font-jp {
+  font-family: 'Zen Maru Gothic', 'Nunito', sans-serif;
+}
+
+/* ═══════════════════════════════════════════
+   SAKURA PETAL ANIMATION
+   ═══════════════════════════════════════════ */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(5deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-3deg); }
+}
+
+@keyframes petal-fall {
+  0% {
+    transform: translateY(-10%) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(100px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes wave-hand {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(20deg); }
+  75% { transform: rotate(-10deg); }
+}
+
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
+.animate-bounce-gentle { animation: bounce-gentle 2s ease-in-out infinite; }
+.animate-pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
+.animate-wave { animation: wave-hand 1.5s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════
+   SOFT GRADIENTS & DECORATIVE PATTERNS
+   ═══════════════════════════════════════════ */
+.bg-sakura-gradient {
+  background: linear-gradient(
+    135deg,
+    oklch(var(--p) / 0.08) 0%,
+    oklch(var(--a) / 0.05) 50%,
+    oklch(var(--s) / 0.08) 100%
+  );
+}
+
+.bg-dots-pattern {
+  background-image: radial-gradient(oklch(var(--p) / 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Soft inner glow for cards */
+.card-glow {
+  box-shadow:
+    0 0 0 1px oklch(var(--p) / 0.08),
+    0 4px 20px oklch(var(--p) / 0.06),
+    inset 0 1px 0 oklch(var(--pc) / 0.1);
+}
+
+.card-glow:hover {
+  box-shadow:
+    0 0 0 1px oklch(var(--p) / 0.15),
+    0 8px 30px oklch(var(--p) / 0.12),
+    inset 0 1px 0 oklch(var(--pc) / 0.15);
+}
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR & UTILITIES
+   ═══════════════════════════════════════════ */
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth focus outlines matching theme */
+:focus-visible {
+  outline: 2px solid oklch(var(--p));
+  outline-offset: 2px;
+  border-radius: var(--rounded-btn);
+}
