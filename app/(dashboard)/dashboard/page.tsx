@@ -561,6 +561,11 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchDashboardStats() }, [])
 
+  useEffect(() => {
+    console.log("user: ", clerkUser);
+    
+  })
+
   const fetchDashboardStats = async () => {
     try {
       setIsLoading(true)

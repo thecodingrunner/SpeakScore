@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getUserProgressCollection, getUserSentenceHistoryCollection } from '@/lib/mongodb';
+import { getUserLessonSessionsCollection } from '@/lib/mongodb/lessons';
 
 export async function GET(request: NextRequest) {
   try {
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
     const pronunciationBreakdown = calculatePhonemeBreakdown(practiceHistory);
 
     // Get recent sessions grouped by lesson
-    const lessonSessions = await getLessonSessions(historyCollection, userId, 10);
+    const lessonSessions = await getLessonSessions(userId, 10);
 
     return NextResponse.json({
       success: true,
@@ -221,94 +222,142 @@ function extractLessonName(sentenceId: string): string {
   return 'Practice Session';
 }
 
-// NEW: Get lesson sessions grouped by lesson/scenario
-async function getLessonSessions(historyCollection: any, userId: string, limit: number) {
-  const allHistory = await historyCollection
+async function getLessonSessions(userId: string, limit: number) {
+  const collection = await getUserLessonSessionsCollection();
+
+  const sessions = await collection
     .find({ userId })
-    .sort({ lastPracticed: -1 })
+    .sort({ completedAt: -1 })
+    .limit(limit)
     .toArray();
 
-  // Group by lesson
-  const lessonGroups: Record<string, any[]> = {};
+  return sessions.map(session => {
+    const practiceDate = new Date(session.completedAt);
+    const now = new Date();
 
-  allHistory.forEach((history: any) => {
-    const lessonId = history.sentenceId.split('_sentence_')[0] || history.sentenceId;
-    
-    if (!lessonGroups[lessonId]) {
-      lessonGroups[lessonId] = [];
-    }
-    lessonGroups[lessonId].push(history);
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const practiceMidnight = new Date(
+      practiceDate.getFullYear(),
+      practiceDate.getMonth(),
+      practiceDate.getDate()
+    );
+
+    const diffDays = Math.floor(
+      (nowMidnight.getTime() - practiceMidnight.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    let dateLabel = 'Today';
+    if (diffDays === 1) dateLabel = 'Yesterday';
+    else if (diffDays > 1) dateLabel = `${diffDays} days ago`;
+
+    return {
+      id: session.lessonSessionId,
+      lessonId: session.lessonId,
+      lessonName: extractLessonName(session.lessonId),
+      date: dateLabel,
+      time: practiceDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      }),
+      accuracy: session.averageAccuracy,
+      duration: session.totalDurationSeconds,
+      xp: session.totalXP,
+      sentencesCompleted: session.totalSentences,
+      totalAttempts: null, // optional if you store it
+      phonemeScores: null, // optional if you store aggregated phonemes
+      lastPracticed: session.completedAt
+    };
   });
-
-  // Convert to lesson sessions
-  const lessonSessions = Object.entries(lessonGroups)
-    .map(([lessonId, histories]) => {
-      // Calculate lesson-level stats
-      const totalAttempts = histories.reduce((sum, h) => sum + h.attempts, 0);
-      const allAccuracyScores = histories.flatMap(h => h.accuracyScores);
-      const avgAccuracy = allAccuracyScores.length > 0
-        ? Math.round(allAccuracyScores.reduce((a, b) => a + b, 0) / allAccuracyScores.length)
-        : 0;
-      
-      const duration = Math.round(totalAttempts * 1.5);
-      const sentencesCompleted = histories.length;
-      const mostRecentPractice = histories[0].lastPracticed;
-
-      // Calculate XP based on average accuracy
-      let xp = 10 * sentencesCompleted;
-      if (avgAccuracy >= 90) xp = 50 * sentencesCompleted;
-      else if (avgAccuracy >= 80) xp = 30 * sentencesCompleted;
-      else if (avgAccuracy >= 70) xp = 20 * sentencesCompleted;
-
-      // Aggregate phoneme scores
-      const phonemeScores: Record<string, number[]> = {};
-      histories.forEach(h => {
-        if (h.phonemeScores) {
-          Object.entries(h.phonemeScores).forEach(([phoneme, score]) => {
-            if (!phonemeScores[phoneme]) {
-              phonemeScores[phoneme] = [];
-            }
-            phonemeScores[phoneme].push(score as number);
-          });
-        }
-      });
-
-      // Average phoneme scores
-      const avgPhonemeScores: Record<string, number> = {};
-      Object.entries(phonemeScores).forEach(([phoneme, scores]) => {
-        avgPhonemeScores[phoneme] = Math.round(
-          scores.reduce((a, b) => a + b, 0) / scores.length
-        );
-      });
-
-      // Date formatting
-      const practiceDate = new Date(mostRecentPractice);
-      const now = new Date();
-      const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const practiceMidnight = new Date(practiceDate.getFullYear(), practiceDate.getMonth(), practiceDate.getDate());
-      const diffDays = Math.floor((nowMidnight.getTime() - practiceMidnight.getTime()) / (1000 * 60 * 60 * 24));
-      
-      let dateLabel = 'Today';
-      if (diffDays === 1) dateLabel = 'Yesterday';
-      else if (diffDays > 1) dateLabel = `${diffDays} days ago`;
-
-      return {
-        id: lessonId,
-        lessonId,
-        lessonName: extractLessonName(lessonId),
-        date: dateLabel,
-        time: practiceDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        accuracy: avgAccuracy,
-        duration,
-        xp,
-        sentencesCompleted,
-        totalAttempts,
-        phonemeScores: avgPhonemeScores,
-        lastPracticed: mostRecentPractice
-      };
-    })
-    .sort((a, b) => new Date(b.lastPracticed).getTime() - new Date(a.lastPracticed).getTime())
-    .slice(0, limit);
-
-  return lessonSessions;
 }
+
+// NEW: Get lesson sessions grouped by lesson/scenario
+// async function getLessonSessions(historyCollection: any, userId: string, limit: number) {
+//   const allHistory = await historyCollection
+//     .find({ userId })
+//     .sort({ lastPracticed: -1 })
+//     .toArray();
+
+//   // Group by lesson
+//   const lessonGroups: Record<string, any[]> = {};
+
+//   allHistory.forEach((history: any) => {
+//     const lessonId = history.sentenceId.split('_sentence_')[0] || history.sentenceId;
+    
+//     if (!lessonGroups[lessonId]) {
+//       lessonGroups[lessonId] = [];
+//     }
+//     lessonGroups[lessonId].push(history);
+//   });
+
+//   // Convert to lesson sessions
+//   const lessonSessions = Object.entries(lessonGroups)
+//     .map(([lessonId, histories]) => {
+//       // Calculate lesson-level stats
+//       const totalAttempts = histories.reduce((sum, h) => sum + h.attempts, 0);
+//       const allAccuracyScores = histories.flatMap(h => h.accuracyScores);
+//       const avgAccuracy = allAccuracyScores.length > 0
+//         ? Math.round(allAccuracyScores.reduce((a, b) => a + b, 0) / allAccuracyScores.length)
+//         : 0;
+      
+//       const duration = Math.round(totalAttempts * 1.5);
+//       const sentencesCompleted = histories.length;
+//       const mostRecentPractice = histories[0].lastPracticed;
+
+//       // Calculate XP based on average accuracy
+//       let xp = 10 * sentencesCompleted;
+//       if (avgAccuracy >= 90) xp = 50 * sentencesCompleted;
+//       else if (avgAccuracy >= 80) xp = 30 * sentencesCompleted;
+//       else if (avgAccuracy >= 70) xp = 20 * sentencesCompleted;
+
+//       // Aggregate phoneme scores
+//       const phonemeScores: Record<string, number[]> = {};
+//       histories.forEach(h => {
+//         if (h.phonemeScores) {
+//           Object.entries(h.phonemeScores).forEach(([phoneme, score]) => {
+//             if (!phonemeScores[phoneme]) {
+//               phonemeScores[phoneme] = [];
+//             }
+//             phonemeScores[phoneme].push(score as number);
+//           });
+//         }
+//       });
+
+//       // Average phoneme scores
+//       const avgPhonemeScores: Record<string, number> = {};
+//       Object.entries(phonemeScores).forEach(([phoneme, scores]) => {
+//         avgPhonemeScores[phoneme] = Math.round(
+//           scores.reduce((a, b) => a + b, 0) / scores.length
+//         );
+//       });
+
+//       // Date formatting
+//       const practiceDate = new Date(mostRecentPractice);
+//       const now = new Date();
+//       const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+//       const practiceMidnight = new Date(practiceDate.getFullYear(), practiceDate.getMonth(), practiceDate.getDate());
+//       const diffDays = Math.floor((nowMidnight.getTime() - practiceMidnight.getTime()) / (1000 * 60 * 60 * 24));
+      
+//       let dateLabel = 'Today';
+//       if (diffDays === 1) dateLabel = 'Yesterday';
+//       else if (diffDays > 1) dateLabel = `${diffDays} days ago`;
+
+//       return {
+//         id: lessonId,
+//         lessonId,
+//         lessonName: extractLessonName(lessonId),
+//         date: dateLabel,
+//         time: practiceDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+//         accuracy: avgAccuracy,
+//         duration,
+//         xp,
+//         sentencesCompleted,
+//         totalAttempts,
+//         phonemeScores: avgPhonemeScores,
+//         lastPracticed: mostRecentPractice
+//       };
+//     })
+//     .sort((a, b) => new Date(b.lastPracticed).getTime() - new Date(a.lastPracticed).getTime())
+//     .slice(0, limit);
+
+//   return lessonSessions;
+// }

@@ -5,7 +5,8 @@ import { getSentencesCollection, getUserProgressCollection, getUserSentenceHisto
 
 export async function getNextPracticeSentence(
   userId: string,
-  scenario: string
+  scenario: string,
+  sessionExclusions: string[] = []  // IDs already seen this lesson
 ) {
   const sentencesCollection = await getSentencesCollection();
   const userProgressCollection = await getUserProgressCollection();
@@ -17,9 +18,14 @@ export async function getNextPracticeSentence(
   const weakPhonemes = userProgress?.weakPhonemes || [];
   const userLevel = userProgress?.level || 'beginner';
 
+  // Merge completed sentences with session exclusions (deduped)
+  const excludeIds = [...new Set([...completedSentences, ...sessionExclusions])];
+
   console.log(`🔍 Finding sentence for user ${userId}, scenario: ${scenario}`);
   console.log(`   User level: ${userLevel}`);
   console.log(`   Completed: ${completedSentences.length} sentences`);
+  console.log(`   Session exclusions: ${sessionExclusions.length} sentences`);
+  console.log(`   Total excluded: ${excludeIds.length} sentences`);
   console.log(`   Weak phonemes:`, weakPhonemes);
 
   const dbScenario = mapScenarioName(scenario);
@@ -29,8 +35,8 @@ export async function getNextPracticeSentence(
     .find({
       scenario: dbScenario,
       type: 'core',
-      difficulty: getDifficultyRange(userLevel), // ✅ Filter by difficulty
-      id: { $nin: completedSentences }
+      difficulty: getDifficultyRange(userLevel),
+      id: { $nin: excludeIds }
     })
     .limit(10)
     .toArray();
@@ -51,7 +57,7 @@ export async function getNextPracticeSentence(
       scenario: dbScenario,
       type: 'core',
       difficulty: { $in: adjacentLevels },
-      id: { $nin: completedSentences }
+      id: { $nin: excludeIds }
     })
     .limit(10)
     .toArray();
@@ -62,12 +68,14 @@ export async function getNextPracticeSentence(
   }
 
   // 4. Check for review sentences (spaced repetition)
+  // But skip any already seen this lesson
   const now = new Date();
   const dueForReview = await historyCollection
     .find({
       userId: userId,
       nextReview: { $lte: now },
-      mastered: false
+      mastered: false,
+      sentenceId: { $nin: sessionExclusions }
     })
     .limit(5)
     .toArray();
@@ -93,7 +101,7 @@ export async function getNextPracticeSentence(
     dbScenario,
     targetPhoneme,
     userLevel,
-    completedSentences
+    excludeIds  // Use merged list here too
   );
 
   if (existingAI) {
@@ -121,11 +129,11 @@ export async function getNextPracticeSentence(
 function getDifficultyRange(userLevel: string): any {
   switch (userLevel) {
     case 'beginner':
-      return 'beginner'; // Only beginner sentences
+      return 'beginner';
     case 'intermediate':
-      return { $in: ['beginner', 'intermediate'] }; // Beginner + intermediate
+      return { $in: ['beginner', 'intermediate'] };
     case 'advanced':
-      return { $in: ['intermediate', 'advanced'] }; // Intermediate + advanced
+      return { $in: ['intermediate', 'advanced'] };
     default:
       return 'beginner';
   }
@@ -137,11 +145,11 @@ function getDifficultyRange(userLevel: string): any {
 function getAdjacentLevels(userLevel: string): string[] {
   switch (userLevel) {
     case 'beginner':
-      return ['intermediate']; // Try intermediate if no beginner left
+      return ['intermediate'];
     case 'intermediate':
-      return ['beginner', 'advanced']; // Try both easier and harder
+      return ['beginner', 'advanced'];
     case 'advanced':
-      return ['intermediate']; // Try intermediate if no advanced left
+      return ['intermediate'];
     default:
       return ['beginner', 'intermediate'];
   }
@@ -155,13 +163,13 @@ async function findMatchingAISentence(
   scenario: string,
   targetPhoneme: string | null,
   difficulty: string,
-  completedSentences: string[]
+  excludeIds: string[]
 ) {
   const query: any = {
     type: 'ai_generated',
     scenario: scenario,
     difficulty: difficulty,
-    id: { $nin: completedSentences }
+    id: { $nin: excludeIds }
   };
 
   if (targetPhoneme) {
@@ -207,16 +215,14 @@ export async function checkAndLevelUp(userId: string) {
 
   const currentLevel = userProgress.level || 'beginner';
   
-  // Get last 20 practice sessions
   const recentPractice = await historyCollection
     .find({ userId })
     .sort({ lastPracticed: -1 })
     .limit(20)
     .toArray();
 
-  if (recentPractice.length < 20) return; // Need at least 20 sessions
+  if (recentPractice.length < 20) return;
 
-  // Calculate average accuracy of recent sessions
   const avgAccuracy = recentPractice.reduce((sum, session) => {
     const sessionAvg = session.accuracyScores.reduce((a: number, b: number) => a + b, 0) / session.accuracyScores.length;
     return sum + sessionAvg;
@@ -224,7 +230,6 @@ export async function checkAndLevelUp(userId: string) {
 
   console.log(`📊 User ${userId} recent average: ${avgAccuracy}%`);
 
-  // Level up conditions
   let newLevel = currentLevel;
   
   if (currentLevel === 'beginner' && avgAccuracy >= 85 && userProgress.completedSentences?.length >= 30) {
@@ -279,7 +284,8 @@ export async function recordPracticeAttempt(
   userId: string,
   sentenceId: string,
   accuracy: number,
-  phonemeScores: Record<string, number>
+  phonemeScores: Record<string, number>,
+  lessonSessionId: string
 ) {
   const historyCollection = await getUserSentenceHistoryCollection();
   const userProgressCollection = await getUserProgressCollection();
@@ -318,6 +324,7 @@ export async function recordPracticeAttempt(
     await historyCollection.insertOne({
       userId,
       sentenceId,
+      lessonSessionId,
       attempts: 1,
       accuracyScores: [accuracy],
       bestAccuracy: accuracy,
@@ -375,7 +382,6 @@ export async function recordPracticeAttempt(
     console.log(`   ✅ Updated user progress (+${calculateXP(accuracy)} XP)`);
   }
 
-  // Check if user should level up
   await checkAndLevelUp(userId);
 }
 
@@ -408,25 +414,17 @@ function findWeakPhonemes(phonemeScores: Record<string, number>): string[] {
     .slice(0, 3);
 }
 
-// Update the mapScenarioName function in sentence-selector.ts
-// Replace the existing function with this:
-
 function mapScenarioName(frontendScenario: string): string {
   const mapping: Record<string, string> = {
-    // Quick practice
     'quick': 'daily_drill',
     'daily_drill': 'daily_drill',
-    
-    // Phoneme practices
-    'phonemes': 'phoneme_r_vs_l', // Generic fallback
+    'phonemes': 'phoneme_r_vs_l',
     'phoneme_r_vs_l': 'phoneme_r_vs_l',
     'phoneme_th_sounds': 'phoneme_th_sounds',
     'phoneme_f_vs_h': 'phoneme_f_vs_h',
     'phoneme_v_vs_b': 'phoneme_v_vs_b',
     'phoneme_word_stress': 'phoneme_word_stress',
     'phoneme_silent_letters': 'phoneme_silent_letters',
-    
-    // TOEIC & Pro scenarios
     'toeic': 'toeic_speaking',
     'toeic_speaking': 'toeic_speaking',
     'business': 'business',

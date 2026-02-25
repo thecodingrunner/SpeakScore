@@ -1,5 +1,5 @@
 // app/api/user/language/route.ts
-// Update user language and region preferences
+// Update user language, voice gender, and region preferences
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
@@ -17,11 +17,12 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { interfaceLanguage, practiceVoiceAccent } = body;
+    const { interfaceLanguage, practiceVoiceAccent, practiceVoiceGender } = body;
 
     // Validation
     const validLanguages = ['en', 'ja'];
     const validAccents = ['american', 'british'];
+    const validGenders = ['female', 'male'];
 
     if (interfaceLanguage && !validLanguages.includes(interfaceLanguage)) {
       return NextResponse.json(
@@ -33,6 +34,13 @@ export async function PATCH(request: NextRequest) {
     if (practiceVoiceAccent && !validAccents.includes(practiceVoiceAccent)) {
       return NextResponse.json(
         { error: 'Invalid voice accent' },
+        { status: 400 }
+      );
+    }
+
+    if (practiceVoiceGender && !validGenders.includes(practiceVoiceGender)) {
+      return NextResponse.json(
+        { error: 'Invalid voice gender' },
         { status: 400 }
       );
     }
@@ -49,6 +57,10 @@ export async function PATCH(request: NextRequest) {
 
     if (practiceVoiceAccent) {
       updateFields['settings.language.practiceVoiceAccent'] = practiceVoiceAccent;
+    }
+
+    if (practiceVoiceGender) {
+      updateFields['settings.language.practiceVoiceGender'] = practiceVoiceGender;
     }
 
     await userProgressCollection.updateOne(
@@ -89,6 +101,7 @@ export async function GET(request: NextRequest) {
     const defaultSettings = {
       interfaceLanguage: 'en',
       practiceVoiceAccent: 'american',
+      practiceVoiceGender: 'female',
     };
 
     if (!userProgress?.settings?.language) {
@@ -100,7 +113,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      settings: userProgress.settings.language,
+      settings: {
+        ...defaultSettings,
+        ...userProgress.settings.language,
+      },
     });
 
   } catch (error: any) {

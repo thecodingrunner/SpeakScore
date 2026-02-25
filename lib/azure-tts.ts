@@ -6,12 +6,34 @@ import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
 const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY!;
 const AZURE_SPEECH_REGION = process.env.AZURE_SPEECH_REGION!;
 
+type VoiceGender = 'female' | 'male';
+type VoiceAccent = 'american' | 'british';
+
 interface TTSOptions {
   text: string;
-  voice?: 'female' | 'male';
+  gender?: VoiceGender;
+  accent?: VoiceAccent;
   speed?: number; // 0.5 to 2.0
   pitch?: number; // -50 to 50
 }
+
+/**
+ * Voice mapping: gender + accent → Azure Neural voice name
+ */
+const VOICE_MAP: Record<string, string> = {
+  'female-american': 'en-US-JennyNeural',
+  'male-american':   'en-US-GuyNeural',
+  'female-british':  'en-GB-SoniaNeural',
+  'male-british':    'en-GB-OllieMultilingualNeural',
+};
+
+/**
+ * Accent → SSML xml:lang
+ */
+const LANG_MAP: Record<VoiceAccent, string> = {
+  american: 'en-US',
+  british:  'en-GB',
+};
 
 /**
  * Generate audio from text using Azure TTS
@@ -19,7 +41,8 @@ interface TTSOptions {
  */
 export async function generateTTS({
   text,
-  voice = 'female',
+  gender = 'female',
+  accent = 'american',
   speed = 1.0,
   pitch = 0
 }: TTSOptions): Promise<Buffer> {
@@ -29,11 +52,14 @@ export async function generateTTS({
     AZURE_SPEECH_REGION
   );
 
-  // Use high-quality neural voices
-  // Female: en-US-JennyNeural (natural, clear)
-  // Male: en-US-GuyNeural (professional, clear)
-  speechConfig.speechSynthesisVoiceName = 
-    voice === 'female' ? 'en-US-JennyNeural' : 'en-US-GuyNeural';
+  const voiceKey = `${gender}-${accent}`;
+  const voiceName = VOICE_MAP[voiceKey];
+
+  if (!voiceName) {
+    throw new Error(`Unknown voice combination: ${voiceKey}`);
+  }
+
+  speechConfig.speechSynthesisVoiceName = voiceName;
 
   // Output to memory (we'll upload to Firebase)
   speechConfig.speechSynthesisOutputFormat = 
@@ -41,10 +67,12 @@ export async function generateTTS({
 
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig);
 
+  const xmlLang = LANG_MAP[accent];
+
   // Build SSML for precise control
   const ssml = `
-    <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
-      <voice name="${speechConfig.speechSynthesisVoiceName}">
+    <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${xmlLang}">
+      <voice name="${voiceName}">
         <prosody rate="${speed}" pitch="${pitch}%">
           ${text}
         </prosody>
@@ -76,20 +104,28 @@ export async function generateTTS({
 /**
  * Generate slow version for learning (0.75x speed)
  */
-export async function generateSlowTTS(text: string): Promise<Buffer> {
-  return generateTTS({ text, speed: 0.75 });
+export async function generateSlowTTS(
+  text: string,
+  gender: VoiceGender = 'female',
+  accent: VoiceAccent = 'american'
+): Promise<Buffer> {
+  return generateTTS({ text, gender, accent, speed: 0.75 });
 }
 
 /**
- * Generate both normal and slow versions
+ * Generate both normal and slow versions for a specific voice combo
  */
-export async function generateTTSVariants(text: string): Promise<{
+export async function generateTTSVariants(
+  text: string,
+  gender: VoiceGender = 'female',
+  accent: VoiceAccent = 'american'
+): Promise<{
   normal: Buffer;
   slow: Buffer;
 }> {
   const [normal, slow] = await Promise.all([
-    generateTTS({ text }),
-    generateSlowTTS(text)
+    generateTTS({ text, gender, accent }),
+    generateSlowTTS(text, gender, accent)
   ]);
 
   return { normal, slow };

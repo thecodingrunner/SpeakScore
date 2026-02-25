@@ -1,5 +1,6 @@
 // app/api/practice/next-sentence/route.ts
 // Get next sentence for practice with AI generation support
+// Audio is resolved on-demand by the client via /api/audio/resolve
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
@@ -8,7 +9,6 @@ import { getUserProgressCollection } from '@/lib/mongodb';
 
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user
     const { userId } = await auth();
     
     if (!userId) {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { scenario } = await request.json();
+    const { scenario, excludeSentenceIds } = await request.json();
 
     if (!scenario) {
       return NextResponse.json(
@@ -27,21 +27,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const sessionExclusions: string[] = Array.isArray(excludeSentenceIds) ? excludeSentenceIds : [];
+
     // Get next sentence
-    const sentence = await getNextPracticeSentence(userId, scenario);
+    const sentence = await getNextPracticeSentence(userId, scenario, sessionExclusions);
 
     if (!sentence) {
       // No sentence found - need to generate AI sentence
       console.log(`⚠️ No sentence found, generating AI sentence for ${userId}`);
       
-      // Get user progress to determine generation parameters
       const userProgressCollection = await getUserProgressCollection();
       const userProgress = await userProgressCollection.findOne({ userId });
       
       const targetPhoneme = userProgress?.weakPhonemes?.[0] || '/r/';
       const difficulty = userProgress?.level || 'beginner';
       
-      // Call generate-sentence API
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const generateResponse = await fetch(`${baseUrl}/api/generate-sentence`, {
         method: 'POST',
@@ -74,14 +74,13 @@ export async function POST(request: NextRequest) {
           text: generatedData.sentence.text,
           phonemes: [targetPhoneme],
           difficulty,
-          audioUrls: generatedData.sentence.audioUrls,
           scenario
         },
-        generated: true // Flag to indicate this was newly generated
+        generated: true
       });
     }
 
-    // Return existing sentence
+    // Return existing sentence (text + metadata, no audio URLs)
     return NextResponse.json({
       success: true,
       sentence: {
@@ -89,7 +88,6 @@ export async function POST(request: NextRequest) {
         text: sentence.text,
         phonemes: sentence.phonemes,
         difficulty: sentence.difficulty,
-        audioUrls: sentence.audioUrls,
         scenario: sentence.scenario
       },
       generated: false

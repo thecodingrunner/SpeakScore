@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { sentenceId, accuracy, phonemeScores } = await request.json();
+    const { sentenceId, accuracy, phonemeScores, lessonSessionId } = await request.json();
 
     // Validate input
     if (!sentenceId || accuracy === undefined || !phonemeScores) {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Record the attempt
-    await recordPracticeAttempt(userId, sentenceId, accuracy, phonemeScores);
+    await recordPracticeAttempt(userId, sentenceId, accuracy, phonemeScores, lessonSessionId);
 
     return NextResponse.json({
       success: true,

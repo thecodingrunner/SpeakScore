@@ -1,11 +1,10 @@
 // app/api/generate-sentence/route.ts
 // Generate AI sentences with deduplication check
+// Audio is NOT generated here — it's resolved on-demand when played
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { generateValidatedSentence } from '@/lib/ai-sentence-generator';
-import { generateTTSVariants } from '@/lib/azure-tts';
-import { uploadAudioVariants } from '@/lib/firebase-audio-storage';
 import { getSentencesCollection } from '@/lib/mongodb';
 
 export async function POST(request: NextRequest) {
@@ -54,7 +53,6 @@ export async function POST(request: NextRequest) {
         sentence: {
           id: existingSimilar.id,
           text: existingSimilar.text,
-          audioUrls: existingSimilar.audioUrls
         },
         reused: true
       });
@@ -72,28 +70,20 @@ export async function POST(request: NextRequest) {
 
     console.log(`   Generated text: "${sentence}"`);
 
-    // 2. Generate audio (TTS)
-    const { normal, slow } = await generateTTSVariants(sentence);
-    console.log(`   Generated TTS audio`);
-
-    // 3. Create sentence ID
+    // 2. Create sentence ID
     const sentenceId = `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // 4. Upload audio to Firebase
-    const audioUrls = await uploadAudioVariants(sentenceId, normal, slow);
-    console.log(`   Uploaded audio to Firebase`);
-
-    // 5. Save to MongoDB with usage tracking
+    // 3. Save to MongoDB — text only, no audioUrls
+    // Audio is generated on-demand when a user plays the sentence
     await sentencesCollection.insertOne({
       id: sentenceId,
       text: sentence,
       phonemes: [phoneme],
       difficulty,
       scenario,
-      audioUrls,
       type: 'ai_generated',
       generatedFor: targetUserId,
-      usageCount: 1, // Initialize usage counter
+      usageCount: 1,
       lastUsed: new Date(),
       createdAt: new Date(),
       updatedAt: new Date()
@@ -106,7 +96,6 @@ export async function POST(request: NextRequest) {
       sentence: {
         id: sentenceId,
         text: sentence,
-        audioUrls
       },
       reused: false
     });
