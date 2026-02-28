@@ -12,6 +12,7 @@ import { useAuth, SignInButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Mascot, MascotMini, SakuraPetal } from '@/components/global/Mascot';
+import { useTranslations } from 'next-intl';
 
 /* ═══════════════════════════════════════════════════════════════
    NAVBAR — Warm, friendly, with Koko mini mascot as logo
@@ -19,6 +20,7 @@ import { Mascot, MascotMini, SakuraPetal } from '@/components/global/Mascot';
 const Navbar = () => {
   const { isSignedIn } = useAuth();
   const router = useRouter();
+  const t = useTranslations('landing');
 
   return (
     <div className="navbar bg-base-100/90 backdrop-blur-xl border-b border-primary/10 px-4 lg:px-8 sticky top-0 z-40">
@@ -32,16 +34,16 @@ const Navbar = () => {
       </div>
       <div className="navbar-end gap-2">
         <Link href="#pricing" className="btn btn-ghost btn-sm text-base-content/70 hover:text-primary">
-          Pricing
+          {t('nav.pricing')}
         </Link>
         {isSignedIn ? (
           <Link href="/practice" className="btn btn-primary btn-sm shadow-md shadow-primary/20">
-            Start Practicing
+            {t('nav.startPracticing')}
           </Link>
         ) : (
           <SignInButton mode="modal">
             <button className="btn btn-primary btn-sm shadow-md shadow-primary/20">
-              Start Practicing
+              {t('nav.startPracticing')}
             </button>
           </SignInButton>
         )}
@@ -55,6 +57,7 @@ const Navbar = () => {
    Sakura petals, dot pattern background, no cold canvas anim
    ═══════════════════════════════════════════════════════════════ */
 const HeroSection = () => {
+  const t = useTranslations('landing');
   return (
     <div className="relative min-h-[88vh] overflow-hidden flex items-center justify-center bg-sakura-gradient">
       {/* Dot pattern overlay */}
@@ -98,7 +101,7 @@ const HeroSection = () => {
             <Mascot size={140} expression="waving" className="animate-float drop-shadow-lg" />
             {/* Speech bubble */}
             <div className="absolute -top-2 -right-16 bg-base-100 rounded-2xl rounded-bl-sm px-4 py-2 shadow-lg border border-primary/15 animate-bounce-gentle" style={{ animationDelay: '0.5s' }}>
-              <span className="text-sm font-bold text-primary">Let&apos;s go! 🌸</span>
+              <span className="text-sm font-bold text-primary">{t('hero.speechBubble')}</span>
             </div>
           </div>
         </div>
@@ -106,43 +109,41 @@ const HeroSection = () => {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-6">
           <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold text-primary">AI Pronunciation Coach for Japanese Speakers</span>
+          <span className="text-sm font-semibold text-primary">{t('hero.badge')}</span>
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-5 leading-[1.1] text-base-content">
-          Master English{' '}
+          {t('hero.titleStart')}{' '}
           <span className="text-primary relative">
-            Pronunciation
+            {t('hero.titleHighlight')}
             <svg className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
               <path d="M2 8 Q50 2 100 7 Q150 12 198 4" stroke="oklch(var(--p) / 0.4)" strokeWidth="3" strokeLinecap="round" fill="none" />
             </svg>
           </span>
           <br />
-          <span className="text-base-content/80 text-3xl sm:text-4xl lg:text-5xl">with Your Personal AI Coach</span>
+          <span className="text-base-content/80 text-3xl sm:text-4xl lg:text-5xl">{t('hero.titleEnd')}</span>
         </h1>
 
         <p className="text-base sm:text-lg lg:text-xl mb-8 text-base-content/60 max-w-2xl mx-auto leading-relaxed">
-          Built for Japanese speakers learning English. Get phoneme-level
-          feedback on /r/ vs /l/, /th/ sounds, word stress — an AI that
-          truly understands your challenges.
+          {t('hero.subtitle')}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
           <Link href="/practice" className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all">
-            Try Free Practice
+            {t('hero.cta1')}
             <ArrowRight className="w-5 h-5" />
           </Link>
           <button className="btn btn-ghost btn-lg border-2 border-base-content/10 hover:border-primary/30 gap-2">
             <Play className="w-4 h-4" />
-            Watch Demo
+            {t('hero.watchDemo')}
           </button>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-5 text-sm text-base-content/50">
           {[
-            '5 free sessions',
-            'No credit card',
-            '日本語サポート',
+            t('hero.check1'),
+            t('hero.check2'),
+            t('hero.check3'),
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-success/15 flex items-center justify-center">
@@ -160,58 +161,42 @@ const HeroSection = () => {
 /* ═══════════════════════════════════════════════════════════════
    SOCIAL PROOF BAR — Quick trust strip below hero
    ═══════════════════════════════════════════════════════════════ */
-const SocialProofBar = () => (
-  <div className="bg-base-200/80 border-y border-base-content/5 py-5 px-4">
-    <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-8 text-sm text-base-content/50">
-      <div className="flex items-center gap-2">
-        <Users className="w-4 h-4 text-primary" />
-        <span><strong className="text-base-content">5,000+</strong> learners</span>
-      </div>
-      <div className="flex items-center gap-1.5">
-        {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-warning text-warning" />)}
-        <span className="ml-1"><strong className="text-base-content">4.8</strong> rating</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <TrendingUp className="w-4 h-4 text-success" />
-        <span><strong className="text-base-content">+35%</strong> avg accuracy gain</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Flame className="w-4 h-4 text-accent" />
-        <span><strong className="text-base-content">50k+</strong> sessions completed</span>
+const SocialProofBar = () => {
+  const t = useTranslations('landing');
+  return (
+    <div className="bg-base-200/80 border-y border-base-content/5 py-5 px-4">
+      <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-8 text-sm text-base-content/50">
+        <div className="flex items-center gap-2">
+          <Users className="w-4 h-4 text-primary" />
+          <span><strong className="text-base-content">5,000+</strong> {t('social.learners')}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-warning text-warning" />)}
+          <span className="ml-1"><strong className="text-base-content">4.8</strong> {t('social.rating')}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-success" />
+          <span><strong className="text-base-content">+35%</strong> {t('social.accuracyGain')}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Flame className="w-4 h-4 text-accent" />
+          <span><strong className="text-base-content">50k+</strong> {t('social.sessionsCompleted')}</span>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* ═══════════════════════════════════════════════════════════════
    FEATURES — Clean card grid with warm colors
    ═══════════════════════════════════════════════════════════════ */
 const FeaturesGridSection = () => {
+  const t = useTranslations('landing');
   const features = [
-    {
-      icon: <Mic className="w-6 h-6" />,
-      title: 'Japanese-Specific Analysis',
-      description: 'Detects /r/ vs /l/, /th/ sounds, and phonemes Japanese speakers struggle with most',
-      color: 'primary',
-    },
-    {
-      icon: <MessageCircle className="w-6 h-6" />,
-      title: 'AI Conversation Practice',
-      description: 'TOEIC scenarios, business meetings, job interviews — practice what you actually need',
-      color: 'secondary',
-    },
-    {
-      icon: <BarChart3 className="w-6 h-6" />,
-      title: 'Progress Tracking',
-      description: 'Watch your pronunciation improve day by day with detailed accuracy analytics',
-      color: 'accent',
-    },
-    {
-      icon: <Target className="w-6 h-6" />,
-      title: 'Smart Repetition',
-      description: 'Focus on your problem sounds with intelligent practice scheduling',
-      color: 'info',
-    },
+    { icon: <Mic className="w-6 h-6" />, title: t('features.f1title'), description: t('features.f1desc'), color: 'primary' },
+    { icon: <MessageCircle className="w-6 h-6" />, title: t('features.f2title'), description: t('features.f2desc'), color: 'secondary' },
+    { icon: <BarChart3 className="w-6 h-6" />, title: t('features.f3title'), description: t('features.f3desc'), color: 'accent' },
+    { icon: <Target className="w-6 h-6" />, title: t('features.f4title'), description: t('features.f4desc'), color: 'info' },
   ];
 
   return (
@@ -222,11 +207,11 @@ const FeaturesGridSection = () => {
             <Mascot size={72} expression="excited" className="drop-shadow-sm" />
           </div>
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-3 text-base-content">
-            Built for{' '}
-            <span className="text-primary">Japanese English Learners</span>
+            {t('features.titleStart')}{' '}
+            <span className="text-primary">{t('features.titleHighlight')}</span>
           </h2>
           <p className="text-base text-base-content/55 max-w-xl mx-auto">
-            Unlike ChatGPT, we remember your progress and understand your specific challenges
+            {t('features.subtitle')}
           </p>
         </div>
 
@@ -255,17 +240,15 @@ const FeaturesGridSection = () => {
    PRONUNCIATION CHALLENGES — Visual, interactive-feeling
    ═══════════════════════════════════════════════════════════════ */
 const PronounciationChallengesSection = () => {
+  const t = useTranslations('landing');
   const challenges = [
-    { sound: '/r/ vs /l/', example: 'right ↔ light, rock ↔ lock', difficulty: 'Very Hard', emoji: '😤' },
-    { sound: '/th/ sounds', example: 'think, that, this', difficulty: 'Very Hard', emoji: '😬' },
-    { sound: '/f/ vs /h/', example: 'fan ↔ hand, feel ↔ heel', difficulty: 'Hard', emoji: '🤔' },
-    { sound: '/v/ vs /b/', example: 'vote ↔ boat, very ↔ berry', difficulty: 'Hard', emoji: '😅' },
-    { sound: 'Silent vowels', example: 'desk not desk-u, test not test-o', difficulty: 'Medium', emoji: '💡' },
-    { sound: 'Word stress', example: 'REcord vs reCORD', difficulty: 'Medium', emoji: '🎯' },
+    { sound: t('challenges.c1sound'), example: t('challenges.c1example'), difficulty: t('challenges.c1difficulty'), color: 'error', emoji: '😤' },
+    { sound: t('challenges.c2sound'), example: t('challenges.c2example'), difficulty: t('challenges.c2difficulty'), color: 'error', emoji: '😬' },
+    { sound: t('challenges.c3sound'), example: t('challenges.c3example'), difficulty: t('challenges.c3difficulty'), color: 'warning', emoji: '🤔' },
+    { sound: t('challenges.c4sound'), example: t('challenges.c4example'), difficulty: t('challenges.c4difficulty'), color: 'warning', emoji: '😅' },
+    { sound: t('challenges.c5sound'), example: t('challenges.c5example'), difficulty: t('challenges.c5difficulty'), color: 'info', emoji: '💡' },
+    { sound: t('challenges.c6sound'), example: t('challenges.c6example'), difficulty: t('challenges.c6difficulty'), color: 'info', emoji: '🎯' },
   ];
-
-  const difficultyColor = (d: string) =>
-    d === 'Very Hard' ? 'error' : d === 'Hard' ? 'warning' : 'info';
 
   return (
     <div className="py-20 px-4 lg:px-8 bg-base-200/50 bg-dots-pattern">
@@ -275,10 +258,10 @@ const PronounciationChallengesSection = () => {
             <Mascot size={72} expression="thinking" className="drop-shadow-sm" />
           </div>
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-3 text-base-content">
-            Sounds that <span className="text-primary">Japanese Speakers</span> Find Tricky
+            {t('challenges.titleStart')} <span className="text-primary">{t('challenges.titleHighlight')}</span> {t('challenges.titleEnd')}
           </h2>
           <p className="text-base text-base-content/55 max-w-lg mx-auto">
-            We understand your specific struggles — and we help fix them
+            {t('challenges.subtitle')}
           </p>
         </div>
 
@@ -294,7 +277,7 @@ const PronounciationChallengesSection = () => {
                     <span className="text-xl">{c.emoji}</span>
                     <h3 className="font-bold text-base">{c.sound}</h3>
                   </div>
-                  <div className={`badge badge-${difficultyColor(c.difficulty)} badge-sm font-semibold`}>
+                  <div className={`badge badge-${c.color} badge-sm font-semibold`}>
                     {c.difficulty}
                   </div>
                 </div>
@@ -312,8 +295,8 @@ const PronounciationChallengesSection = () => {
               <Volume2 className="w-5 h-5 text-success" />
             </div>
             <div>
-              <h4 className="font-bold text-base-content text-sm">SpeakScore detects and scores ALL of these</h4>
-              <p className="text-xs text-base-content/55">Get phoneme-level feedback on every challenging sound</p>
+              <h4 className="font-bold text-base-content text-sm">{t('challenges.detectTitle')}</h4>
+              <p className="text-xs text-base-content/55">{t('challenges.detectSubtitle')}</p>
             </div>
           </div>
         </div>
@@ -326,11 +309,12 @@ const PronounciationChallengesSection = () => {
    HOW IT WORKS — Friendly step-by-step with mascot
    ═══════════════════════════════════════════════════════════════ */
 const HowItWorksSection = () => {
+  const t = useTranslations('landing');
   const steps = [
-    { num: 1, title: 'Choose Your Scenario', desc: 'TOEIC test, business meeting, job interview, or free conversation', icon: <BookOpen className="w-6 h-6" />, time: '10 sec', mascotExpr: 'happy' as const },
-    { num: 2, title: 'Practice Speaking', desc: 'AI conversation partner responds naturally to your English', icon: <Mic className="w-6 h-6" />, time: '5–10 min', mascotExpr: 'excited' as const },
-    { num: 3, title: 'Get Detailed Feedback', desc: 'Phoneme-level scores, error patterns, and pronunciation tips', icon: <BarChart3 className="w-6 h-6" />, time: 'Instant', mascotExpr: 'thinking' as const },
-    { num: 4, title: 'Track & Improve', desc: 'Watch accuracy improve day by day with streaks and badges', icon: <TrendingUp className="w-6 h-6" />, time: 'Ongoing', mascotExpr: 'cheering' as const },
+    { num: 1, title: t('howItWorks.s1title'), desc: t('howItWorks.s1desc'), icon: <BookOpen className="w-6 h-6" />, time: t('howItWorks.s1time') },
+    { num: 2, title: t('howItWorks.s2title'), desc: t('howItWorks.s2desc'), icon: <Mic className="w-6 h-6" />, time: t('howItWorks.s2time') },
+    { num: 3, title: t('howItWorks.s3title'), desc: t('howItWorks.s3desc'), icon: <BarChart3 className="w-6 h-6" />, time: t('howItWorks.s3time') },
+    { num: 4, title: t('howItWorks.s4title'), desc: t('howItWorks.s4desc'), icon: <TrendingUp className="w-6 h-6" />, time: t('howItWorks.s4time') },
   ];
 
   return (
@@ -338,10 +322,10 @@ const HowItWorksSection = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-3 text-base-content">
-            How It Works
+            {t('howItWorks.title')}
           </h2>
           <p className="text-base text-base-content/55">
-            Start improving in just 5 minutes
+            {t('howItWorks.subtitle')}
           </p>
         </div>
 
@@ -378,7 +362,7 @@ const HowItWorksSection = () => {
 
         <div className="text-center mt-10">
           <Link href="/practice" className="btn btn-primary btn-md gap-2 shadow-md shadow-primary/20">
-            Start Free Practice Now
+            {t('howItWorks.cta')}
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -391,15 +375,16 @@ const HowItWorksSection = () => {
    BEFORE / AFTER — Visual progress showcase
    ═══════════════════════════════════════════════════════════════ */
 const BeforeAfterSection = () => {
+  const t = useTranslations('landing');
   const before = [
-    { phoneme: '/r/ vs /l/', error: '"light" → "right"', status: 'Confused' },
-    { phoneme: '/th/ sounds', error: '"think" → "sink"', status: 'Missing' },
-    { phoneme: 'Word stress', error: '"REcord" → "reCORD"', status: 'Wrong' },
+    { phoneme: '/r/ vs /l/', error: '"light" → "right"', status: t('beforeAfter.confused') },
+    { phoneme: '/th/ sounds', error: '"think" → "sink"', status: t('beforeAfter.missing') },
+    { phoneme: 'Word stress', error: '"REcord" → "reCORD"', status: t('beforeAfter.wrong') },
   ];
   const after = [
-    { phoneme: '/r/ vs /l/', result: '✓ Correctly distinguished', status: 'Fixed' },
-    { phoneme: '/th/ sounds', result: '✓ Clear θ and ð sounds', status: 'Mastered' },
-    { phoneme: 'Word stress', result: '✓ Natural stress patterns', status: 'Improved' },
+    { phoneme: '/r/ vs /l/', result: '✓ Correctly distinguished', status: t('beforeAfter.fixed') },
+    { phoneme: '/th/ sounds', result: '✓ Clear θ and ð sounds', status: t('beforeAfter.mastered') },
+    { phoneme: 'Word stress', result: '✓ Natural stress patterns', status: t('beforeAfter.improved') },
   ];
 
   return (
@@ -407,9 +392,9 @@ const BeforeAfterSection = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-3 text-base-content">
-            See Real <span className="text-primary">Progress</span>
+            {t('beforeAfter.titleStart')} <span className="text-primary">{t('beforeAfter.titleHighlight')}</span>
           </h2>
-          <p className="text-base text-base-content/55">After just 2 weeks of daily practice</p>
+          <p className="text-base text-base-content/55">{t('beforeAfter.subtitle')}</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -417,7 +402,7 @@ const BeforeAfterSection = () => {
           <div className="card bg-base-100 border border-error/15 card-glow">
             <div className="card-body p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="badge badge-error gap-1.5 font-semibold">Before</div>
+                <div className="badge badge-error gap-1.5 font-semibold">{t('beforeAfter.before')}</div>
                 <span className="text-3xl font-extrabold text-error">62%</span>
               </div>
               <progress className="progress progress-error w-full mb-4 h-2.5" value={62} max={100} />
@@ -432,7 +417,7 @@ const BeforeAfterSection = () => {
                   </div>
                 ))}
               </div>
-              <div className="text-center mt-4 text-sm text-base-content/50">TOEIC Speaking: ~110</div>
+              <div className="text-center mt-4 text-sm text-base-content/50">{t('beforeAfter.toeicBefore')}</div>
             </div>
           </div>
 
@@ -443,7 +428,7 @@ const BeforeAfterSection = () => {
             </div>
             <div className="card-body p-6 relative z-10">
               <div className="flex items-center gap-3 mb-4">
-                <div className="badge badge-success gap-1.5 font-semibold">After 2 Weeks</div>
+                <div className="badge badge-success gap-1.5 font-semibold">{t('beforeAfter.afterLabel')}</div>
                 <span className="text-3xl font-extrabold text-success">91%</span>
               </div>
               <progress className="progress progress-success w-full mb-4 h-2.5" value={91} max={100} />
@@ -459,8 +444,8 @@ const BeforeAfterSection = () => {
                 ))}
               </div>
               <div className="text-center mt-4">
-                <div className="text-sm text-base-content/50">TOEIC Speaking: ~150</div>
-                <div className="badge badge-success badge-outline mt-1 font-semibold">+40 point improvement</div>
+                <div className="text-sm text-base-content/50">{t('beforeAfter.toeicAfter')}</div>
+                <div className="badge badge-success badge-outline mt-1 font-semibold">{t('beforeAfter.improvement')}</div>
               </div>
             </div>
           </div>
@@ -474,19 +459,12 @@ const BeforeAfterSection = () => {
    BENEFITS CHECKLIST — Clean, warm grid
    ═══════════════════════════════════════════════════════════════ */
 const BenefitsChecklistSection = () => {
+  const t = useTranslations('landing');
   const benefits = [
-    'Phoneme-level pronunciation scoring',
-    '/r/ vs /l/ detection and practice',
-    '/th/ (θ/ð) sound training',
-    'Word stress pattern analysis',
-    'Silent vowel correction',
-    'Fluency and rhythm feedback',
-    'TOEIC/TOEFL speaking scenarios',
-    'Business English practice',
-    'Job interview preparation',
-    'Daily practice streaks (連続日数)',
-    'Achievement badges (達成バッジ)',
-    'Progress analytics dashboard',
+    t('benefits.b1'), t('benefits.b2'), t('benefits.b3'),
+    t('benefits.b4'), t('benefits.b5'), t('benefits.b6'),
+    t('benefits.b7'), t('benefits.b8'), t('benefits.b9'),
+    t('benefits.b10'), t('benefits.b11'), t('benefits.b12'),
   ];
 
   return (
@@ -494,11 +472,11 @@ const BenefitsChecklistSection = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-3 text-base-content">
-            Everything You Need to{' '}
-            <span className="text-primary">Master Pronunciation</span>
+            {t('benefits.titleStart')}{' '}
+            <span className="text-primary">{t('benefits.titleHighlight')}</span>
           </h2>
           <p className="text-base text-base-content/55">
-            Professional coaching that used to cost ¥20,000/month at Eikaiwa schools
+            {t('benefits.subtitle')}
           </p>
         </div>
 
@@ -524,6 +502,7 @@ const BenefitsChecklistSection = () => {
    COMPARISON TABLE — Warm, less sterile
    ═══════════════════════════════════════════════════════════════ */
 const ComparisonSection = () => {
+  const t = useTranslations('landing');
   const competitors = [
     { name: 'Eikaiwa Schools', price: '¥10,000–20,000', pronunciation: 'Generic', tracking: 'Manual', availability: 'Fixed schedule' },
     { name: 'Online Tutors', price: '¥3,000–12,000', pronunciation: 'Teacher-dependent', tracking: 'None', availability: 'Booking required' },
@@ -536,10 +515,10 @@ const ComparisonSection = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-3 text-base-content">
-            Why <span className="text-primary">SpeakScore</span>?
+            {t('comparison.titleStart')} <span className="text-primary">{t('comparison.titleHighlight')}</span>{t('comparison.titleEnd')}
           </h2>
           <p className="text-base text-base-content/55">
-            Compare our AI coach to traditional options
+            {t('comparison.subtitle')}
           </p>
         </div>
 
@@ -547,11 +526,11 @@ const ComparisonSection = () => {
           <table className="table table-zebra bg-base-100 rounded-2xl overflow-hidden border border-base-content/6">
             <thead>
               <tr className="text-xs uppercase text-base-content/50 bg-base-200/80">
-                <th>Method</th>
-                <th>Price /mo</th>
-                <th>Pronunciation</th>
-                <th>Tracking</th>
-                <th>Availability</th>
+                <th>{t('comparison.colMethod')}</th>
+                <th>{t('comparison.colPrice')}</th>
+                <th>{t('comparison.colPronunciation')}</th>
+                <th>{t('comparison.colTracking')}</th>
+                <th>{t('comparison.colAvailability')}</th>
               </tr>
             </thead>
             <tbody>
@@ -584,7 +563,7 @@ const ComparisonSection = () => {
         <div className="card bg-primary/5 border border-primary/15 mt-6">
           <div className="card-body flex-row items-center gap-3 p-4">
             <Sparkles className="w-5 h-5 text-primary flex-shrink-0" />
-            <span className="text-sm text-base-content/70">85% cheaper than Eikaiwa schools with better pronunciation tracking</span>
+            <span className="text-sm text-base-content/70">{t('comparison.footer')}</span>
           </div>
         </div>
       </div>
@@ -596,34 +575,11 @@ const ComparisonSection = () => {
    TESTIMONIALS — Warm cards, personal feel
    ═══════════════════════════════════════════════════════════════ */
 const TestimonialsSection = () => {
+  const t = useTranslations('landing');
   const testimonials = [
-    {
-      name: 'Yuki T.',
-      age: 28,
-      location: 'Tokyo',
-      rating: 5,
-      emoji: '👩‍💼',
-      quote: "Finally fixed my /r/ and /l/ problem! The AI detected exactly when I was saying 'light' instead of 'right'. My TOEIC speaking score improved by 30 points.",
-      result: 'TOEIC +30 points',
-    },
-    {
-      name: 'Kenji M.',
-      age: 32,
-      location: 'Osaka',
-      rating: 5,
-      emoji: '👨‍💻',
-      quote: 'ビジネス英語の発音が自信持てるようになりました。Meeting scenarios helped me prepare for real presentations.',
-      result: 'Promoted at work',
-    },
-    {
-      name: 'Sakura I.',
-      age: 24,
-      location: 'Yokohama',
-      rating: 5,
-      emoji: '👩‍🎓',
-      quote: "The /th/ sound practice is amazing — I can finally say 'think' and 'thank' correctly! My American friends noticed the difference.",
-      result: 'Study abroad ready',
-    },
+    { name: 'Yuki T.', age: 28, location: 'Tokyo', rating: 5, emoji: '👩‍💼', quote: t('testimonials.t1quote'), result: t('testimonials.t1result') },
+    { name: 'Kenji M.', age: 32, location: 'Osaka', rating: 5, emoji: '👨‍💻', quote: t('testimonials.t2quote'), result: t('testimonials.t2result') },
+    { name: 'Sakura I.', age: 24, location: 'Yokohama', rating: 5, emoji: '👩‍🎓', quote: t('testimonials.t3quote'), result: t('testimonials.t3result') },
   ];
 
   return (
@@ -632,10 +588,10 @@ const TestimonialsSection = () => {
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/8 border border-success/15 rounded-full mb-4">
             <Heart className="w-4 h-4 text-success" />
-            <span className="text-sm font-semibold text-success">Loved by Japanese Learners</span>
+            <span className="text-sm font-semibold text-success">{t('testimonials.lovedBadge')}</span>
           </div>
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-3 text-base-content">
-            Real Results from <span className="text-primary">Real Learners</span>
+            {t('testimonials.titleStart')} <span className="text-primary">{t('testimonials.titleHighlight')}</span>
           </h2>
         </div>
 
@@ -688,27 +644,13 @@ const TestimonialsSection = () => {
    FAQ — Clean accordion
    ═══════════════════════════════════════════════════════════════ */
 const FaqSection = () => {
+  const t = useTranslations('landing');
   const faqs = [
-    {
-      q: 'How does SpeakScore understand Japanese pronunciation challenges?',
-      a: "Our AI uses Azure's pronunciation assessment specifically calibrated for Japanese→English learners. It detects common issues like /r/ vs /l/ confusion, /th/ sounds, and silent vowel additions.",
-    },
-    {
-      q: 'Can I use SpeakScore to prepare for TOEIC/TOEFL?',
-      a: 'Yes! We have dedicated TOEIC speaking test scenarios and TOEFL preparation conversations. Practice with realistic test formats and get feedback on pronunciation, fluency, and accuracy.',
-    },
-    {
-      q: 'Is the interface available in Japanese?',
-      a: "Currently the interface is in English (we're building for English-speaking Japanese learners first). Japanese UI will launch soon. Support is available in both English and Japanese now.",
-    },
-    {
-      q: 'How is this different from ChatGPT for pronunciation practice?',
-      a: "ChatGPT doesn't track your progress, can't analyze pronunciation at the phoneme level, and doesn't remember your specific error patterns. SpeakScore remembers everything and focuses on YOUR challenges.",
-    },
-    {
-      q: 'Can I cancel anytime?',
-      a: "Absolutely! No contracts, no commitments. Cancel your subscription anytime from your account settings. You'll keep access until the end of your billing period.",
-    },
+    { q: t('faq.q1'), a: t('faq.a1') },
+    { q: t('faq.q2'), a: t('faq.a2') },
+    { q: t('faq.q3'), a: t('faq.a3') },
+    { q: t('faq.q4'), a: t('faq.a4') },
+    { q: t('faq.q5'), a: t('faq.a5') },
   ];
 
   return (
@@ -719,10 +661,10 @@ const FaqSection = () => {
             <Mascot size={64} expression="thinking" className="drop-shadow-sm" />
           </div>
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-3 text-base-content">
-            Frequently Asked Questions
+            {t('faq.title')}
           </h2>
           <p className="text-base text-base-content/55">
-            Everything you need to know about SpeakScore
+            {t('faq.subtitle')}
           </p>
         </div>
 
@@ -751,11 +693,12 @@ const FaqSection = () => {
    TRUST BADGES — Why us strip
    ═══════════════════════════════════════════════════════════════ */
 const TrustBadgesSection = () => {
+  const t = useTranslations('landing');
   const badges = [
-    { icon: Target, title: 'Japanese-Specific', subtitle: 'Built for your phoneme challenges', color: 'primary' },
-    { icon: Brain, title: 'Remembers You', subtitle: 'Tracks your unique patterns', color: 'secondary' },
-    { icon: Trophy, title: 'TOEIC/TOEFL Ready', subtitle: 'Test-specific scenarios', color: 'accent' },
-    { icon: Shield, title: '日本語サポート', subtitle: 'Japanese language support', color: 'info' },
+    { icon: Target, title: t('trust.b1title'), subtitle: t('trust.b1subtitle'), color: 'primary' },
+    { icon: Brain, title: t('trust.b2title'), subtitle: t('trust.b2subtitle'), color: 'secondary' },
+    { icon: Trophy, title: t('trust.b3title'), subtitle: t('trust.b3subtitle'), color: 'accent' },
+    { icon: Shield, title: t('trust.b4title'), subtitle: t('trust.b4subtitle'), color: 'info' },
   ];
 
   return (
@@ -783,6 +726,7 @@ const TrustBadgesSection = () => {
    FINAL CTA — Warm, encouraging closing
    ═══════════════════════════════════════════════════════════════ */
 const FinalCTASection = () => {
+  const t = useTranslations('landing');
   return (
     <div className="relative py-20 px-4 lg:px-8 overflow-hidden bg-sakura-gradient">
       <div className="absolute inset-0 bg-dots-pattern opacity-30 pointer-events-none" />
@@ -797,32 +741,32 @@ const FinalCTASection = () => {
         </div>
 
         <h2 className="text-3xl lg:text-5xl font-extrabold mb-4 text-base-content">
-          Ready to Start Your{' '}
-          <span className="text-primary">Pronunciation Journey?</span>
+          {t('finalCta.titleStart')}{' '}
+          <span className="text-primary">{t('finalCta.titleHighlight')}</span>
         </h2>
 
         <p className="text-base lg:text-lg mb-8 text-base-content/55 max-w-xl mx-auto">
-          Join thousands of Japanese speakers improving their English with AI — it only takes 5 minutes to start.
+          {t('finalCta.subtitle')}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
           <Link href="/practice" className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/25">
-            Start Free Practice
+            {t('finalCta.cta1')}
             <ArrowRight className="w-5 h-5" />
           </Link>
           <button className="btn btn-ghost btn-lg border-2 border-base-content/10 hover:border-primary/30 gap-2">
             <Play className="w-4 h-4" />
-            Watch Demo
+            {t('finalCta.watchDemo')}
           </button>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-5 text-sm text-base-content/50">
-          {['5 free sessions', 'No credit card required', '日本語サポートあり'].map((t, i) => (
+          {[t('finalCta.check1'), t('finalCta.check2'), t('finalCta.check3')].map((item, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-success/15 flex items-center justify-center">
                 <Check className="w-3 h-3 text-success" />
               </div>
-              <span>{t}</span>
+              <span>{item}</span>
             </div>
           ))}
         </div>

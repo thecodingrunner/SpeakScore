@@ -27,11 +27,14 @@ export async function GET(
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
-    // Fetch sentence-level history for this session
+    // Fetch sentence-level history for this session.
+    // Prefer the sentenceIds array stored on the session (set since the upsert fix).
+    // Fall back to querying by lessonSessionId for older sessions.
     const historyCollection = await getUserSentenceHistoryCollection();
-    const sentenceHistories = await historyCollection
-      .find({ userId, lessonSessionId: sessionId })
-      .toArray();
+    const sessionSentenceIds: string[] = (session as any).sentenceIds ?? [];
+    const sentenceHistories = sessionSentenceIds.length > 0
+      ? await historyCollection.find({ userId, sentenceId: { $in: sessionSentenceIds } }).toArray()
+      : await historyCollection.find({ userId, lessonSessionId: sessionId }).toArray();
 
     // Look up sentence texts from sentences collection
     const sentenceIds = sentenceHistories.map(h => h.sentenceId);

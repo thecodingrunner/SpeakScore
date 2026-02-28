@@ -8,11 +8,13 @@ import { Home, Mic, BarChart3, Trophy, Settings, Crown, Flame, Lock, Menu, X } f
 import { useState, useEffect } from 'react'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { MascotMini } from '@/components/global/Mascot'
+import { useTranslations } from 'next-intl'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const { isPro } = useSubscription()
+  const t = useTranslations('nav')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [onboardingChecked, setOnboardingChecked] = useState(false)
 
@@ -39,11 +41,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router])
 
   const navigation = [
-    { name: 'Home', href: '/dashboard', icon: Home, requiresPro: false },
-    { name: 'Practice', href: '/practice', icon: Mic, requiresPro: false },
-    { name: 'Progress', href: '/progress', icon: BarChart3, requiresPro: true },
-    { name: 'Achievements', href: '/achievements', icon: Trophy, requiresPro: true },
-    { name: 'Settings', href: '/settings', icon: Settings, requiresPro: false },
+    { name: t('home'), href: '/dashboard', icon: Home, requiresPro: false },
+    { name: t('practice'), href: '/practice', icon: Mic, requiresPro: false },
+    { name: t('progress'), href: '/progress', icon: BarChart3, requiresPro: true },
+    { name: t('achievements'), href: '/achievements', icon: Trophy, requiresPro: true },
+    { name: t('settings'), href: '/settings', icon: Settings, requiresPro: false },
   ]
 
   const handleNavClick = (e: React.MouseEvent, item: typeof navigation[0]) => {
@@ -135,12 +137,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             }
           `}>
             {isPro() && <Crown className="w-3 h-3" />}
-            {isPro() ? 'PRO' : 'FREE'}
+            {isPro() ? t('pro') : t('free')}
           </div>
 
           {!isPro() && (
             <Link href="/pricing" className="btn btn-primary btn-sm shadow-sm shadow-primary/20">
-              Upgrade
+              {t('upgrade')}
             </Link>
           )}
 

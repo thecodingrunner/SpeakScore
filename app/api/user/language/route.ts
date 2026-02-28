@@ -69,10 +69,21 @@ export async function PATCH(request: NextRequest) {
       { upsert: true }
     );
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Language preferences updated successfully',
     });
+
+    // Keep the NEXT_LOCALE cookie in sync so next-intl picks up the change
+    if (interfaceLanguage) {
+      response.cookies.set('NEXT_LOCALE', interfaceLanguage, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        sameSite: 'lax',
+      });
+    }
+
+    return response;
 
   } catch (error: any) {
     console.error('Error updating language preferences:', error);

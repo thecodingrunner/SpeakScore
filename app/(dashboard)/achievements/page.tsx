@@ -367,6 +367,7 @@ import {
 import Link from 'next/link'
 import { ProRoute } from '@/components/global/ProRoute'
 import { Mascot } from '@/components/global/Mascot'
+import { useTranslations } from 'next-intl'
 
 const iconMap: Record<string, any> = { Mic, Flame, Trophy, Calendar, Star, Crown, Zap, Award, Target, TrendingUp, CheckCircle }
 
@@ -383,6 +384,8 @@ const rarityBg = (r: string) => r === 'legendary' ? 'bg-warning/4' : r === 'epic
 const rarityBadge = (r: string) => r === 'legendary' ? 'bg-warning/10 text-warning border-warning/15' : r === 'epic' ? 'bg-primary/10 text-primary border-primary/15' : r === 'rare' ? 'bg-info/10 text-info border-info/15' : 'bg-base-content/5 text-base-content/50 border-base-content/8'
 
 export default function AchievementsPage() {
+  const t = useTranslations('achievements')
+  const ta = useTranslations('achievementItems')
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState<Stats | null>(null)
   const [achievements, setAchievements] = useState<Achievement[]>([])
@@ -412,10 +415,10 @@ export default function AchievementsPage() {
   })
 
   const categories = [
-    { name: 'all', label: 'All', count: achievements.length },
-    { name: 'unlocked', label: 'Unlocked', count: achievements.filter(a => a.unlocked).length },
-    { name: 'progress', label: 'In Progress', count: achievements.filter(a => !a.unlocked && a.progress > 0).length },
-    { name: 'locked', label: 'Locked', count: achievements.filter(a => !a.unlocked && a.progress === 0).length },
+    { name: 'all', label: t('filterAll'), count: achievements.length },
+    { name: 'unlocked', label: t('filterUnlocked'), count: achievements.filter(a => a.unlocked).length },
+    { name: 'progress', label: t('filterInProgress'), count: achievements.filter(a => !a.unlocked && a.progress > 0).length },
+    { name: 'locked', label: t('filterLocked'), count: achievements.filter(a => !a.unlocked && a.progress === 0).length },
   ]
 
   /* Loading */
@@ -425,7 +428,7 @@ export default function AchievementsPage() {
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Mascot size={88} expression="thinking" className="animate-float opacity-70" />
           <span className="loading loading-dots loading-lg text-primary" />
-          <p className="text-base text-base-content/50 font-semibold">Loading achievements...</p>
+          <p className="text-base text-base-content/50 font-semibold">{t('loading')}</p>
         </div>
       </ProRoute>
     )
@@ -437,9 +440,9 @@ export default function AchievementsPage() {
       <ProRoute>
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
           <Mascot size={88} expression="thinking" className="mx-auto mb-4 opacity-60" />
-          <h3 className="font-extrabold text-xl mb-2 text-base-content">Couldn&apos;t load achievements</h3>
-          <p className="text-base text-base-content/50 mb-5">Something went wrong — let&apos;s try again.</p>
-          <button onClick={fetchAchievements} className="btn btn-primary gap-2"><RefreshCw className="w-4 h-4" /> Retry</button>
+          <h3 className="font-extrabold text-xl mb-2 text-base-content">{t('errorTitle')}</h3>
+          <p className="text-base text-base-content/50 mb-5">{t('errorDesc')}</p>
+          <button onClick={fetchAchievements} className="btn btn-primary gap-2"><RefreshCw className="w-4 h-4" /> {t('retry')}</button>
         </div>
       </ProRoute>
     )
@@ -453,8 +456,8 @@ export default function AchievementsPage() {
 
         {/* Header */}
         <div className="mb-6 lg:mb-8">
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content mb-1">Achievements</h1>
-          <p className="text-sm lg:text-base text-base-content/50">Unlock badges and earn XP as you improve</p>
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content mb-1">{t('title')}</h1>
+          <p className="text-sm lg:text-base text-base-content/50">{t('subtitle')}</p>
         </div>
 
         {/* New Unlocks */}
@@ -465,9 +468,9 @@ export default function AchievementsPage() {
                 <Trophy className="w-5 h-5 lg:w-6 lg:h-6 text-success" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-base text-base-content">New Achievement{newUnlocks.length > 1 ? 's' : ''} Unlocked!</h3>
+                <h3 className="font-bold text-base text-base-content">{t('newUnlock', { count: newUnlocks.length })}</h3>
                 <p className="text-sm text-base-content/50">
-                  {newUnlocks.map((u, i) => <span key={i}>{u.title} (+{u.xp} XP){i < newUnlocks.length - 1 ? ', ' : ''}</span>)}
+                  {newUnlocks.map((u, i) => <span key={i}>{ta(`${u.id}.title`)} (+{u.xp} XP){i < newUnlocks.length - 1 ? ', ' : ''}</span>)}
                 </p>
               </div>
             </div>
@@ -477,9 +480,9 @@ export default function AchievementsPage() {
         {/* Stats Overview — 3 cards */}
         <div className="grid grid-cols-3 gap-3 lg:gap-4 mb-6 lg:mb-8">
           {[
-            { icon: Trophy, value: stats.totalAchievements, label: 'Unlocked', sub: `of ${stats.totalPossible}`, color: 'text-primary', bg: 'bg-primary/8', progress: completionPercent },
-            { icon: CheckCircle, value: stats.recentlyUnlocked, label: 'This Week', sub: 'recently', color: 'text-success', bg: 'bg-success/8' },
-            { icon: Star, value: stats.totalXpFromAchievements, label: 'Achievement XP', sub: 'total earned', color: 'text-warning', bg: 'bg-warning/8' },
+            { icon: Trophy, value: stats.totalAchievements, label: t('unlocked'), sub: t('ofTotal', { total: stats.totalPossible }), color: 'text-primary', bg: 'bg-primary/8', progress: completionPercent },
+            { icon: CheckCircle, value: stats.recentlyUnlocked, label: t('thisWeek'), sub: t('recently'), color: 'text-success', bg: 'bg-success/8' },
+            { icon: Star, value: stats.totalXpFromAchievements, label: t('achievementXp'), sub: t('totalEarned'), color: 'text-warning', bg: 'bg-warning/8' },
           ].map((s, i) => {
             const Icon = s.icon
             return (
@@ -495,7 +498,7 @@ export default function AchievementsPage() {
                       <div className="w-full bg-base-200 rounded-full h-2.5 overflow-hidden">
                         <div className="h-full rounded-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500" style={{ width: `${s.progress}%` }} />
                       </div>
-                      <p className="text-[10px] lg:text-xs text-base-content/35 mt-1">{stats.totalAchievements} of {stats.totalPossible}</p>
+                      <p className="text-[10px] lg:text-xs text-base-content/35 mt-1">{stats.totalAchievements} {t('ofTotal', { total: stats.totalPossible })}</p>
                     </div>
                   )}
                   {!s.progress && <span className="text-[10px] lg:text-xs text-base-content/35">{s.sub}</span>}
@@ -528,8 +531,8 @@ export default function AchievementsPage() {
         {filteredAchievements.length === 0 && (
           <div className="text-center py-12 lg:py-16">
             <Mascot size={88} expression="waving" className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg text-base-content/50 mb-4">No achievements in this category yet</p>
-            <Link href="/practice" className="btn btn-primary">Start Practicing</Link>
+            <p className="text-lg text-base-content/50 mb-4">{t('noAchievements')}</p>
+            <Link href="/practice" className="btn btn-primary">{t('startPracticing')}</Link>
           </div>
         )}
 
@@ -574,14 +577,14 @@ export default function AchievementsPage() {
                     </div>
 
                     {/* Title + description */}
-                    <h3 className="font-bold text-base lg:text-lg text-base-content mb-1">{a.title}</h3>
-                    <p className="text-sm text-base-content/45 mb-3">{a.description}</p>
+                    <h3 className="font-bold text-base lg:text-lg text-base-content mb-1">{ta(`${a.id}.title`)}</h3>
+                    <p className="text-sm text-base-content/45 mb-3">{ta(`${a.id}.desc`)}</p>
 
                     {/* Progress bar (in-progress only) */}
                     {!a.unlocked && a.progress > 0 && (
                       <div className="mb-3">
                         <div className="flex justify-between text-xs mb-1.5">
-                          <span className="text-base-content/45">Progress</span>
+                          <span className="text-base-content/45">{t('progressLabel')}</span>
                           <span className="font-bold text-base-content/60">{a.progress}/{a.total}</span>
                         </div>
                         <div className="w-full bg-base-200 rounded-full h-2.5 overflow-hidden">
@@ -603,7 +606,7 @@ export default function AchievementsPage() {
                     {/* Unlocked date */}
                     {a.unlocked && a.unlockedDate && (
                       <p className="text-xs text-base-content/35 text-center mt-3 pt-3 border-t border-base-content/6">
-                        Unlocked {a.unlockedDate}
+                        {t('unlockedOn', { date: a.unlockedDate })}
                       </p>
                     )}
                   </div>
@@ -621,11 +624,11 @@ export default function AchievementsPage() {
             </div>
             <div className="card-body p-6 lg:p-8 items-center text-center relative z-10">
               <Trophy className="w-12 h-12 text-primary mb-2" />
-              <h2 className="text-xl lg:text-2xl font-extrabold text-base-content mb-1">Keep Going!</h2>
+              <h2 className="text-xl lg:text-2xl font-extrabold text-base-content mb-1">{t('keepGoing')}</h2>
               <p className="text-sm lg:text-base text-base-content/50 mb-4">
-                {stats.totalPossible - stats.totalAchievements} more achievement{stats.totalPossible - stats.totalAchievements !== 1 ? 's' : ''} to unlock
+                {t('moreToUnlock', { count: stats.totalPossible - stats.totalAchievements })}
               </p>
-              <Link href="/practice" className="btn btn-primary shadow-sm shadow-primary/15">Practice Now</Link>
+              <Link href="/practice" className="btn btn-primary shadow-sm shadow-primary/15">{t('practiceNow')}</Link>
             </div>
           </div>
         )}

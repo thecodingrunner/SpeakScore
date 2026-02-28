@@ -15,6 +15,7 @@ import { getLessonConfig, type LessonAttempt } from '@/lib/lesson-config'
 import { Mascot } from '@/components/global/Mascot'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { SCENARIO_TIERS, type PlanTier } from '@/lib/plan-config'
+import { useTranslations } from 'next-intl'
 
 /* ═══════════════════════════════════════════
    TYPES
@@ -68,6 +69,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   const router = useRouter()
   const posthog = usePostHog()
   const { getTier } = useSubscription()
+  const t = useTranslations('lesson')
 
   const getLessonStorageKey = (lessonId: string) =>
   `lessonState_${lessonId}`
@@ -118,33 +120,32 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
     params.then(p => {
       const id = p.lessonId
       setLessonId(id)
-  
+
       const storageKey = getLessonStorageKey(id)
-  
+
       const savedState = localStorage.getItem(storageKey)
-  
+
       if (savedState) {
         const parsed = JSON.parse(savedState)
-  
+
         setLessonSessionId(parsed.lessonSessionId)
         setCurrentSentenceIndex(parsed.currentSentenceIndex)
-        setLessonStartTime(parsed.lessonStartTime)
+        setLessonStartTime(Date.now()) // always reset timer to now so stale localStorage timestamps don't skew duration
         setSeenSentenceIds(parsed.seenSentenceIds || [])
-  
+
       } else {
         const newSessionId = crypto.randomUUID()
 
         const initialState = {
           lessonSessionId: newSessionId,
           currentSentenceIndex: 0,
-          lessonStartTime: Date.now(),
           seenSentenceIds: []
         }
 
         localStorage.setItem(storageKey, JSON.stringify(initialState))
 
         setLessonSessionId(newSessionId)
-        setLessonStartTime(initialState.lessonStartTime)
+        setLessonStartTime(Date.now())
 
         posthog?.capture('lesson_started', { lessonId: id, scenario: id })
       }
@@ -153,22 +154,21 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
 
   useEffect(() => {
     if (!lessonId || !lessonSessionId) return
-  
+
     const storageKey = getLessonStorageKey(lessonId)
-  
+
+    // Don't persist lessonStartTime — always reset to Date.now() on load
     const stateToSave = {
       lessonSessionId,
       currentSentenceIndex,
-      lessonStartTime,
       seenSentenceIds
     }
-  
+
     localStorage.setItem(storageKey, JSON.stringify(stateToSave))
-  
+
   }, [
     lessonSessionId,
     currentSentenceIndex,
-    lessonStartTime,
     seenSentenceIds,
     lessonId
   ])
@@ -201,6 +201,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   }, [lessonId, currentSentenceIndex])
 
   const completeLesson = async (lessonSummary: any) => {
+    if (!lessonSummary) return
     try {
       await fetch('/api/practice/complete-lesson', {
         method: 'POST',
@@ -211,7 +212,8 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
           totalSentences: lessonSummary.total,
           averageAccuracy: lessonSummary.avg,
           totalXP: lessonSummary.xp,
-          totalDurationSeconds: lessonSummary.time
+          totalDurationSeconds: lessonSummary.time,
+          sentenceIds: lessonAttempts.map(a => a.sentenceId)
         })
       })
 
@@ -237,6 +239,17 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
     completeLesson(lessonSummary)
   }, [showSummary])
 
+  const fetchAudioUrls = async (s: { id: string; text: string }) => {
+    try {
+      const [normalRes, slowRes] = await Promise.all([
+        fetch('/api/audio/resolve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sentenceId: s.id, text: s.text, speed: 'normal' }) }),
+        fetch('/api/audio/resolve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sentenceId: s.id, text: s.text, speed: 'slow' }) }),
+      ])
+      const [normalData, slowData] = await Promise.all([normalRes.json(), slowRes.json()])
+      setSentence(prev => prev ? { ...prev, audioUrls: { normal: normalData.url ?? '', slow: slowData.url ?? '' } } : null)
+    } catch { /* audio fetch is non-critical */ }
+  }
+
   const fetchSentence = async (scenario: string) => {
     try {
       setIsLoading(true)
@@ -248,7 +261,10 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
       if (!res.ok) throw new Error('Failed')
       const data = await res.json()
       setSentence(data.sentence)
-      if (data.sentence?.id) setSeenSentenceIds(prev => [...prev, data.sentence.id])
+      if (data.sentence?.id) {
+        setSeenSentenceIds(prev => [...prev, data.sentence.id])
+        fetchAudioUrls(data.sentence) // fetch audio in background after sentence is shown
+      }
     } catch { alert('Failed to load sentence.') }
     finally { setIsLoading(false) }
   }
@@ -396,7 +412,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
           }} className="btn btn-ghost btn-sm btn-circle"><ChevronLeft className="w-5 h-5" /></button>
           <div className="text-center">
             <h2 className="font-bold text-sm lg:text-base text-base-content leading-tight">{lessonConfig?.name || 'Practice'}</h2>
-            <p className="text-[11px] text-base-content/40">{currentSentenceIndex + 1} of {totalSentences}</p>
+            <p className="text-[11px] text-base-content/40">{t('sentenceOf', { current: currentSentenceIndex + 1, total: totalSentences })}</p>
           </div>
           {sentence ? (
             <span className={`badge badge-sm font-semibold ${sentence.difficulty === 'Very Hard' ? 'badge-error' : sentence.difficulty === 'Hard' ? 'badge-warning' : 'badge-info'}`}>{sentence.difficulty}</span>
@@ -410,22 +426,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   )
 
   /* ═══════════════════════════════════════════
-     LOADING
-     ═══════════════════════════════════════════ */
-  if (isLoading && !sentence) {
-    return (
-      <div className={`${VIEW_H} flex flex-col bg-base-100 overflow-hidden`}>
-        {lessonId && lessonConfig && <Header />}
-        <div className="flex-1 flex flex-col items-center justify-center gap-3">
-          <span className="loading loading-dots loading-lg text-primary" />
-          <p className="text-sm text-base-content/40 font-semibold">{currentSentenceIndex > 0 ? 'Next sentence...' : 'Loading lesson...'}</p>
-        </div>
-      </div>
-    )
-  }
-
-  /* ═══════════════════════════════════════════
-     SUMMARY
+     SUMMARY (checked before !sentence so it isn't masked by the loading screen)
      ═══════════════════════════════════════════ */
   if (showSummary && lessonSummary) {
     const expr = lessonSummary.avg >= 85 ? 'cheering' : lessonSummary.avg >= 70 ? 'excited' : 'happy'
@@ -433,7 +434,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
       <div className={`${VIEW_H} flex flex-col bg-base-100`}>
         <div className="bg-base-100 border-b border-primary/8 px-4 py-3 flex-shrink-0">
           <div className="max-w-xl mx-auto flex items-center justify-between">
-            <h2 className="font-extrabold text-lg text-base-content">Lesson Complete</h2>
+            <h2 className="font-extrabold text-lg text-base-content">{t('lessonComplete')}</h2>
             <button onClick={() => router.push('/practice')} className="btn btn-ghost btn-sm btn-circle"><X className="w-5 h-5" /></button>
           </div>
         </div>
@@ -442,16 +443,16 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
             <div className="text-center mb-5">
               <Mascot size={80} expression={expr as any} className="mx-auto mb-2 drop-shadow-md animate-bounce-gentle" />
               <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content">
-                {lessonSummary.avg >= 85 ? 'Amazing! 🌸' : lessonSummary.avg >= 70 ? 'Great job!' : 'Keep going!'}
+                {lessonSummary.avg >= 85 ? t('amazing') : lessonSummary.avg >= 70 ? t('greatJob') : t('keepGoing')}
               </h1>
               <p className="text-sm text-base-content/45">{lessonSummary.name}</p>
             </div>
             <div className="grid grid-cols-4 gap-2 lg:gap-3 mb-5">
               {[
-                { icon: Target, val: `${lessonSummary.avg}%`, label: 'Score', c: 'text-primary', bg: 'bg-primary/8' },
-                { icon: Star, val: `+${lessonSummary.xp}`, label: 'XP', c: 'text-warning', bg: 'bg-warning/8' },
-                { icon: Check, val: `${lessonSummary.total}`, label: 'Done', c: 'text-success', bg: 'bg-success/8' },
-                { icon: TrendingUp, val: `${Math.floor(lessonSummary.time / 60)}m`, label: 'Time', c: 'text-info', bg: 'bg-info/8' },
+                { icon: Target, val: `${lessonSummary.avg}%`, label: t('score'), c: 'text-primary', bg: 'bg-primary/8' },
+                { icon: Star, val: `+${lessonSummary.xp}`, label: t('xp'), c: 'text-warning', bg: 'bg-warning/8' },
+                { icon: Check, val: `${lessonSummary.total}`, label: t('done'), c: 'text-success', bg: 'bg-success/8' },
+                { icon: TrendingUp, val: `${Math.floor(lessonSummary.time / 60)}m`, label: t('time'), c: 'text-info', bg: 'bg-info/8' },
               ].map((s, i) => { const I = s.icon; return (
                 <div key={i} className="card bg-base-100 border border-base-content/6">
                   <div className="card-body p-2.5 lg:p-3 items-center text-center gap-1">
@@ -466,13 +467,13 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
               <div className="grid grid-cols-2 gap-3 mb-5">
                 {lessonSummary.strong.length > 0 && (
                   <div className="bg-success/5 border border-success/12 rounded-2xl p-3">
-                    <h3 className="font-bold text-xs text-success flex items-center gap-1.5 mb-2"><Award className="w-4 h-4" /> Strong</h3>
+                    <h3 className="font-bold text-xs text-success flex items-center gap-1.5 mb-2"><Award className="w-4 h-4" /> {t('strong')}</h3>
                     <div className="flex flex-wrap gap-1">{lessonSummary.strong.slice(0, 3).map((p, i) => <span key={i} className="text-xs font-bold bg-success/10 text-success px-2 py-0.5 rounded-full">{p.phoneme} {p.avg}%</span>)}</div>
                   </div>
                 )}
                 {lessonSummary.weak.length > 0 && (
                   <div className="bg-warning/5 border border-warning/12 rounded-2xl p-3">
-                    <h3 className="font-bold text-xs text-warning flex items-center gap-1.5 mb-2"><AlertCircle className="w-4 h-4" /> Improve</h3>
+                    <h3 className="font-bold text-xs text-warning flex items-center gap-1.5 mb-2"><AlertCircle className="w-4 h-4" /> {t('improve')}</h3>
                     <div className="flex flex-wrap gap-1">{lessonSummary.weak.slice(0, 3).map((p, i) => <span key={i} className="text-xs font-bold bg-warning/10 text-warning px-2 py-0.5 rounded-full">{p.phoneme} {p.avg}%</span>)}</div>
                   </div>
                 )}
@@ -480,7 +481,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
             )}
             {lessonJapaneseIssues.length > 0 && (
               <div className="bg-info/5 border border-info/12 rounded-2xl p-4 mb-5">
-                <h3 className="font-bold text-sm text-info flex items-center gap-1.5 mb-3"><Lightbulb className="w-4 h-4" /> Key Areas to Practice</h3>
+                <h3 className="font-bold text-sm text-info flex items-center gap-1.5 mb-3"><Lightbulb className="w-4 h-4" /> {t('keyAreas')}</h3>
                 <div className="space-y-2">
                   {lessonJapaneseIssues.slice(0, 4).map((issue, i) => (
                     <div key={i} className="flex items-start gap-2">
@@ -494,9 +495,43 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
                 </div>
               </div>
             )}
+            {lessonAttempts.length > 0 && (
+              <div className="mb-5">
+                <h3 className="font-bold text-sm text-base-content flex items-center gap-1.5 mb-3">
+                  <Target className="w-4 h-4 text-primary" /> {t('sentencesReview')}
+                </h3>
+                <div className="space-y-2">
+                  {lessonAttempts.map((attempt, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-base-200/40 border border-base-content/5 rounded-xl px-3 py-2.5">
+                      <div
+                        className={`radial-progress ${accColor(attempt.accuracy)} text-xs font-extrabold flex-shrink-0`}
+                        style={{ '--value': attempt.accuracy, '--size': '2.5rem', '--thickness': '3px' } as React.CSSProperties}
+                        role="progressbar"
+                      >
+                        {attempt.accuracy}%
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs lg:text-sm font-semibold text-base-content leading-snug">
+                          &ldquo;{attempt.text}&rdquo;
+                        </p>
+                        {Object.entries(attempt.phonemeScores).slice(0, 5).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {Object.entries(attempt.phonemeScores).slice(0, 5).map(([ph, score], j) => (
+                              <span key={j} className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                score >= 85 ? 'bg-success/10 text-success' : score >= 70 ? 'bg-warning/10 text-warning' : 'bg-error/10 text-error'
+                              }`}>{ph} {score}%</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex gap-3">
-              <button onClick={() => router.push('/practice')} className="btn btn-ghost flex-1 border border-base-content/8">Back</button>
-              <button onClick={() => { setShowSummary(false); setCurrentSentenceIndex(0); setLessonAttempts([]); setSeenSentenceIds([]); setLessonStartTime(Date.now()) }} className="btn btn-primary flex-1 shadow-sm shadow-primary/15 gap-1.5"><RotateCcw className="w-4 h-4" /> Again</button>
+              <button onClick={() => router.push('/practice')} className="btn btn-ghost flex-1 border border-base-content/8">{t('back')}</button>
+              <button onClick={() => { setShowSummary(false); setCurrentSentenceIndex(0); setLessonAttempts([]); setSeenSentenceIds([]); setLessonStartTime(Date.now()) }} className="btn btn-primary flex-1 shadow-sm shadow-primary/15 gap-1.5"><RotateCcw className="w-4 h-4" /> {t('again')}</button>
             </div>
           </div>
         </div>
@@ -505,14 +540,17 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   }
 
   /* ═══════════════════════════════════════════
-     NO SENTENCE
+     LOADING / NO SENTENCE
+     Show mascot whenever no sentence is available (loading or between sentences)
      ═══════════════════════════════════════════ */
   if (!sentence) {
     return (
-      <div className={`${VIEW_H} flex flex-col items-center justify-center gap-4 bg-base-100`}>
-        <Mascot size={80} expression="thinking" className="opacity-60" />
-        <p className="text-base text-base-content/50">No sentence available</p>
-        <button onClick={() => router.push('/practice')} className="btn btn-primary">Back to Practice</button>
+      <div className={`${VIEW_H} flex flex-col bg-base-100 overflow-hidden`}>
+        {lessonId && lessonConfig && <Header />}
+        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+          <Mascot size={80} expression="thinking" className="opacity-70 animate-float" />
+          <p className="text-sm text-base-content/40 font-semibold">{currentSentenceIndex > 0 ? t('nextSentence') : t('loading')}</p>
+        </div>
       </div>
     )
   }
@@ -535,14 +573,14 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
               {currentStep === 0 && (
                 <>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/8 border border-primary/12 rounded-full text-xs lg:text-sm font-bold text-primary mb-4">
-                    <Volume2 className="w-3.5 h-3.5" /> Step 1: Listen
+                    <Volume2 className="w-3.5 h-3.5" /> {t('step1')}
                   </span>
-                  <h2 className="text-xl lg:text-2xl font-extrabold text-base-content mb-4">Listen to the native speaker</h2>
+                  <h2 className="text-xl lg:text-2xl font-extrabold text-base-content mb-4">{t('listenTitle')}</h2>
                   <div className="card bg-primary/5 border border-primary/12 mb-5">
                     <div className="card-body p-4 lg:p-5">
                       <p className="text-xl lg:text-2xl font-bold text-base-content leading-relaxed">&ldquo;{sentence.text}&rdquo;</p>
                       <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
-                        <span className="text-xs text-base-content/35">Target:</span>
+                        <span className="text-xs text-base-content/35">{t('target')}</span>
                         {sentence.phonemes.map((p, i) => <span key={i} className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">{p}</span>)}
                       </div>
                     </div>
@@ -551,19 +589,19 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
                     <button onClick={handlePlayAudio} className="btn btn-circle btn-lg btn-primary shadow-md shadow-primary/20"><Play className="w-7 h-7 ml-0.5" /></button>
                     <div className="flex gap-1">
                       {(['normal', 'slow'] as const).map(s => (
-                        <button key={s} className={`btn btn-sm ${audioSpeed === s ? 'btn-primary' : 'btn-ghost border border-base-content/8'}`} onClick={() => setAudioSpeed(s)}>{s === 'normal' ? 'Normal' : 'Slow'}</button>
+                        <button key={s} className={`btn btn-sm ${audioSpeed === s ? 'btn-primary' : 'btn-ghost border border-base-content/8'}`} onClick={() => setAudioSpeed(s)}>{s === 'normal' ? t('normal') : t('slow')}</button>
                       ))}
                     </div>
                   </div>
-                  <button onClick={() => setCurrentStep(1)} className="btn btn-primary gap-1.5 shadow-sm shadow-primary/15">My Turn <ChevronRight className="w-4 h-4" /></button>
+                  <button onClick={() => setCurrentStep(1)} className="btn btn-primary gap-1.5 shadow-sm shadow-primary/15">{t('myTurn')} <ChevronRight className="w-4 h-4" /></button>
                 </>
               )}
               {currentStep === 1 && (
                 <>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent/8 border border-accent/12 rounded-full text-xs lg:text-sm font-bold text-accent mb-4">
-                    <Mic className="w-3.5 h-3.5" /> Step 2: Your Turn
+                    <Mic className="w-3.5 h-3.5" /> {t('step2')}
                   </span>
-                  <h2 className="text-xl lg:text-2xl font-extrabold text-base-content mb-4">Now say it yourself!</h2>
+                  <h2 className="text-xl lg:text-2xl font-extrabold text-base-content mb-4">{t('sayItYourself')}</h2>
                   <div className="card bg-primary/5 border border-primary/12 mb-5">
                     <div className="card-body p-4 lg:p-5">
                       <p className="text-xl lg:text-2xl font-bold text-base-content leading-relaxed">&ldquo;{sentence.text}&rdquo;</p>
@@ -574,14 +612,14 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
                       className={`btn btn-circle w-24 h-24 shadow-lg transition-all duration-300 ${isRecording ? 'btn-error animate-pulse shadow-error/30 scale-110' : 'btn-primary shadow-primary/20 hover:scale-105'}`}>
                       <Mic className="w-10 h-10" />
                     </button>
-                    <p className="text-sm font-semibold text-base-content/50">{isRecording ? 'Recording... tap to stop' : 'Tap to record'}</p>
-                    {recordedAudio && !isRecording && <span className="text-sm text-success font-bold flex items-center gap-1"><Check className="w-4 h-4" /> Recording complete!</span>}
+                    <p className="text-sm font-semibold text-base-content/50">{isRecording ? t('recording') : t('tapToRecord')}</p>
+                    {recordedAudio && !isRecording && <span className="text-sm text-success font-bold flex items-center gap-1"><Check className="w-4 h-4" /> {t('recordingComplete')}</span>}
                   </div>
                   {recordedAudio && !isRecording && (
                     <div className="flex gap-2 justify-center">
-                      <button onClick={handleTryAgain} className="btn btn-ghost gap-1.5 border border-base-content/8"><RotateCcw className="w-4 h-4" /> Redo</button>
+                      <button onClick={handleTryAgain} className="btn btn-ghost gap-1.5 border border-base-content/8"><RotateCcw className="w-4 h-4" /> {t('redo')}</button>
                       <button onClick={handleSubmit} disabled={isLoading} className="btn btn-primary gap-1.5 shadow-sm shadow-primary/15">
-                        {isLoading ? <><span className="loading loading-spinner loading-sm" /> Analyzing...</> : <><Check className="w-4 h-4" /> Check</>}
+                        {isLoading ? <><span className="loading loading-spinner loading-sm" /> {t('analyzing')}</> : <><Check className="w-4 h-4" /> {t('check')}</>}
                       </button>
                     </div>
                   )}
@@ -610,19 +648,19 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-base lg:text-lg font-extrabold text-base-content leading-tight">
-                  {(feedback?.accuracy || 0) >= 85 ? 'Excellent! 🌸' : (feedback?.accuracy || 0) >= 70 ? 'Good job!' : 'Nice try!'}
+                  {(feedback?.accuracy || 0) >= 85 ? t('excellent') : (feedback?.accuracy || 0) >= 70 ? t('goodJob') : t('niceTry')}
                 </h2>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-base-content/40">
-                  <span>Fluency <span className={`font-bold ${accColor(feedback?.fluencyScore || 0)}`}>{feedback?.fluencyScore}%</span></span>
-                  <span>Complete <span className={`font-bold ${accColor(feedback?.completenessScore || 0)}`}>{feedback?.completenessScore}%</span></span>
-                  <span>Prosody <span className={`font-bold ${accColor(feedback?.prosodyScore || 0)}`}>{feedback?.prosodyScore}%</span></span>
+                  <span>{t('fluency')} <span className={`font-bold ${accColor(feedback?.fluencyScore || 0)}`}>{feedback?.fluencyScore}%</span></span>
+                  <span>{t('completeness')} <span className={`font-bold ${accColor(feedback?.completenessScore || 0)}`}>{feedback?.completenessScore}%</span></span>
+                  <span>{t('prosody')} <span className={`font-bold ${accColor(feedback?.prosodyScore || 0)}`}>{feedback?.prosodyScore}%</span></span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
                   {(feedback?.xpEarned || 0) > 0 && (
                     <span className="inline-flex items-center gap-1 text-xs font-bold text-warning"><Star className="w-3 h-3" /> +{feedback?.xpEarned} XP</span>
                   )}
                   {(feedback?.accuracy || 0) < 70 && (
-                    <span className="text-[10px] text-base-content/25 italic">Try again or move on</span>
+                    <span className="text-[10px] text-base-content/25 italic">{t('tryAgainOrMove')}</span>
                   )}
                 </div>
               </div>
@@ -656,7 +694,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
                     <div className="flex items-center justify-center gap-1.5 mt-2 pt-2 border-t border-base-content/5">
                       <Ear className="w-3 h-3 text-base-content/25" />
                       <p className="text-[11px] text-base-content/35">
-                        Heard: <span className="font-semibold text-base-content/50">&ldquo;{feedback.freeFormText}&rdquo;</span>
+                        {t('heard')} <span className="font-semibold text-base-content/50">&ldquo;{feedback.freeFormText}&rdquo;</span>
                       </p>
                     </div>
                   )}
@@ -694,7 +732,7 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
                         onClick={() => setShowMoreTips(!showMoreTips)}
                         className="text-[10px] font-semibold text-base-content/25 hover:text-base-content/45 mt-1.5 flex items-center gap-0.5 transition-colors"
                       >
-                        {showMoreTips ? 'Show less' : `+${sortedTips.length - 1} more`}
+                        {showMoreTips ? t('showLess') : t('showMore', { count: sortedTips.length - 1 })}
                         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showMoreTips ? 'rotate-180' : ''}`} />
                       </button>
                       {showMoreTips && (
@@ -716,10 +754,10 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
             {/* ── ZONE C: Buttons ── always pinned to bottom */}
             <div className="flex-1 flex gap-3 py-3 flex-shrink-0 items-end">
               <button onClick={handleTryAgain} className="btn btn-ghost flex-1 gap-1.5 border border-base-content/8">
-                <RotateCcw className="w-4 h-4" /> Retry
+                <RotateCcw className="w-4 h-4" /> {t('retry')}
               </button>
               <button onClick={handleNext} className="btn btn-primary flex-1 gap-1.5 shadow-sm shadow-primary/15">
-                {currentSentenceIndex + 1 >= totalSentences ? 'Finish' : 'Next'} <ChevronRight className="w-4 h-4" />
+                {currentSentenceIndex + 1 >= totalSentences ? t('finish') : t('next')} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>

@@ -516,6 +516,7 @@ import {
 import { useUser } from '@clerk/nextjs'
 import { Mascot } from '@/components/global/Mascot'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import { useTranslations } from 'next-intl'
 
 /* ═══════════════════════════════════════════
    ICON MAP
@@ -558,6 +559,9 @@ const difficultyColor = (d: string) => {
 export default function DashboardPage() {
   const { user: clerkUser } = useUser()
   const { isPro, loading: subLoading } = useSubscription()
+  const t = useTranslations('dashboard')
+  const ts = useTranslations('scenarios')
+  const ta = useTranslations('achievementItems')
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats | null>(null)
 
@@ -582,7 +586,7 @@ export default function DashboardPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Mascot size={88} expression="thinking" className="animate-float opacity-70" />
         <span className="loading loading-dots loading-lg text-primary" />
-        <p className="text-base text-base-content/50 font-semibold">Loading your dashboard...</p>
+        <p className="text-base text-base-content/50 font-semibold">{t('loading')}</p>
       </div>
     )
   }
@@ -592,10 +596,10 @@ export default function DashboardPage() {
     return (
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
         <Mascot size={88} expression="thinking" className="mx-auto mb-4 opacity-60" />
-        <h3 className="font-extrabold text-xl mb-2 text-base-content">Couldn&apos;t load your dashboard</h3>
-        <p className="text-base text-base-content/50 mb-5">Something went wrong — let&apos;s try again.</p>
+        <h3 className="font-extrabold text-xl mb-2 text-base-content">{t('errorTitle')}</h3>
+        <p className="text-base text-base-content/50 mb-5">{t('errorDesc')}</p>
         <button onClick={fetchDashboardStats} className="btn btn-primary gap-2">
-          <RefreshCw className="w-4 h-4" /> Retry
+          <RefreshCw className="w-4 h-4" /> {t('retry')}
         </button>
       </div>
     )
@@ -623,14 +627,14 @@ export default function DashboardPage() {
           />
           <div className="min-w-0">
             <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content truncate">
-              Welcome back, {userName}! 👋
+              {t('greeting', { name: userName })}
             </h1>
             <p className="text-sm lg:text-base text-base-content/50 font-medium">
               {goalComplete
-                ? 'Daily goal smashed! Keep going! 🎉'
+                ? t('goalSmashed')
                 : stats.user.streak > 0
-                  ? `${stats.user.streak}-day streak — keep it alive! 🔥`
-                  : 'Start practicing to build your streak!'}
+                  ? t('streakMessage', { count: stats.user.streak })
+                  : t('buildStreak')}
             </p>
           </div>
         </div>
@@ -641,7 +645,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary" />
-                <span className="text-base font-bold text-base-content">Daily Goal</span>
+                <span className="text-base font-bold text-base-content">{t('dailyGoal')}</span>
               </div>
               <span className="text-base lg:text-lg font-extrabold text-primary">
                 {stats.user.dailyProgress}/{stats.user.dailyGoal} min
@@ -656,7 +660,7 @@ export default function DashboardPage() {
               />
             </div>
             <p className="text-sm text-base-content/45 mt-2">
-              {goalComplete ? '✨ Goal completed!' : `${stats.user.dailyGoal - stats.user.dailyProgress} more minutes to go`}
+              {goalComplete ? t('goalComplete') : t('moreMinutes', { count: stats.user.dailyGoal - stats.user.dailyProgress })}
             </p>
           </div>
         </div>
@@ -667,10 +671,10 @@ export default function DashboardPage() {
           ═══════════════════════════════════════════ */}
       <div className="grid grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
         {[
-          { label: 'Time', value: `${stats.todayStats.practiceTime}m`, icon: Mic, color: 'text-primary', bg: 'bg-primary/8' },
-          { label: 'Accuracy', value: stats.todayStats.accuracy > 0 ? `${stats.todayStats.accuracy}%` : '—', icon: Target, color: 'text-success', bg: 'bg-success/8' },
-          { label: 'Streak', value: stats.user.streak, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/8' },
-          { label: 'XP', value: stats.todayStats.xpEarned, icon: Star, color: 'text-warning', bg: 'bg-warning/8' },
+          { label: t('statTime'), value: `${stats.todayStats.practiceTime}m`, icon: Mic, color: 'text-primary', bg: 'bg-primary/8' },
+          { label: t('statAccuracy'), value: stats.todayStats.accuracy > 0 ? `${stats.todayStats.accuracy}%` : '—', icon: Target, color: 'text-success', bg: 'bg-success/8' },
+          { label: t('statStreak'), value: stats.user.streak, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/8' },
+          { label: t('statXp'), value: stats.todayStats.xpEarned, icon: Star, color: 'text-warning', bg: 'bg-warning/8' },
         ].map((s, i) => {
           const Icon = s.icon
           return (
@@ -702,11 +706,11 @@ export default function DashboardPage() {
                 <Zap className="w-7 h-7 lg:w-8 lg:h-8 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-extrabold text-lg lg:text-xl text-base-content">Quick Practice</h3>
-                <p className="text-sm lg:text-base text-base-content/50">5-minute pronunciation drill</p>
+                <h3 className="font-extrabold text-lg lg:text-xl text-base-content">{t('quickPractice')}</h3>
+                <p className="text-sm lg:text-base text-base-content/50">{t('quickPracticeDesc')}</p>
               </div>
               <Link href="/practice/daily_drill" className="btn btn-primary lg:btn-lg gap-2 shadow-md shadow-primary/15 flex-shrink-0">
-                Start <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
+                {t('start')} <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
               </Link>
             </div>
           </div>
@@ -716,14 +720,14 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-extrabold text-lg lg:text-xl text-base-content flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-primary" />
-                Learning Path
+                {t('learningPath')}
               </h2>
               <span className="badge badge-primary font-bold">{levelLabel}</span>
             </div>
 
             <div className="space-y-3">
               {lessons.map((lesson) => (
-                <LessonCard key={lesson.id} lesson={lesson} />
+                <LessonCard key={lesson.id} lesson={lesson} t={t} ts={ts} />
               ))}
             </div>
           </div>
@@ -736,7 +740,7 @@ export default function DashboardPage() {
           <div className="card bg-base-100 border border-base-content/5 card-glow">
             <div className="card-body p-6">
               <h3 className="font-bold text-base text-base-content flex items-center gap-2 mb-4">
-                <TrendingUp className="w-5 h-5 text-primary" /> Progress
+                <TrendingUp className="w-5 h-5 text-primary" /> {t('progress')}
               </h3>
 
               <div className="mb-5">
@@ -748,7 +752,7 @@ export default function DashboardPage() {
                   <div className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-all duration-500" style={{ width: `${xpPercent}%` }} />
                 </div>
                 <p className="text-xs text-base-content/40 mt-1.5 text-center">
-                  {stats.user.xpToNextLevel - stats.user.xp} XP to next level
+                  {t('xpToNext', { count: stats.user.xpToNextLevel - stats.user.xp })}
                 </p>
               </div>
 
@@ -756,7 +760,7 @@ export default function DashboardPage() {
 
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-base-content/50 font-medium">Sentences Completed</span>
+                  <span className="text-base-content/50 font-medium">{t('sentencesCompleted')}</span>
                   <span className="font-bold text-base-content/60">{stats.user.completedSentences}/300</span>
                 </div>
                 <progress className="progress progress-success w-full h-2.5" value={stats.user.completedSentences} max={300} />
@@ -768,7 +772,7 @@ export default function DashboardPage() {
           <div className="card bg-base-100 border border-base-content/5 card-glow">
             <div className="card-body p-6">
               <h3 className="font-bold text-base text-base-content flex items-center gap-2 mb-4">
-                <Trophy className="w-5 h-5 text-warning" /> Achievements
+                <Trophy className="w-5 h-5 text-warning" /> {t('recentAchievements')}
               </h3>
 
               {stats.recentAchievements.length > 0 ? (
@@ -782,21 +786,21 @@ export default function DashboardPage() {
                           <IconComp className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-bold text-sm text-base-content truncate">{a.title}</p>
+                          <p className="font-bold text-sm text-base-content truncate">{ta(`${a.id}.title`)}</p>
                           <p className="text-xs text-base-content/40">+{a.xp} XP</p>
                         </div>
                       </div>
                     )
                   })}
                   <Link href="/achievements" className="btn btn-ghost btn-sm w-full text-base-content/40 mt-1">
-                    View All <ChevronRight className="w-4 h-4" />
+                    {t('viewAll')} <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
               ) : (
                 <div className="text-center py-6">
                   <Trophy className="w-12 h-12 mx-auto mb-3 text-base-content/15" />
-                  <p className="text-sm text-base-content/40 mb-3">Start practicing to unlock achievements!</p>
-                  <Link href="/achievements" className="btn btn-primary btn-sm">View All</Link>
+                  <p className="text-sm text-base-content/40 mb-3">{t('noAchievements')}</p>
+                  <Link href="/achievements" className="btn btn-primary btn-sm">{t('viewAll')}</Link>
                 </div>
               )}
             </div>
@@ -807,9 +811,9 @@ export default function DashboardPage() {
             <div className="absolute top-3 right-3 opacity-15"><Mascot size={56} expression="excited" /></div>
             <div className="card-body p-6 relative z-10">
               <Crown className="w-7 h-7 text-primary mb-1" />
-              <h3 className="font-extrabold text-base text-base-content">Upgrade to Pro</h3>
-              <p className="text-sm text-base-content/50 mb-4">Unlock all lessons, analytics, and more!</p>
-              <Link href="/pricing" className="btn btn-primary shadow-sm shadow-primary/15">Upgrade Now</Link>
+              <h3 className="font-extrabold text-base text-base-content">{t('upgradeToPro')}</h3>
+              <p className="text-sm text-base-content/50 mb-4">{t('upgradeDesc')}</p>
+              <Link href="/pricing" className="btn btn-primary shadow-sm shadow-primary/15">{t('upgradeNow')}</Link>
             </div>
           </div>
         </div>
@@ -843,9 +847,9 @@ export default function DashboardPage() {
             <div className="card-body p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-bold text-base-content/60 flex items-center gap-1.5">
-                  <Trophy className="w-4 h-4 text-warning" /> Recent Achievements
+                  <Trophy className="w-4 h-4 text-warning" /> {t('recentAchievements')}
                 </span>
-                <Link href="/achievements" className="text-xs font-semibold text-primary">See All</Link>
+                <Link href="/achievements" className="text-xs font-semibold text-primary">{t('seeAll')}</Link>
               </div>
               <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
                 {stats.recentAchievements.map((a) => {
@@ -853,7 +857,7 @@ export default function DashboardPage() {
                   return (
                     <div key={a.id} className="flex-shrink-0 flex items-center gap-2 bg-base-200/80 rounded-xl px-3 py-2.5">
                       <IconComp className="w-4 h-4 text-warning" />
-                      <span className="text-sm font-semibold text-base-content/70 whitespace-nowrap">{a.title}</span>
+                      <span className="text-sm font-semibold text-base-content/70 whitespace-nowrap">{ta(`${a.id}.title`)}</span>
                     </div>
                   )
                 })}
@@ -869,7 +873,7 @@ export default function DashboardPage() {
 /* ═══════════════════════════════════════════
    LESSON CARD
    ═══════════════════════════════════════════ */
-function LessonCard({ lesson }: { lesson: typeof LESSON_DEFS[0] & { locked: boolean } }) {
+function LessonCard({ lesson, t, ts }: { lesson: typeof LESSON_DEFS[0] & { locked: boolean }; t: (key: string, values?: Record<string, any>) => string; ts: (key: string) => string }) {
   return (
     <div className={`card bg-base-100 border transition-all duration-200 ${
       lesson.locked
@@ -888,13 +892,13 @@ function LessonCard({ lesson }: { lesson: typeof LESSON_DEFS[0] & { locked: bool
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <h3 className="font-bold text-base lg:text-lg text-base-content truncate">{lesson.title}</h3>
+              <h3 className="font-bold text-base lg:text-lg text-base-content truncate">{ts(`${lesson.id}.title`)}</h3>
               {lesson.locked && <Lock className="w-3.5 h-3.5 text-base-content/25 flex-shrink-0" />}
             </div>
-            <p className="text-sm text-base-content/45 truncate">{lesson.subtitle}</p>
+            <p className="text-sm text-base-content/45 truncate">{ts(`${lesson.id}.description`)}</p>
             <div className="flex items-center gap-2.5 mt-1.5">
-              <span className={`badge badge-sm ${difficultyColor(lesson.difficulty)} font-semibold`}>{lesson.difficulty}</span>
-              <span className="text-xs text-base-content/30 font-medium">{lesson.lessons} sentences</span>
+              <span className={`badge badge-sm ${difficultyColor(lesson.difficulty)} font-semibold`}>{ts(`difficulties.${lesson.difficulty}`)}</span>
+              <span className="text-xs text-base-content/30 font-medium">{t('sentenceCount', { count: lesson.lessons })}</span>
             </div>
           </div>
 
@@ -907,7 +911,7 @@ function LessonCard({ lesson }: { lesson: typeof LESSON_DEFS[0] & { locked: bool
               </div>
             ) : (
               <Link href={`/practice/${lesson.scenario}`} className="btn btn-primary btn-sm lg:btn-md gap-1.5 shadow-sm shadow-primary/10">
-                Start <ChevronRight className="w-4 h-4" />
+                {t('start')} <ChevronRight className="w-4 h-4" />
               </Link>
             )}
           </div>

@@ -11,6 +11,7 @@ import {
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import { Mascot } from '@/components/global/Mascot'
 import { SCENARIO_TIERS, type PlanTier } from '@/lib/plan-config'
+import { useTranslations } from 'next-intl'
 
 /* ═══════════════════════════════════════════
    TYPES
@@ -62,6 +63,8 @@ const getScenarioName = (sentenceId: string): string => {
 export default function PracticePage() {
   const { isSignedIn, userId } = useAuth()
   const { isPro, getTier, loading: subscriptionLoading } = useSubscription()
+  const t = useTranslations('practicePage')
+  const ts = useTranslations('scenarios')
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [loading, setLoading] = useState(true)
   const [dailyGoal, setDailyGoal] = useState<DailyGoal>({ practiced: 0, goal: 10, percentage: 0, remaining: 10 })
@@ -95,6 +98,12 @@ export default function PracticePage() {
     fetchData()
   }, [isSignedIn, userId])
 
+  const getScenarioLabel = (sentenceId: string): string => {
+    const keys = ['daily_drill', 'phoneme_r_vs_l', 'phoneme_th_sounds', 'phoneme_f_vs_h', 'toeic', 'phoneme_v_vs_b', 'phoneme_word_stress', 'phoneme_silent_letters', 'business', 'interview', 'phone']
+    const match = keys.find(k => sentenceId.includes(k))
+    return match ? ts(`${match}.title`) : ts('practiceSession')
+  }
+
   const userTier = getTier()
   const hasAccess = (scenarioTier: PlanTier) => TIER_ORDER[scenarioTier] <= TIER_ORDER[userTier]
   const atLimit = lessonStatus?.remaining === 0
@@ -107,7 +116,7 @@ export default function PracticePage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Mascot size={88} expression="thinking" className="animate-float opacity-70" />
         <span className="loading loading-dots loading-lg text-primary" />
-        <p className="text-base text-base-content/50 font-semibold">Loading scenarios...</p>
+        <p className="text-base text-base-content/50 font-semibold">{t('loading')}</p>
       </div>
     )
   }
@@ -117,18 +126,18 @@ export default function PracticePage() {
       {/* Header */}
       <div className="mb-6 lg:mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content">Practice</h1>
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content">{t('title')}</h1>
           {isPro() && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/8 border border-primary/12 rounded-full text-xs font-bold text-primary">
-              <Star className="w-3.5 h-3.5" /> {userTier === 'premium' ? 'Premium' : 'Pro'}
+              <Star className="w-3.5 h-3.5" /> {userTier === 'premium' ? 'Premium' : t('proLabel')}
             </span>
           )}
         </div>
-        <p className="text-sm lg:text-base text-base-content/50">Choose a scenario and start improving your pronunciation</p>
+        <p className="text-sm lg:text-base text-base-content/50">{t('subtitle')}</p>
       </div>
 
       {/* Lesson Usage Banner */}
-      <LessonUsageBanner lessonStatus={lessonStatus} />
+      <LessonUsageBanner lessonStatus={lessonStatus} t={t} />
 
       <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
         {/* MAIN */}
@@ -141,14 +150,14 @@ export default function PracticePage() {
                 <Mic className="w-7 h-7 lg:w-8 lg:h-8 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="font-extrabold text-lg lg:text-xl text-base-content">Ready to practice?</h2>
-                <p className="text-sm lg:text-base text-base-content/50">Jump into a quick 5-minute drill</p>
+                <h2 className="font-extrabold text-lg lg:text-xl text-base-content">{t('readyToPractice')}</h2>
+                <p className="text-sm lg:text-base text-base-content/50">{t('quickDrill')}</p>
               </div>
               <Link
                 href={atLimit ? '/pricing?limit=true' : '/practice/daily_drill'}
                 className="btn btn-primary lg:btn-lg gap-2 shadow-md shadow-primary/15 flex-shrink-0"
               >
-                Start <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
+                {t('start')} <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
               </Link>
             </div>
           </div>
@@ -158,7 +167,7 @@ export default function PracticePage() {
             <div className="card-body p-4 flex-row items-center gap-3">
               <Target className="w-5 h-5 text-info flex-shrink-0" />
               <p className="text-sm lg:text-base text-base-content/60">
-                <span className="font-bold">Structured Practice</span> — Targeted sentences with instant phoneme-level feedback
+                <span className="font-bold">{t('structuredPractice')}</span> — {t('structuredDesc')}
               </p>
             </div>
           </div>
@@ -166,11 +175,11 @@ export default function PracticePage() {
           {/* FREE */}
           <div>
             <h2 className="text-sm lg:text-base font-extrabold text-base-content/70 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" /> Free Scenarios
+              <Sparkles className="w-4 h-4 text-primary" /> {t('freeScenarios')}
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">
               {freeScenarios.map(s => (
-                <ScenarioCard key={s.id} scenario={s} hasAccess={true} atLimit={atLimit} />
+                <ScenarioCard key={s.id} scenario={s} hasAccess={true} atLimit={atLimit} t={t} ts={ts} />
               ))}
             </div>
           </div>
@@ -179,11 +188,11 @@ export default function PracticePage() {
           {proScenarios.length > 0 && (
             <div>
               <h2 className="text-sm lg:text-base font-extrabold text-base-content/70 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-warning" /> Pro Scenarios
+                <Lock className="w-4 h-4 text-warning" /> {t('proScenarios')}
               </h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {proScenarios.map(s => (
-                  <ScenarioCard key={s.id} scenario={s} hasAccess={hasAccess(s.tier)} atLimit={atLimit} />
+                  <ScenarioCard key={s.id} scenario={s} hasAccess={hasAccess(s.tier)} atLimit={atLimit} t={t} ts={ts} />
                 ))}
               </div>
             </div>
@@ -197,10 +206,10 @@ export default function PracticePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 className="font-bold text-base lg:text-lg text-base-content">AI Conversation Mode</h3>
-                  <span className="text-xs font-bold text-secondary bg-secondary/10 border border-secondary/15 px-2 py-0.5 rounded-full">COMING SOON</span>
+                  <h3 className="font-bold text-base lg:text-lg text-base-content">{t('aiConversation')}</h3>
+                  <span className="text-xs font-bold text-secondary bg-secondary/10 border border-secondary/15 px-2 py-0.5 rounded-full">{t('comingSoon')}</span>
                 </div>
-                <p className="text-sm lg:text-base text-base-content/50">Natural 10–15 min conversations with AI coach.</p>
+                <p className="text-sm lg:text-base text-base-content/50">{t('aiConversationDesc')}</p>
               </div>
             </div>
           </div>
@@ -212,17 +221,17 @@ export default function PracticePage() {
           <div className="card bg-base-100 border border-base-content/5 card-glow">
             <div className="card-body p-6">
               <h3 className="font-bold text-base text-base-content flex items-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-primary" /> Today&apos;s Goal
+                <Target className="w-5 h-5 text-primary" /> {t('todaysGoal')}
               </h3>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-base-content/50">Practice Time</span>
+                <span className="text-sm text-base-content/50">{t('practiceTime')}</span>
                 <span className="text-lg font-extrabold text-base-content">{dailyGoal.practiced}/{dailyGoal.goal} min</span>
               </div>
               <div className="w-full bg-base-200 rounded-full h-3 overflow-hidden mb-2">
                 <div className={`h-full rounded-full transition-all duration-500 ${dailyGoal.remaining <= 0 ? 'bg-success' : 'bg-gradient-to-r from-primary to-primary/80'}`} style={{ width: `${dailyGoal.percentage}%` }} />
               </div>
               <p className="text-sm text-base-content/45">
-                {dailyGoal.remaining > 0 ? `${dailyGoal.remaining} more min to go!` : '🎉 Goal achieved!'}
+                {dailyGoal.remaining > 0 ? t('moreMinToGo', { count: dailyGoal.remaining }) : t('goalAchieved')}
               </p>
             </div>
           </div>
@@ -233,8 +242,8 @@ export default function PracticePage() {
               <div className="flex items-start gap-3">
                 <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-sm mb-1 text-base-content">Pro Tip</h4>
-                  <p className="text-sm text-base-content/50 leading-relaxed">Master one phoneme at a time! Focus on /r/ vs /l/ before moving to /th/ sounds.</p>
+                  <h4 className="font-bold text-sm mb-1 text-base-content">{t('proTip')}</h4>
+                  <p className="text-sm text-base-content/50 leading-relaxed">{t('proTipDesc')}</p>
                 </div>
               </div>
             </div>
@@ -244,13 +253,13 @@ export default function PracticePage() {
           <div className="card bg-base-100 border border-base-content/5 card-glow">
             <div className="card-body p-6">
               <h3 className="font-bold text-base text-base-content flex items-center gap-2 mb-4">
-                <Clock className="w-5 h-5 text-base-content/40" /> Recent Sessions
+                <Clock className="w-5 h-5 text-base-content/40" /> {t('recentSessions')}
               </h3>
               {recentSessions.length > 0 ? (
                 <div className="space-y-3">
                   {recentSessions.map((s) => (
                     <div key={s.id} className="bg-base-200/80 rounded-xl px-4 py-3">
-                      <h4 className="font-bold text-sm text-base-content mb-0.5">{getScenarioName(s.sentenceId)}</h4>
+                      <h4 className="font-bold text-sm text-base-content mb-0.5">{getScenarioLabel(s.sentenceId)}</h4>
                       <p className="text-xs text-base-content/40 mb-2">{s.date}{s.time && `, ${s.time}`}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-base-content/45 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {s.duration}m</span>
@@ -258,10 +267,10 @@ export default function PracticePage() {
                       </div>
                     </div>
                   ))}
-                  <Link href="/progress" className="btn btn-ghost btn-sm w-full text-base-content/40">View All <ChevronRight className="w-4 h-4" /></Link>
+                  <Link href="/progress" className="btn btn-ghost btn-sm w-full text-base-content/40">{t('viewAll')} <ChevronRight className="w-4 h-4" /></Link>
                 </div>
               ) : (
-                <p className="text-sm text-base-content/40 text-center py-6">No sessions yet. Start practicing!</p>
+                <p className="text-sm text-base-content/40 text-center py-6">{t('noSessions')}</p>
               )}
             </div>
           </div>
@@ -272,9 +281,9 @@ export default function PracticePage() {
               <div className="absolute top-2 right-2 opacity-15"><Mascot size={56} expression="cheering" /></div>
               <div className="card-body p-6 relative z-10">
                 <Star className="w-6 h-6 text-primary mb-1" />
-                <h3 className="font-extrabold text-base text-base-content">Unlock Pro</h3>
-                <p className="text-sm text-base-content/50 mb-4">Business, Interview, Phone practice + 100 lessons/month</p>
-                <Link href="/pricing" className="btn btn-primary shadow-sm shadow-primary/15">Upgrade Now</Link>
+                <h3 className="font-extrabold text-base text-base-content">{t('unlockPro')}</h3>
+                <p className="text-sm text-base-content/50 mb-4">{t('unlockProDesc')}</p>
+                <Link href="/pricing" className="btn btn-primary shadow-sm shadow-primary/15">{t('upgradeNow')}</Link>
               </div>
             </div>
           )}
@@ -290,7 +299,7 @@ export default function PracticePage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-bold text-base-content/60">Today</span>
+                <span className="text-sm font-bold text-base-content/60">{t('today')}</span>
                 <span className="text-sm text-base-content/40">{dailyGoal.practiced}/{dailyGoal.goal} min</span>
               </div>
               <div className="w-full bg-base-200 rounded-full h-2.5 overflow-hidden">
@@ -307,12 +316,12 @@ export default function PracticePage() {
 /* ═══════════════════════════════════════════
    LESSON USAGE BANNER
    ═══════════════════════════════════════════ */
-function LessonUsageBanner({ lessonStatus }: { lessonStatus: LessonStatus | null }) {
+function LessonUsageBanner({ lessonStatus, t }: { lessonStatus: LessonStatus | null; t: (key: string, values?: Record<string, any>) => string }) {
   if (!lessonStatus || lessonStatus.tier === 'premium' || lessonStatus.max === null) return null
 
   const { tier, used, max, remaining, period } = lessonStatus
   const pct = Math.min((used / max) * 100, 100)
-  const periodLabel = period === 'week' ? 'this week' : 'this month'
+  const periodLabel = period === 'week' ? t('periodWeek') : t('periodMonth')
   const atLimit = remaining === 0
 
   if (atLimit) {
@@ -321,10 +330,10 @@ function LessonUsageBanner({ lessonStatus }: { lessonStatus: LessonStatus | null
         <div className="card-body p-4 flex-row items-center gap-3">
           <AlertCircle className="w-5 h-5 text-warning flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-base-content">Lesson limit reached</p>
+            <p className="text-sm font-bold text-base-content">{t('limitReached')}</p>
             <p className="text-xs text-base-content/55">
-              You&apos;ve used all {max} lessons {periodLabel}.{' '}
-              <Link href="/pricing" className="underline text-warning font-semibold">Upgrade to continue</Link>
+              {t('limitDesc', { max, period: periodLabel })}{' '}
+              <Link href="/pricing" className="underline text-warning font-semibold">{t('upgradeToContinue')}</Link>
             </p>
           </div>
         </div>
@@ -337,9 +346,9 @@ function LessonUsageBanner({ lessonStatus }: { lessonStatus: LessonStatus | null
       <div className="card-body p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-base-content/55">
-            {tier === 'free' ? 'Free' : 'Pro'} — {used}/{max} lessons {periodLabel}
+            {tier === 'free' ? t('tierFree') : t('tierPro')} — {used}/{max} {t('lessons')} {periodLabel}
           </span>
-          <span className="text-xs text-base-content/40">{remaining} remaining</span>
+          <span className="text-xs text-base-content/40">{t('remaining', { count: remaining })}</span>
         </div>
         <div className="w-full bg-base-200 rounded-full h-1.5 overflow-hidden">
           <div
@@ -349,7 +358,7 @@ function LessonUsageBanner({ lessonStatus }: { lessonStatus: LessonStatus | null
         </div>
         {tier === 'free' && (
           <p className="text-[10px] text-base-content/35 mt-1.5">
-            <Link href="/pricing" className="underline">Upgrade to Pro</Link> for 100 lessons/month
+            <Link href="/pricing" className="underline">{t('upgradePro')}</Link> {t('forMoreLessons')}
           </p>
         )}
       </div>
@@ -360,7 +369,7 @@ function LessonUsageBanner({ lessonStatus }: { lessonStatus: LessonStatus | null
 /* ═══════════════════════════════════════════
    SCENARIO CARD
    ═══════════════════════════════════════════ */
-function ScenarioCard({ scenario, hasAccess, atLimit }: { scenario: typeof scenarios[0]; hasAccess: boolean; atLimit: boolean }) {
+function ScenarioCard({ scenario, hasAccess, atLimit, t, ts }: { scenario: typeof scenarios[0]; hasAccess: boolean; atLimit: boolean; t: (key: string, values?: Record<string, any>) => string; ts: (key: string) => string }) {
   const blocked = !hasAccess || atLimit
   const href = !hasAccess ? '/pricing' : atLimit ? '/pricing?limit=true' : `/practice/${scenario.id}`
 
@@ -377,19 +386,19 @@ function ScenarioCard({ scenario, hasAccess, atLimit }: { scenario: typeof scena
             {scenario.icon}
           </div>
           <div className="flex flex-col items-end gap-1">
-            {!hasAccess && <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning/10 border border-warning/15 px-2 py-0.5 rounded-full"><Lock className="w-3 h-3" /> Pro</span>}
-            {hasAccess && atLimit && <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning/10 border border-warning/15 px-2 py-0.5 rounded-full"><AlertCircle className="w-3 h-3" /> Limit</span>}
+            {!hasAccess && <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning/10 border border-warning/15 px-2 py-0.5 rounded-full"><Lock className="w-3 h-3" /> {t('proLabel')}</span>}
+            {hasAccess && atLimit && <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning/10 border border-warning/15 px-2 py-0.5 rounded-full"><AlertCircle className="w-3 h-3" /> {t('limitLabel')}</span>}
             {scenario.badge && !blocked && <span className={`inline-flex text-xs font-bold px-2 py-0.5 rounded-full border ${badgeColor(scenario.badge)}`}>{scenario.badge}</span>}
           </div>
         </div>
-        <h3 className="font-bold text-base lg:text-lg text-base-content mb-1">{scenario.title}</h3>
-        <p className="text-sm text-base-content/45 mb-3 line-clamp-1">{scenario.description}</p>
+        <h3 className="font-bold text-base lg:text-lg text-base-content mb-1">{ts(`${scenario.id}.title`)}</h3>
+        <p className="text-sm text-base-content/45 mb-3 line-clamp-1">{ts(`${scenario.id}.description`)}</p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className={`badge badge-sm ${difficultyColor(scenario.difficulty)} font-semibold`}>{scenario.difficulty}</span>
+            <span className={`badge badge-sm ${difficultyColor(scenario.difficulty)} font-semibold`}>{ts(`difficulties.${scenario.difficulty}`)}</span>
             <span className="text-xs text-base-content/35 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {scenario.duration}</span>
           </div>
-          {!blocked ? <ChevronRight className="w-5 h-5 text-base-content/25" /> : <span className="text-xs font-semibold text-warning">Upgrade →</span>}
+          {!blocked ? <ChevronRight className="w-5 h-5 text-base-content/25" /> : <span className="text-xs font-semibold text-warning">{t('upgradeArrow')}</span>}
         </div>
       </div>
     </Link>

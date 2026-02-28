@@ -4,6 +4,7 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import {
   Crown, CreditCard, User, Bell, Globe, Mic,
@@ -11,6 +12,7 @@ import {
   Sparkles
 } from 'lucide-react'
 import { Mascot } from '@/components/global/Mascot'
+import { useTranslations } from 'next-intl'
 
 /* ═══════════════════════════════════════════
    TYPES
@@ -33,6 +35,8 @@ interface NotificationSettings {
    ═══════════════════════════════════════════ */
 export default function SettingsPage() {
   const { user, isLoaded } = useUser()
+  const router = useRouter()
+  const t = useTranslations('settings')
   // FIX #1: Use SubscriptionContext instead of useUserStore for accurate pro status
   const { isPro } = useSubscription()
 
@@ -67,11 +71,11 @@ export default function SettingsPage() {
 
   /* ─── Tabs ─── */
   const tabs = [
-    { id: 'account', label: 'Account', icon: User },
-    { id: 'subscription', label: 'Plan', icon: Crown },
-    { id: 'practice', label: 'Practice', icon: Mic },
-    { id: 'notifications', label: 'Alerts', icon: Bell },
-    { id: 'language', label: 'Language', icon: Globe },
+    { id: 'account', label: t('tabs.account'), icon: User },
+    { id: 'subscription', label: t('tabs.plan'), icon: Crown },
+    { id: 'practice', label: t('tabs.practice'), icon: Mic },
+    { id: 'notifications', label: t('tabs.alerts'), icon: Bell },
+    { id: 'language', label: t('tabs.language'), icon: Globe },
   ]
 
   /* ─── Load all settings on mount ─── */
@@ -191,7 +195,7 @@ export default function SettingsPage() {
     } catch { showSaveStatus('error', 'Failed to save notification preferences') }
   }
 
-  // Language save no longer includes voice settings
+  // Language save — also triggers router.refresh() so next-intl reloads the new locale
   const handleSaveLanguage = async () => {
     setSaveStatus('saving')
     try {
@@ -201,7 +205,12 @@ export default function SettingsPage() {
         body: JSON.stringify({ interfaceLanguage }),
       })
       const data = await res.json()
-      data.success ? showSaveStatus('success') : showSaveStatus('error', data.error)
+      if (data.success) {
+        showSaveStatus('success')
+        router.refresh()
+      } else {
+        showSaveStatus('error', data.error)
+      }
     } catch { showSaveStatus('error', 'Failed to save language preferences') }
   }
 
@@ -236,19 +245,19 @@ export default function SettingsPage() {
         className="btn btn-primary btn-sm lg:btn-md shadow-sm shadow-primary/15 gap-2"
       >
         {saveStatus === 'saving' ? (
-          <><span className="loading loading-spinner loading-xs" /> Saving...</>
+          <><span className="loading loading-spinner loading-xs" /> {t('save.saving')}</>
         ) : (
-          <><Check className="w-4 h-4" /> Save Changes</>
+          <><Check className="w-4 h-4" /> {t('save.saveChanges')}</>
         )}
       </button>
       {saveStatus === 'success' && (
         <span className="flex items-center gap-1.5 text-success text-sm font-semibold animate-in fade-in duration-200">
-          <Check className="w-4 h-4" /> Saved!
+          <Check className="w-4 h-4" /> {t('save.saved')}
         </span>
       )}
       {saveStatus === 'error' && (
         <span className="flex items-center gap-1.5 text-error text-sm font-semibold animate-in fade-in duration-200">
-          <AlertCircle className="w-4 h-4" /> {errorMessage || 'Error'}
+          <AlertCircle className="w-4 h-4" /> {errorMessage || t('save.error')}
         </span>
       )}
     </div>
@@ -259,8 +268,8 @@ export default function SettingsPage() {
 
       {/* ═══ HEADER ═══ */}
       <div className="mb-4 lg:mb-8">
-        <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content">Settings</h1>
-        <p className="text-sm lg:text-base text-base-content/45 mt-0.5 lg:mt-1">Manage your account and preferences</p>
+        <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content">{t('title')}</h1>
+        <p className="text-sm lg:text-base text-base-content/45 mt-0.5 lg:mt-1">{t('subtitle')}</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-0 lg:gap-6">
@@ -312,7 +321,7 @@ export default function SettingsPage() {
                   ──────────────────────────────── */}
               {activeTab === 'account' && (
                 <div>
-                  <SectionHeader title="Account Information" />
+                  <SectionHeader title={t('account.title')} />
 
                   <div className="space-y-5">
                     {/* Avatar */}
@@ -322,22 +331,22 @@ export default function SettingsPage() {
                           <img src={user?.imageUrl || '/default-avatar.png'} alt="Profile" />
                         </div>
                       </div>
-                      <p className="text-xs text-base-content/40">Photo managed through your sign-in provider</p>
+                      <p className="text-xs text-base-content/40">{t('account.photoHint')}</p>
                     </div>
 
                     {/* Name */}
-                    <FieldGroup label="Full Name">
+                    <FieldGroup label={t('account.fullName')}>
                       <input
                         type="text"
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         className="input input-bordered input-sm lg:input-md w-full"
-                        placeholder="Enter your name"
+                        placeholder={t('account.fullNamePlaceholder')}
                       />
                     </FieldGroup>
 
                     {/* Email */}
-                    <FieldGroup label="Email Address" hint="Managed through your sign-in provider">
+                    <FieldGroup label={t('account.email')} hint={t('account.emailHint')}>
                       <input
                         type="email"
                         value={user?.primaryEmailAddress?.emailAddress || ''}
@@ -357,7 +366,7 @@ export default function SettingsPage() {
                   ──────────────────────────────── */}
               {activeTab === 'subscription' && (
                 <div>
-                  <SectionHeader title="Your Plan" />
+                  <SectionHeader title={t('plan.title')} />
 
                   {/* Plan card */}
                   <div className={`rounded-2xl p-4 lg:p-6 mb-5 border-2 ${
@@ -374,18 +383,18 @@ export default function SettingsPage() {
                         </div>
                         <div>
                           <h3 className="text-base lg:text-lg font-extrabold text-base-content">
-                            {pro ? 'Pro Plan' : 'Free Plan'}
+                            {pro ? t('plan.proPlan') : t('plan.freePlan')}
                           </h3>
                           {pro && subEndDate && (
                             <p className="text-[11px] lg:text-xs text-base-content/45">
-                              Renews {new Date(subEndDate).toLocaleDateString()}
+                              {t('plan.renews', { date: new Date(subEndDate).toLocaleDateString() })}
                             </p>
                           )}
                         </div>
                       </div>
                       {pro && (
                         <span className="badge badge-primary font-bold gap-1">
-                          <Sparkles className="w-3 h-3" /> Active
+                          <Sparkles className="w-3 h-3" /> {t('plan.active')}
                         </span>
                       )}
                     </div>
@@ -393,9 +402,9 @@ export default function SettingsPage() {
                     {/* Feature comparison */}
                     <div className="grid grid-cols-3 gap-2 lg:gap-3">
                       {[
-                        { label: 'Sessions', free: '5/mo', proVal: '∞' },
-                        { label: 'Scenarios', free: '5', proVal: 'All 11' },
-                        { label: 'Analytics', free: 'Basic', proVal: 'Full' },
+                        { label: t('plan.sessions'), free: '5/mo', proVal: '∞' },
+                        { label: t('plan.scenarios'), free: '5', proVal: 'All 11' },
+                        { label: t('plan.analytics'), free: 'Basic', proVal: 'Full' },
                       ].map((f, i) => (
                         <div key={i} className="bg-base-100/80 rounded-xl p-2.5 lg:p-3 text-center">
                           <p className="text-[9px] lg:text-xs font-semibold text-base-content/40 uppercase tracking-wide mb-0.5 lg:mb-1">{f.label}</p>
@@ -419,14 +428,14 @@ export default function SettingsPage() {
                       ) : (
                         <CreditCard className="w-4 h-4" />
                       )}
-                      Manage Billing
+                      {t('plan.manageBilling')}
                     </button>
                   ) : (
                     <div className="flex flex-wrap items-center gap-3">
                       <Link href="/pricing" className="btn btn-primary btn-sm lg:btn-md gap-2 shadow-sm shadow-primary/15">
-                        <Crown className="w-4 h-4" /> Upgrade to Pro
+                        <Crown className="w-4 h-4" /> {t('plan.upgradeToPro')}
                       </Link>
-                      <span className="text-xs lg:text-sm text-base-content/40">Unlock all features</span>
+                      <span className="text-xs lg:text-sm text-base-content/40">{t('plan.unlockAll')}</span>
                     </div>
                   )}
                 </div>
@@ -437,35 +446,35 @@ export default function SettingsPage() {
                   ──────────────────────────────── */}
               {activeTab === 'practice' && (
                 <div>
-                  <SectionHeader title="Practice Settings" />
+                  <SectionHeader title={t('practice.title')} />
 
                   <div className="space-y-5 lg:space-y-6">
 
                     {/* ─ Voice Settings (moved from Language tab) ─ */}
                     <div>
                       <h3 className="font-bold text-sm text-base-content/60 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Volume2 className="w-4 h-4" /> Practice Voice
+                        <Volume2 className="w-4 h-4" /> {t('practice.voice')}
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <FieldGroup label="Voice Gender" compact>
+                        <FieldGroup label={t('practice.voiceGender')} compact>
                           <select
                             className="select select-bordered select-sm lg:select-md w-full"
                             value={practiceVoiceGender}
                             onChange={(e) => setPracticeVoiceGender(e.target.value as 'female' | 'male')}
                           >
-                            <option value="female">Female</option>
-                            <option value="male">Male</option>
+                            <option value="female">{t('practice.female')}</option>
+                            <option value="male">{t('practice.male')}</option>
                           </select>
                         </FieldGroup>
 
-                        <FieldGroup label="Voice Accent" compact>
+                        <FieldGroup label={t('practice.voiceAccent')} compact>
                           <select
                             className="select select-bordered select-sm lg:select-md w-full"
                             value={practiceVoiceAccent}
                             onChange={(e) => setPracticeVoiceAccent(e.target.value as 'american' | 'british')}
                           >
-                            <option value="american">American English 🇺🇸</option>
-                            <option value="british">British English 🇬🇧</option>
+                            <option value="american">{t('practice.american')}</option>
+                            <option value="british">{t('practice.british')}</option>
                           </select>
                         </FieldGroup>
                       </div>
@@ -476,11 +485,11 @@ export default function SettingsPage() {
                     {/* ─ Daily Goal ─ */}
                     <div>
                       <h3 className="font-bold text-sm text-base-content/60 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Target className="w-4 h-4" /> Daily Goal
+                        <Target className="w-4 h-4" /> {t('practice.dailyGoal')}
                       </h3>
                       <div className="bg-base-200/30 rounded-xl p-3 lg:p-4 border border-base-content/5">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-semibold text-base-content/70">Practice time goal</span>
+                          <span className="text-sm font-semibold text-base-content/70">{t('practice.practiceTimeGoal')}</span>
                           <span className="text-lg font-extrabold text-primary">{dailyGoal} min</span>
                         </div>
                         <input
@@ -499,14 +508,14 @@ export default function SettingsPage() {
                     {/* ─ Pronunciation Focus ─ */}
                     <div>
                       <h3 className="font-bold text-sm text-base-content/60 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Mic className="w-4 h-4" /> Pronunciation Focus
+                        <Mic className="w-4 h-4" /> {t('practice.pronunciationFocus')}
                       </h3>
                       <div className="space-y-1">
                         {[
-                          { key: 'rVsL' as keyof PronunciationFocus, label: '/r/ vs /l/ sounds', desc: 'Right vs Light' },
-                          { key: 'thSounds' as keyof PronunciationFocus, label: '/th/ sounds (θ/ð)', desc: 'Think, That' },
-                          { key: 'wordStress' as keyof PronunciationFocus, label: 'Word stress patterns', desc: 'REcord vs reCORD' },
-                          { key: 'silentVowels' as keyof PronunciationFocus, label: 'Silent vowels', desc: 'Wednesday, Comfortable' },
+                          { key: 'rVsL' as keyof PronunciationFocus, label: t('practice.rVsL'), desc: t('practice.rVsLDesc') },
+                          { key: 'thSounds' as keyof PronunciationFocus, label: t('practice.thSounds'), desc: t('practice.thSoundsDesc') },
+                          { key: 'wordStress' as keyof PronunciationFocus, label: t('practice.wordStress'), desc: t('practice.wordStressDesc') },
+                          { key: 'silentVowels' as keyof PronunciationFocus, label: t('practice.silentVowels'), desc: t('practice.silentVowelsDesc') },
                         ].map(item => (
                           <label key={item.key} className="flex items-center gap-3 p-2.5 lg:p-3 rounded-xl hover:bg-base-200/30 cursor-pointer transition-colors">
                             <input
@@ -529,7 +538,7 @@ export default function SettingsPage() {
                     {/* ─ Reminders ─ */}
                     <div>
                       <h3 className="font-bold text-sm text-base-content/60 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Clock className="w-4 h-4" /> Reminders
+                        <Clock className="w-4 h-4" /> {t('practice.reminders')}
                       </h3>
 
                       <label className="flex items-center gap-3 p-2.5 lg:p-3 rounded-xl hover:bg-base-200/30 cursor-pointer transition-colors mb-3">
@@ -540,14 +549,14 @@ export default function SettingsPage() {
                           className="checkbox checkbox-primary checkbox-sm"
                         />
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm font-semibold text-base-content block">Daily Practice Reminder</span>
-                          <span className="text-xs text-base-content/35">Get notified when it&apos;s time to practice</span>
+                          <span className="text-sm font-semibold text-base-content block">{t('practice.dailyReminder')}</span>
+                          <span className="text-xs text-base-content/35">{t('practice.reminderDesc')}</span>
                         </div>
                       </label>
 
                       {reminderEnabled && (
                         <div className="pl-7 lg:pl-10">
-                          <FieldGroup label="Reminder time" compact>
+                          <FieldGroup label={t('practice.reminderTime')} compact>
                             <select
                               className="select select-bordered select-sm w-full max-w-xs"
                               value={reminderTime}
@@ -574,13 +583,13 @@ export default function SettingsPage() {
                   ──────────────────────────────── */}
               {activeTab === 'notifications' && (
                 <div>
-                  <SectionHeader title="Notifications" />
+                  <SectionHeader title={t('notifications.title')} />
 
                   <div className="space-y-1 mb-6">
                     {[
-                      { key: 'progressUpdates' as keyof NotificationSettings, label: 'Progress Updates', desc: 'Weekly summaries of your improvement' },
-                      { key: 'achievementAlerts' as keyof NotificationSettings, label: 'Achievement Alerts', desc: 'Get notified when you unlock new badges' },
-                      { key: 'newFeatures' as keyof NotificationSettings, label: 'New Features', desc: 'Learn about new scenarios and improvements' },
+                      { key: 'progressUpdates' as keyof NotificationSettings, label: t('notifications.progressUpdates'), desc: t('notifications.progressUpdatesDesc') },
+                      { key: 'achievementAlerts' as keyof NotificationSettings, label: t('notifications.achievementAlerts'), desc: t('notifications.achievementAlertsDesc') },
+                      { key: 'newFeatures' as keyof NotificationSettings, label: t('notifications.newFeatures'), desc: t('notifications.newFeaturesDesc') },
                     ].map(item => (
                       <label key={item.key} className="flex items-center gap-3 p-2.5 lg:p-3 rounded-xl hover:bg-base-200/30 cursor-pointer transition-colors">
                         <input
@@ -607,10 +616,10 @@ export default function SettingsPage() {
                   ──────────────────────────────── */}
               {activeTab === 'language' && (
                 <div>
-                  <SectionHeader title="Language & Region" />
+                  <SectionHeader title={t('language.title')} />
 
                   <div className="space-y-5">
-                    <FieldGroup label="Interface Language" hint="Japanese UI coming soon">
+                    <FieldGroup label={t('language.interfaceLanguage')}>
                       <select
                         className="select select-bordered select-sm lg:select-md w-full"
                         value={interfaceLanguage}

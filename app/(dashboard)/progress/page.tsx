@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { ProRoute } from '@/components/global/ProRoute'
 import { Mascot } from '@/components/global/Mascot'
+import { useTranslations } from 'next-intl'
 
 /* ═══════════════════════════════════════════
    TYPES
@@ -161,6 +162,7 @@ function ChartBar({
    ═══════════════════════════════════════════ */
 export default function ProgressPage() {
   const router = useRouter()
+  const t = useTranslations('progress')
   const [timeRange, setTimeRange] = useState('week')
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState<Stats | null>(null)
@@ -200,7 +202,7 @@ export default function ProgressPage() {
   /* ── Helpers ── */
   const accColor = (a: number) => a >= 85 ? 'text-success' : a >= 70 ? 'text-warning' : 'text-error'
   const accBg = (a: number) => a >= 85 ? 'bg-success' : a >= 70 ? 'bg-warning' : 'bg-error'
-  const accLabel = (a: number) => a >= 85 ? 'Excellent' : a >= 70 ? 'Good' : 'Needs Work'
+  const accLabel = (a: number) => a >= 85 ? t('excellent') : a >= 70 ? t('good') : t('needsWork')
   const accBadge = (a: number) => a >= 85 ? 'bg-success/10 text-success border-success/15' : a >= 70 ? 'bg-warning/10 text-warning border-warning/15' : 'bg-error/10 text-error border-error/15'
 
   console.log("Lesson Sessions: ", lessonSessions);
@@ -214,7 +216,7 @@ export default function ProgressPage() {
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Mascot size={88} expression="thinking" className="animate-float opacity-70" />
           <span className="loading loading-dots loading-lg text-primary" />
-          <p className="text-base text-base-content/50 font-semibold">Loading your progress...</p>
+          <p className="text-base text-base-content/50 font-semibold">{t('loading')}</p>
         </div>
       </ProRoute>
     )
@@ -228,9 +230,9 @@ export default function ProgressPage() {
       <ProRoute>
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
           <Mascot size={88} expression="thinking" className="mx-auto mb-4 opacity-60" />
-          <h3 className="font-extrabold text-xl mb-2 text-base-content">Couldn&apos;t load progress</h3>
-          <p className="text-base text-base-content/50 mb-5">Something went wrong — let&apos;s try again.</p>
-          <button onClick={fetchProgressData} className="btn btn-primary gap-2"><RefreshCw className="w-4 h-4" /> Retry</button>
+          <h3 className="font-extrabold text-xl mb-2 text-base-content">{t('errorTitle')}</h3>
+          <p className="text-base text-base-content/50 mb-5">{t('errorDesc')}</p>
+          <button onClick={fetchProgressData} className="btn btn-primary gap-2"><RefreshCw className="w-4 h-4" /> {t('retry')}</button>
         </div>
       </ProRoute>
     )
@@ -248,8 +250,8 @@ export default function ProgressPage() {
         {/* ─── Header + Time Range ─── */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 lg:mb-8">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content mb-1">Your Progress</h1>
-            <p className="text-sm lg:text-base text-base-content/50">Track your pronunciation improvement over time</p>
+            <h1 className="text-2xl lg:text-3xl font-extrabold text-base-content mb-1">{t('title')}</h1>
+            <p className="text-sm lg:text-base text-base-content/50">{t('subtitle')}</p>
           </div>
           <div className="flex gap-1">
             {(['week', 'month', 'all'] as const).map(range => (
@@ -262,7 +264,7 @@ export default function ProgressPage() {
                     : 'bg-base-content/4 text-base-content/50 border border-transparent hover:bg-base-content/6'
                 }`}
               >
-                {range === 'week' ? 'Week' : range === 'month' ? 'Month' : 'All Time'}
+                {range === 'week' ? t('week') : range === 'month' ? t('month') : t('allTime')}
               </button>
             ))}
           </div>
@@ -271,11 +273,11 @@ export default function ProgressPage() {
         {/* ─── Stats Overview ─── */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4 mb-6 lg:mb-8">
           {[
-            { icon: Mic, value: `${stats.totalPracticeTime}m`, label: 'Practice Time', color: 'text-primary', bg: 'bg-primary/8' },
-            { icon: Target, value: `${stats.averageAccuracy}%`, label: 'Avg Accuracy', color: 'text-success', bg: 'bg-success/8' },
-            { icon: Flame, value: `${stats.streak}`, label: 'Day Streak', color: 'text-orange-500', bg: 'bg-orange-500/8' },
-            { icon: Trophy, value: `${stats.lessonsCompleted}`, label: 'Sentences', color: 'text-warning', bg: 'bg-warning/8' },
-            { icon: Star, value: `${stats.xpEarned}`, label: 'Total XP', color: 'text-warning', bg: 'bg-warning/8' },
+            { icon: Mic, value: `${stats.totalPracticeTime}m`, label: t('statPracticeTime'), color: 'text-primary', bg: 'bg-primary/8' },
+            { icon: Target, value: `${stats.averageAccuracy}%`, label: t('statAvgAccuracy'), color: 'text-success', bg: 'bg-success/8' },
+            { icon: Flame, value: `${stats.streak}`, label: t('statDayStreak'), color: 'text-orange-500', bg: 'bg-orange-500/8' },
+            { icon: Trophy, value: `${stats.lessonsCompleted}`, label: t('statSentences'), color: 'text-warning', bg: 'bg-warning/8' },
+            { icon: Star, value: `${stats.xpEarned}`, label: t('statTotalXp'), color: 'text-warning', bg: 'bg-warning/8' },
           ].map((s, i) => {
             const Icon = s.icon
             return (
@@ -297,7 +299,7 @@ export default function ProgressPage() {
           <div className="card bg-info/6 border border-info/12 mb-6 lg:mb-8">
             <div className="card-body p-4 flex-row items-center gap-3">
               <Target className="w-5 h-5 text-info flex-shrink-0" />
-              <p className="text-sm lg:text-base text-base-content/60">Start practicing to see your progress charts!</p>
+              <p className="text-sm lg:text-base text-base-content/60">{t('noDataHint')}</p>
             </div>
           </div>
         )}
@@ -313,10 +315,10 @@ export default function ProgressPage() {
               {/* Practice Activity */}
               <div className="card bg-base-100 border border-base-content/5">
                 <div className="card-body p-5 lg:p-6">
-                  <h2 className="font-extrabold text-base lg:text-lg text-base-content mb-0.5">Practice Activity</h2>
+                  <h2 className="font-extrabold text-base lg:text-lg text-base-content mb-0.5">{t('practiceActivity')}</h2>
                   <p className="text-xs text-base-content/40 mb-4">
-                    Minutes practiced {isWeek ? 'this week' : timeRange === 'month' ? 'this month' : 'all time'}
-                    {!isWeek && <span className="text-base-content/25"> · {chartBuckets.length} intervals</span>}
+                    {isWeek ? t('minutesPracticedWeek') : timeRange === 'month' ? t('minutesPracticedMonth') : t('minutesPracticedAll')}
+                    {!isWeek && <span className="text-base-content/25"> · {t('intervals', { count: chartBuckets.length })}</span>}
                   </p>
 
                   {/* Chart — always contained */}
@@ -345,11 +347,11 @@ export default function ProgressPage() {
                   <div className="flex gap-3 mt-4">
                     <div className="flex-1 bg-base-200/50 rounded-xl px-3 py-2.5 text-center">
                       <span className="text-lg lg:text-xl font-extrabold text-primary">{totalMins}m</span>
-                      <p className="text-[10px] lg:text-xs text-base-content/35 font-semibold">Total</p>
+                      <p className="text-[10px] lg:text-xs text-base-content/35 font-semibold">{t('total')}</p>
                     </div>
                     <div className="flex-1 bg-base-200/50 rounded-xl px-3 py-2.5 text-center">
                       <span className="text-lg lg:text-xl font-extrabold text-secondary">{dailyAvg}m</span>
-                      <p className="text-[10px] lg:text-xs text-base-content/35 font-semibold">Daily Avg</p>
+                      <p className="text-[10px] lg:text-xs text-base-content/35 font-semibold">{t('dailyAvg')}</p>
                     </div>
                   </div>
                 </div>
@@ -358,10 +360,10 @@ export default function ProgressPage() {
               {/* Accuracy Trend */}
               <div className="card bg-base-100 border border-base-content/5">
                 <div className="card-body p-5 lg:p-6">
-                  <h2 className="font-extrabold text-base lg:text-lg text-base-content mb-0.5">Accuracy Trend</h2>
+                  <h2 className="font-extrabold text-base lg:text-lg text-base-content mb-0.5">{t('accuracyTrend')}</h2>
                   <p className="text-xs text-base-content/40 mb-4">
-                    Pronunciation accuracy over time
-                    {!isWeek && <span className="text-base-content/25"> · averaged per interval</span>}
+                    {t('accuracyOverTime')}
+                    {!isWeek && <span className="text-base-content/25"> · {t('averagedPerInterval')}</span>}
                   </p>
 
                   {/* Chart — always contained */}
@@ -392,11 +394,11 @@ export default function ProgressPage() {
                   <div className="flex gap-3 mt-4">
                     <div className="flex-1 bg-base-200/50 rounded-xl px-3 py-2.5 text-center">
                       <span className={`text-lg lg:text-xl font-extrabold ${accColor(avgAcc)}`}>{avgAcc}%</span>
-                      <p className="text-[10px] lg:text-xs text-base-content/35 font-semibold">Average</p>
+                      <p className="text-[10px] lg:text-xs text-base-content/35 font-semibold">{t('average')}</p>
                     </div>
                     <div className="flex-1 bg-base-200/50 rounded-xl px-3 py-2.5 text-center">
                       <span className={`text-lg lg:text-xl font-extrabold ${accColor(bestAcc)}`}>{bestAcc}%</span>
-                      <p className="text-[10px] lg:text-xs text-base-content/35 font-semibold">Best</p>
+                      <p className="text-[10px] lg:text-xs text-base-content/35 font-semibold">{t('best')}</p>
                     </div>
                   </div>
                 </div>
@@ -409,7 +411,7 @@ export default function ProgressPage() {
             {pronunciationBreakdown.length > 0 && (
               <div className="mb-6 lg:mb-8">
                 <h2 className="font-extrabold text-lg lg:text-xl text-base-content flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-5 h-5 text-primary" /> Pronunciation Breakdown
+                  <BarChart3 className="w-5 h-5 text-primary" /> {t('pronunciationBreakdown')}
                 </h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pronunciationBreakdown.slice(0, 6).map((p, idx) => (
@@ -433,7 +435,7 @@ export default function ProgressPage() {
                         <div className="w-full bg-base-200 rounded-full h-2.5 overflow-hidden mb-2">
                           <div className={`h-full rounded-full ${accBg(p.score)} transition-all duration-500`} style={{ width: `${p.score}%` }} />
                         </div>
-                        <p className="text-xs text-base-content/35">Practiced {p.practiceCount} times</p>
+                        <p className="text-xs text-base-content/35">{t('practicedTimes', { count: p.practiceCount })}</p>
                       </div>
                     </div>
                   ))}
@@ -448,7 +450,7 @@ export default function ProgressPage() {
             {lessonSessions.length > 0 && (
               <div>
                 <h2 className="font-extrabold text-lg lg:text-xl text-base-content flex items-center gap-2 mb-4">
-                  <BookOpen className="w-5 h-5 text-primary" /> Completed Lessons
+                  <BookOpen className="w-5 h-5 text-primary" /> {t('completedLessons')}
                 </h2>
                 <div className="space-y-3">
                   {lessonSessions.map((session) => (
@@ -474,10 +476,10 @@ export default function ProgressPage() {
                                 <Calendar className="w-3 h-3" /> {session.date}, {session.time}
                               </span>
                               <span className="inline-flex items-center gap-1">
-                                <Clock className="w-3 h-3" /> {Math.round(session.duration / 60)} min
+                                <Clock className="w-3 h-3" /> {t('sessionMin', { count: Math.round(session.duration / 60) })}
                               </span>
                               <span className="inline-flex items-center gap-1">
-                                <BookOpen className="w-3 h-3" /> {session.sentencesCompleted} sentences
+                                <BookOpen className="w-3 h-3" /> {t('sessionSentences', { count: session.sentencesCompleted })}
                               </span>
                             </div>
                           </div>
@@ -510,14 +512,14 @@ export default function ProgressPage() {
                               className="btn btn-primary btn-sm gap-1.5"
                             >
                               <Eye className="w-4 h-4" />
-                              <span className="hidden sm:inline">Details</span>
+                              <span className="hidden sm:inline">{t('details')}</span>
                             </button>
                           </div>
                         </div>
 
                         {/* Mobile — extra row */}
                         <div className="sm:hidden mt-3 pt-3 border-t border-base-content/5 flex items-center justify-between text-xs">
-                          <span className="text-base-content/40">{session.totalAttempts} total attempts</span>
+                          <span className="text-base-content/40">{t('totalAttempts', { count: session.totalAttempts })}</span>
                           <span className="flex items-center gap-1 font-bold text-warning">
                             <Star className="w-3.5 h-3.5" /> +{session.xp} XP
                           </span>
