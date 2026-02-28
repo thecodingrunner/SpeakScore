@@ -154,10 +154,6 @@ export default function SessionDetailPage({ params }: { params: Promise<{ sessio
 
   useEffect(() => { fetchSession() }, [resolvedParams.sessionId])
 
-  useEffect(() => {
-    console.log("Data: ", data);
-  }, [data])
-
   const fetchSession = async () => {
     setLoading(true)
     setError(false)

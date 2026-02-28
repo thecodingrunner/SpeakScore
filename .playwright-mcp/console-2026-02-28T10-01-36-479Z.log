@@ -1,0 +1,9 @@
+[    5913ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://us.posthog.com/api/sdk_doctor/:0
+[    6153ms] [ERROR] Error loading SDK doctor data i2: Failed to get SDK versions. Please try again later.
+    at Yfn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:5765)
+    at async Object.getResponse (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27771)
+    at async Object.get (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27604)
+    at async loadRawData (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:688:415735) @ https://internal-j.posthog.com/static/posthog-recorder.js?v=1.356.0:0
+[    6962ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.gravatar.com/avatar/0ca872b1f204e7b11efb7cf63f187ce4?s=96&d=404:0
+[   28670ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.gravatar.com/avatar/0ca872b1f204e7b11efb7cf63f187ce4?s=96&d=404:0
+[   70052ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.gravatar.com/avatar/0ca872b1f204e7b11efb7cf63f187ce4?s=96&d=404:0

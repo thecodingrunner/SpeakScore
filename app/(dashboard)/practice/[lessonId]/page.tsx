@@ -9,6 +9,7 @@ import {
   Star, AlertCircle, TrendingUp, Target, Award,
   ChevronRight, Play, Ear, Lightbulb, ChevronDown
 } from 'lucide-react'
+import { usePostHog } from 'posthog-js/react'
 import { convertToWav } from '@/lib/audio-converter'
 import { getLessonConfig, type LessonAttempt } from '@/lib/lesson-config'
 import { Mascot } from '@/components/global/Mascot'
@@ -65,6 +66,7 @@ const VIEW_H = `${VIEW_H_MOBILE} ${VIEW_H_DESKTOP}`
 export default function PracticeLessonPage({ params }: { params: Promise<{ lessonId: string }> }) {
 
   const router = useRouter()
+  const posthog = usePostHog()
   const { getTier } = useSubscription()
 
   const getLessonStorageKey = (lessonId: string) =>
@@ -131,18 +133,20 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
   
       } else {
         const newSessionId = crypto.randomUUID()
-  
+
         const initialState = {
           lessonSessionId: newSessionId,
           currentSentenceIndex: 0,
           lessonStartTime: Date.now(),
           seenSentenceIds: []
         }
-  
+
         localStorage.setItem(storageKey, JSON.stringify(initialState))
-  
+
         setLessonSessionId(newSessionId)
         setLessonStartTime(initialState.lessonStartTime)
+
+        posthog?.capture('lesson_started', { lessonId: id, scenario: id })
       }
     })
   }, [params])
@@ -209,6 +213,15 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
           totalXP: lessonSummary.xp,
           totalDurationSeconds: lessonSummary.time
         })
+      })
+
+      posthog?.capture('lesson_completed', {
+        lessonId,
+        scenario: lessonId,
+        avgAccuracy: lessonSummary.avg,
+        totalXP: lessonSummary.xp,
+        durationSeconds: lessonSummary.time,
+        sentenceCount: lessonSummary.total,
       })
 
       const storageKey = getLessonStorageKey(lessonId)
@@ -289,6 +302,13 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
       setFeedback(result)
       setShowFeedback(true)
       setShowMoreTips(false)
+      posthog?.capture('sentence_attempt', {
+        lessonId,
+        scenario: lessonId,
+        sentenceId: sentence.id,
+        accuracy: result.accuracy ?? 0,
+        xpEarned: result.xpEarned ?? 0,
+      })
       const pm: Record<string, number> = {}
       result.phonemeScores?.forEach((ps) => { pm[ps.phoneme] = ps.score })
       setLessonAttempts(prev => [...prev, {
@@ -364,6 +384,13 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
       <div className="max-w-xl mx-auto px-4 py-2.5">
         <div className="flex items-center justify-between mb-1.5">
           <button onClick={() => {
+            if (!showSummary) {
+              posthog?.capture('lesson_abandoned', {
+                lessonId,
+                scenario: lessonId,
+                sentencesCompleted: currentSentenceIndex,
+              })
+            }
             router.push('/practice')
             completeLesson(lessonSummary)
           }} className="btn btn-ghost btn-sm btn-circle"><ChevronLeft className="w-5 h-5" /></button>

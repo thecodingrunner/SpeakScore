@@ -1,0 +1,120 @@
+[   12631ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://us.posthog.com/api/user_home_settings/@me/:0
+[   12636ms] [ERROR] Failed to load pinned scene tabs i2: Authentication credentials were not provided.
+    at Yfn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:5837)
+    at async Object.getResponse (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27771)
+    at async Object.get (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27604)
+    at async loadPinnedTabsFromBackend (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:15823) @ https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:115
+[   12683ms] Error: Team ID is not known.
+    at Sg.getCurrentTeamId (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:7286)
+    at at.environmentsDetail (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:8944)
+    at at.fileSystem (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:10134)
+    at at.fileSystemLogView (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:10405)
+    at Object.create (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:40569)
+    at vBn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:115:57312)
+    at setScene (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:18683)
+    at https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:13410
+    at Object.dispatch (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:25550)
+    at t.actions.<computed> [as setScene] (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:15233)
+    at https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:20828
+[   13156ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://us.posthog.com/api/user_home_settings/@me/:0
+[   13161ms] [ERROR] Failed to persist pinned scene tabs to backend i2: Authentication credentials were not provided.
+    at Yfn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:5837)
+    at async Object._update (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:28016)
+    at async https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:24138 @ https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:115
+[   48539ms] Error: Team ID is not known.
+    at Sg.getCurrentTeamId (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:7286)
+    at at.environmentsDetail (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:8944)
+    at at.fileSystem (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:10134)
+    at at.fileSystemLogView (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:10405)
+    at Object.create (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:40569)
+    at vBn (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:115:57312)
+    at setScene (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:116:18683)
+    at https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:3:13410
+    at Object.dispatch (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:3:25550)
+    at t.actions.<computed> [as setScene] (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:3:15233)
+    at https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:116:20828
+[   48553ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://eu.posthog.com/api/user_home_settings/@me/:0
+[   48560ms] [ERROR] Failed to load pinned scene tabs i2: Authentication credentials were not provided.
+    at Yfn (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:5837)
+    at async Object.getResponse (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2583:27771)
+    at async Object.get (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2583:27604)
+    at async loadPinnedTabsFromBackend (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:116:15823) @ https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:115
+[   49095ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://eu.posthog.com/api/user_home_settings/@me/:0
+[   49108ms] [ERROR] Failed to persist pinned scene tabs to backend i2: Authentication credentials were not provided.
+    at Yfn (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:5837)
+    at async Object._update (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2583:28016)
+    at async https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:116:24138 @ https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:115
+[   60420ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://us.posthog.com/api/user_home_settings/@me/:0
+[   60547ms] Error: Team ID is not known.
+    at Sg.getCurrentTeamId (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:7286)
+    at at.environmentsDetail (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:8944)
+    at at.fileSystem (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:10134)
+    at at.fileSystemLogView (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:10405)
+    at Object.create (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:40569)
+    at vBn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:115:57312)
+    at setScene (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:18683)
+    at https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:13410
+    at Object.dispatch (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:25550)
+    at t.actions.<computed> [as setScene] (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:15233)
+    at https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:20828
+[   60553ms] [ERROR] Failed to load pinned scene tabs i2: Authentication credentials were not provided.
+    at Yfn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:5837)
+    at async Object.getResponse (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27771)
+    at async Object.get (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27604)
+    at async loadPinnedTabsFromBackend (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:15823) @ https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:115
+[   81349ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://us.posthog.com/api/login/:0
+[   90155ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://us.posthog.com/api/login/:0
+[  106607ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://eu.posthog.com/api/user_home_settings/@me/:0
+[  106702ms] Error: Team ID is not known.
+    at Sg.getCurrentTeamId (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:7286)
+    at at.environmentsDetail (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:8944)
+    at at.fileSystem (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:10134)
+    at at.fileSystemLogView (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:10405)
+    at Object.create (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:40569)
+    at vBn (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:115:57312)
+    at setScene (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:116:18683)
+    at https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:3:13410
+    at Object.dispatch (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:3:25550)
+    at t.actions.<computed> [as setScene] (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:3:15233)
+    at https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:116:20828
+[  106732ms] [ERROR] Failed to load pinned scene tabs i2: Authentication credentials were not provided.
+    at Yfn (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2582:5837)
+    at async Object.getResponse (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2583:27771)
+    at async Object.get (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:2583:27604)
+    at async loadPinnedTabsFromBackend (https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:116:15823) @ https://app-static.eu.posthog.com/static/chunk-MC6TFYEC.js:115
+[  114241ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://eu.posthog.com/api/login/:0
+[  121314ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://eu.posthog.com/api/login/:0
+[  167564ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://us.posthog.com/api/user_home_settings/@me/:0
+[  167600ms] [ERROR] Failed to load pinned scene tabs i2: Authentication credentials were not provided.
+    at Yfn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:5837)
+    at async Object.getResponse (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27771)
+    at async Object.get (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27604)
+    at async loadPinnedTabsFromBackend (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:15823) @ https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:115
+[  167658ms] Error: Team ID is not known.
+    at Sg.getCurrentTeamId (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:7286)
+    at at.environmentsDetail (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:8944)
+    at at.fileSystem (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:10134)
+    at at.fileSystemLogView (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:10405)
+    at Object.create (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:40569)
+    at vBn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:115:57312)
+    at setScene (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:18683)
+    at https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:13410
+    at Object.dispatch (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:25550)
+    at t.actions.<computed> [as setScene] (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:3:15233)
+    at https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:116:20828
+[  185986ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://us.posthog.com/api/login/:0
+[  197675ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://us.posthog.com/api/login/:0
+[  274060ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://us.posthog.com/api/sdk_doctor/:0
+[  274469ms] [ERROR] Error loading SDK doctor data i2: Failed to get SDK versions. Please try again later.
+    at Yfn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:5765)
+    at async Object.getResponse (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27771)
+    at async Object.get (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27604)
+    at async loadRawData (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:688:415735) @ https://internal-j.posthog.com/static/posthog-recorder.js?v=1.356.0:0
+[  275008ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.gravatar.com/avatar/0ca872b1f204e7b11efb7cf63f187ce4?s=96&d=404:0
+[  287769ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.gravatar.com/avatar/0ca872b1f204e7b11efb7cf63f187ce4?s=96&d=404:0
+[  293621ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://us.posthog.com/api/sdk_doctor/:0
+[  293667ms] [ERROR] Error loading SDK doctor data i2: Failed to get SDK versions. Please try again later.
+    at Yfn (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2582:5765)
+    at async Object.getResponse (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27771)
+    at async Object.get (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:2583:27604)
+    at async loadRawData (https://app-static-prod.posthog.com/static/chunk-MC6TFYEC.js:688:415735) @ https://internal-j.posthog.com/static/posthog-recorder.js?v=1.356.0:0

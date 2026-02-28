@@ -1,26 +1,29 @@
 import { ClerkProvider } from '@clerk/nextjs'
+import { Suspense } from 'react'
 import './globals.css'
 import ThemeToggleWidget from '../components/global/ThemeToggleWidget'
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext'
-// import { PHProvider } from './providers'
+import { PHProvider, PostHogPageView } from './providers'
 
 export const metadata = {
-  title: 'YourSaaS - Build Faster',
-  description: 'Production-ready SaaS template',
+  title: 'SpeakScore - Pronunciation Practice',
+  description: 'AI-powered English pronunciation coaching',
 }
 
 export default function RootLayout({ children }) {
-
   return (
     <ClerkProvider>
       <html lang="en" data-theme="light" className='scroll-smooth'>
-        <body suppressHydrationWarning >
-          {/* <PHProvider> */}
+        <body suppressHydrationWarning>
+          <PHProvider>
+            <Suspense fallback={null}>
+              <PostHogPageView />
+            </Suspense>
             <ThemeToggleWidget />
             <SubscriptionProvider>
               {children}
             </SubscriptionProvider>
-          {/* </PHProvider> */}
+          </PHProvider>
         </body>
       </html>
     </ClerkProvider>

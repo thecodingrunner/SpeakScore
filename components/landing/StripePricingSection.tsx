@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useClerk } from '@clerk/nextjs';
 import { Check, Star, Flame, Crown, Zap } from 'lucide-react';
+import { usePostHog } from 'posthog-js/react';
 import { Mascot } from '@/components/global/Mascot';
 
 type BillingCycle = 'monthly' | 'annual';
@@ -164,6 +165,7 @@ function PricingCard({ plan, billing }: { plan: PlanDef; billing: BillingCycle }
   const router = useRouter();
   const searchParams = useSearchParams();
   const { openSignUp } = useClerk();
+  const posthog = usePostHog();
 
   const planId = isFree ? 'free' : (billing === 'monthly' ? `${plan.id}-monthly` : `${plan.id}-annual`);
   const displayPrice = billing === 'monthly' ? plan.monthlyPrice : plan.annualPrice;
@@ -178,6 +180,7 @@ function PricingCard({ plan, billing }: { plan: PlanDef; billing: BillingCycle }
   }, [isSignedIn, searchParams]);
 
   const startCheckout = async (pid: string) => {
+    posthog?.capture('checkout_started', { planId: pid, billingCycle: billing });
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
@@ -194,6 +197,7 @@ function PricingCard({ plan, billing }: { plan: PlanDef; billing: BillingCycle }
   };
 
   const handleClick = () => {
+    posthog?.capture('upgrade_clicked', { planId, planName: plan.name, billingCycle: billing });
     if (isFree) {
       router.push(isSignedIn ? '/practice' : '/sign-up');
       return;
