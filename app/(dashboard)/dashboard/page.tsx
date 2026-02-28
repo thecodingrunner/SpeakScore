@@ -515,6 +515,7 @@ import {
 } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { Mascot } from '@/components/global/Mascot'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 /* ═══════════════════════════════════════════
    ICON MAP
@@ -533,18 +534,18 @@ interface DashboardStats {
 /* ═══════════════════════════════════════════
    LESSON DATA
    ═══════════════════════════════════════════ */
-const lessons = [
-  { id: 'daily_drill', title: 'Daily Drill', subtitle: 'Quick 5-min warm-up', difficulty: 'All Levels', icon: '⚡', scenario: 'daily_drill', lessons: 50, locked: false },
-  { id: 'phoneme_r_vs_l', title: '/r/ vs /l/ Sounds', subtitle: 'Right vs Light, Read vs Lead', difficulty: 'Hard', icon: '🔤', scenario: 'phoneme_r_vs_l', lessons: 50, locked: false },
-  { id: 'phoneme_th_sounds', title: '/th/ Sounds', subtitle: 'Think, That, This, The', difficulty: 'Very Hard', icon: '👅', scenario: 'phoneme_th_sounds', lessons: 50, locked: false },
-  { id: 'phoneme_f_vs_h', title: '/f/ vs /h/ Sounds', subtitle: 'Fish vs Hish, Fan vs Han', difficulty: 'Medium', icon: '🗣️', scenario: 'phoneme_f_vs_h', lessons: 50, locked: false },
-  { id: 'toeic_speaking', title: 'TOEIC Speaking', subtitle: 'Official test format', difficulty: 'Intermediate', icon: '📝', scenario: 'toeic_speaking', lessons: 50, locked: false },
-  { id: 'phoneme_v_vs_b', title: '/v/ vs /b/ Sounds', subtitle: 'Very vs Berry, Vote vs Boat', difficulty: 'Medium', icon: '🎵', scenario: 'phoneme_v_vs_b', lessons: 50, locked: true },
-  { id: 'phoneme_word_stress', title: 'Word Stress', subtitle: 'REcord vs reCORD', difficulty: 'Hard', icon: '🎯', scenario: 'phoneme_word_stress', lessons: 50, locked: true },
-  { id: 'phoneme_silent_letters', title: 'Silent Letters', subtitle: 'Knight, Psychology, Wednesday', difficulty: 'Medium', icon: '🤫', scenario: 'phoneme_silent_letters', lessons: 50, locked: true },
-  { id: 'business', title: 'Business Meetings', subtitle: 'Professional phrases', difficulty: 'Intermediate', icon: '💼', scenario: 'business', lessons: 15, locked: true },
-  { id: 'interview', title: 'Job Interviews', subtitle: 'Common interview questions', difficulty: 'Advanced', icon: '🤝', scenario: 'interview', lessons: 15, locked: true },
-  { id: 'phone', title: 'Phone Calls', subtitle: 'Clear phone communication', difficulty: 'Intermediate', icon: '📞', scenario: 'phone', lessons: 10, locked: true },
+const LESSON_DEFS = [
+  { id: 'daily_drill', title: 'Daily Drill', subtitle: 'Quick 5-min warm-up', difficulty: 'All Levels', icon: '⚡', scenario: 'daily_drill', lessons: 50, pro: false },
+  { id: 'phoneme_r_vs_l', title: '/r/ vs /l/ Sounds', subtitle: 'Right vs Light, Read vs Lead', difficulty: 'Hard', icon: '🔤', scenario: 'phoneme_r_vs_l', lessons: 50, pro: false },
+  { id: 'phoneme_th_sounds', title: '/th/ Sounds', subtitle: 'Think, That, This, The', difficulty: 'Very Hard', icon: '👅', scenario: 'phoneme_th_sounds', lessons: 50, pro: false },
+  { id: 'phoneme_f_vs_h', title: '/f/ vs /h/ Sounds', subtitle: 'Fish vs Hish, Fan vs Han', difficulty: 'Medium', icon: '🗣️', scenario: 'phoneme_f_vs_h', lessons: 50, pro: false },
+  { id: 'toeic', title: 'TOEIC Speaking', subtitle: 'Official test format', difficulty: 'Intermediate', icon: '📝', scenario: 'toeic', lessons: 50, pro: true },
+  { id: 'phoneme_v_vs_b', title: '/v/ vs /b/ Sounds', subtitle: 'Very vs Berry, Vote vs Boat', difficulty: 'Medium', icon: '🎵', scenario: 'phoneme_v_vs_b', lessons: 50, pro: true },
+  { id: 'phoneme_word_stress', title: 'Word Stress', subtitle: 'REcord vs reCORD', difficulty: 'Hard', icon: '🎯', scenario: 'phoneme_word_stress', lessons: 50, pro: true },
+  { id: 'phoneme_silent_letters', title: 'Silent Letters', subtitle: 'Knight, Psychology, Wednesday', difficulty: 'Medium', icon: '🤫', scenario: 'phoneme_silent_letters', lessons: 50, pro: true },
+  { id: 'business', title: 'Business Meetings', subtitle: 'Professional phrases', difficulty: 'Intermediate', icon: '💼', scenario: 'business', lessons: 15, pro: true },
+  { id: 'interview', title: 'Job Interviews', subtitle: 'Common interview questions', difficulty: 'Advanced', icon: '🤝', scenario: 'interview', lessons: 15, pro: true },
+  { id: 'phone', title: 'Phone Calls', subtitle: 'Clear phone communication', difficulty: 'Intermediate', icon: '📞', scenario: 'phone', lessons: 10, pro: true },
 ]
 
 const difficultyColor = (d: string) => {
@@ -556,15 +557,14 @@ const difficultyColor = (d: string) => {
    ═══════════════════════════════════════════ */
 export default function DashboardPage() {
   const { user: clerkUser } = useUser()
+  const { isPro, loading: subLoading } = useSubscription()
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats | null>(null)
 
+  const lessons = LESSON_DEFS.map(l => ({ ...l, locked: l.pro && !subLoading && !isPro() }))
+
   useEffect(() => { fetchDashboardStats() }, [])
 
-  useEffect(() => {
-    console.log("user: ", clerkUser);
-    
-  })
 
   const fetchDashboardStats = async () => {
     try {
@@ -869,7 +869,7 @@ export default function DashboardPage() {
 /* ═══════════════════════════════════════════
    LESSON CARD
    ═══════════════════════════════════════════ */
-function LessonCard({ lesson }: { lesson: typeof lessons[0] }) {
+function LessonCard({ lesson }: { lesson: typeof LESSON_DEFS[0] & { locked: boolean } }) {
   return (
     <div className={`card bg-base-100 border transition-all duration-200 ${
       lesson.locked

@@ -21,7 +21,8 @@ export default function EditBlogPostPage() {
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
-  const [published, setPublished] = useState(false);
+  const [publishMode, setPublishMode] = useState<'draft' | 'publish' | 'schedule'>('draft');
+  const [scheduledAt, setScheduledAt] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -38,7 +39,16 @@ export default function EditBlogPostPage() {
         setExcerpt(post.excerpt || '');
         setContent(post.content || '');
         setTags((post.tags || []).join(', '));
-        setPublished(post.published);
+        if (post.published) {
+          setPublishMode('publish');
+        } else if (post.scheduledAt) {
+          setPublishMode('schedule');
+          const d = new Date(post.scheduledAt);
+          // datetime-local expects "YYYY-MM-DDTHH:mm"
+          setScheduledAt(d.toISOString().slice(0, 16));
+        } else {
+          setPublishMode('draft');
+        }
       } catch {
         setError('Failed to load post');
       } finally {
@@ -54,17 +64,22 @@ export default function EditBlogPostPage() {
     setError('');
 
     try {
+      const body: Record<string, unknown> = {
+        title,
+        slug: newSlug,
+        excerpt,
+        content,
+        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+        published: publishMode === 'publish',
+      };
+      if (publishMode === 'schedule' && scheduledAt) {
+        body.scheduledAt = new Date(scheduledAt).toISOString();
+      }
+
       const res = await fetch(`/api/blog/${slug}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          slug: newSlug,
-          excerpt,
-          content,
-          tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-          published,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
@@ -166,15 +181,37 @@ export default function EditBlogPostPage() {
           </div>
 
           <div className="form-control">
-            <label className="label cursor-pointer justify-start gap-3">
-              <input
-                type="checkbox"
-                className="checkbox checkbox-primary"
-                checked={published}
-                onChange={(e) => setPublished(e.target.checked)}
-              />
-              <span className="label-text font-medium">Published</span>
+            <label className="label">
+              <span className="label-text font-medium">Publish Status</span>
             </label>
+            <div className="flex flex-col gap-2">
+              {(['draft', 'publish', 'schedule'] as const).map((mode) => (
+                <label key={mode} className="label cursor-pointer justify-start gap-3">
+                  <input
+                    type="radio"
+                    className="radio radio-primary"
+                    name="publishMode"
+                    value={mode}
+                    checked={publishMode === mode}
+                    onChange={() => setPublishMode(mode)}
+                  />
+                  <span className="label-text">
+                    {mode === 'draft' && 'Draft'}
+                    {mode === 'publish' && 'Publish Now'}
+                    {mode === 'schedule' && 'Schedule'}
+                  </span>
+                </label>
+              ))}
+            </div>
+            {publishMode === 'schedule' && (
+              <input
+                type="datetime-local"
+                className="input input-bordered mt-2"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                required
+              />
+            )}
           </div>
 
           <div className="flex gap-3 mt-2">

@@ -35,12 +35,16 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, slug, excerpt, content, tags, published } = body;
+    const { title, slug, excerpt, content, tags, published, scheduledAt } = body;
 
     const existing = await getPostBySlug(params.slug);
     if (!existing) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
+
+    const now = new Date();
+    const scheduledDate = scheduledAt ? new Date(scheduledAt) : null;
+    const isScheduled = scheduledDate && scheduledDate > now;
 
     const updates: Record<string, unknown> = {};
     if (title !== undefined) updates.title = title;
@@ -48,10 +52,16 @@ export async function PUT(
     if (excerpt !== undefined) updates.excerpt = excerpt;
     if (content !== undefined) updates.content = content;
     if (tags !== undefined) updates.tags = tags;
-    if (published !== undefined) {
+
+    if (isScheduled) {
+      updates.published = false;
+      updates.publishedAt = null;
+      updates.scheduledAt = scheduledDate;
+    } else if (published !== undefined) {
       updates.published = published;
+      updates.scheduledAt = null;
       if (published && !existing.publishedAt) {
-        updates.publishedAt = new Date();
+        updates.publishedAt = now;
       }
     }
 

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getUserProgressCollection, getUserSentenceHistoryCollection } from '@/lib/mongodb';
+import { getUserLessonSessionsCollection } from '@/lib/mongodb/lessons';
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,8 +57,14 @@ export async function GET(request: NextRequest) {
       })
       .toArray();
 
-    // Today's practice time (estimate 1.5 min per attempt)
-    const todayPracticeTime = todayPractices.reduce((sum, p) => sum + p.attempts, 0) * 1.5;
+    // Today's practice time from actual lesson session durations
+    const lessonSessionsCollection = await getUserLessonSessionsCollection();
+    const todayLessonSessions = await lessonSessionsCollection
+      .find({ userId, completedAt: { $gte: today } })
+      .toArray();
+    const todayPracticeTime = todayLessonSessions.reduce(
+      (sum, s) => sum + (s.totalDurationSeconds || 0), 0
+    ) / 60;
 
     // Today's average accuracy
     let todayAccuracy = 0;

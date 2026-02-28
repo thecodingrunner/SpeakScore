@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, slug, excerpt, content, tags, published } = body;
+    const { title, slug, excerpt, content, tags, published, scheduledAt } = body;
 
     if (!title || !content) {
       return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
@@ -29,14 +29,19 @@ export async function POST(request: NextRequest) {
 
     const finalSlug = slug || slugify(title);
 
+    const now = new Date();
+    const scheduledDate = scheduledAt ? new Date(scheduledAt) : null;
+    const isScheduled = scheduledDate && scheduledDate > now;
+
     const post = await createPost({
       title,
       slug: finalSlug,
       excerpt: excerpt || '',
       content,
       tags: tags || [],
-      published: published ?? false,
-      publishedAt: published ? new Date() : null,
+      published: isScheduled ? false : (published ?? false),
+      publishedAt: isScheduled ? null : (published ? now : null),
+      scheduledAt: isScheduled ? scheduledDate : null,
     });
 
     return NextResponse.json(post, { status: 201 });

@@ -11,6 +11,7 @@ export interface BlogPost {
   tags: string[];
   published: boolean;
   publishedAt: Date | null;
+  scheduledAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,4 +66,14 @@ export async function updatePost(
 export async function deletePost(slug: string): Promise<void> {
   const db = await getDatabase();
   await db.collection<BlogPost>('blog_posts').deleteOne({ slug });
+}
+
+export async function publishScheduledPosts(): Promise<number> {
+  const db = await getDatabase();
+  const now = new Date();
+  const result = await db.collection<BlogPost>('blog_posts').updateMany(
+    { published: false, scheduledAt: { $lte: now, $ne: null } },
+    { $set: { published: true, publishedAt: now, updatedAt: now, scheduledAt: null } }
+  );
+  return result.modifiedCount;
 }

@@ -12,6 +12,8 @@ import {
 import { convertToWav } from '@/lib/audio-converter'
 import { getLessonConfig, type LessonAttempt } from '@/lib/lesson-config'
 import { Mascot } from '@/components/global/Mascot'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import { SCENARIO_TIERS, type PlanTier } from '@/lib/plan-config'
 
 /* ═══════════════════════════════════════════
    TYPES
@@ -61,8 +63,9 @@ const VIEW_H = `${VIEW_H_MOBILE} ${VIEW_H_DESKTOP}`
    COMPONENT
    ═══════════════════════════════════════════ */
 export default function PracticeLessonPage({ params }: { params: Promise<{ lessonId: string }> }) {
-  
+
   const router = useRouter()
+  const { getTier } = useSubscription()
 
   const getLessonStorageKey = (lessonId: string) =>
   `lessonState_${lessonId}`
@@ -165,6 +168,28 @@ export default function PracticeLessonPage({ params }: { params: Promise<{ lesso
     seenSentenceIds,
     lessonId
   ])
+
+  // Access gate: check tier and lesson limit
+  useEffect(() => {
+    if (!lessonId) return
+    const check = async () => {
+      const TIER_ORDER: Record<PlanTier, number> = { free: 0, pro: 1, premium: 2 }
+      const scenarioTier: PlanTier = SCENARIO_TIERS[lessonId] ?? 'free'
+      const userTier = getTier()
+      if (TIER_ORDER[scenarioTier] > TIER_ORDER[userTier]) {
+        router.replace('/pricing')
+        return
+      }
+      try {
+        const res = await fetch('/api/practice/lesson-status')
+        const data = await res.json()
+        if (data.remaining === 0) {
+          router.replace('/pricing?limit=true')
+        }
+      } catch { /* non-blocking */ }
+    }
+    check()
+  }, [lessonId])
 
   useEffect(() => {
     if (lessonId && currentSentenceIndex < totalSentences) fetchSentence(lessonId)

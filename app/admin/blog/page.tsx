@@ -50,17 +50,21 @@ export default async function AdminBlogPage() {
                     <td className="font-medium">{post.title}</td>
                     <td className="text-base-content/50 text-sm">{post.slug}</td>
                     <td>
-                      <span
-                        className={`badge badge-sm ${
-                          post.published ? 'badge-success' : 'badge-ghost'
-                        }`}
-                      >
-                        {post.published ? 'Published' : 'Draft'}
-                      </span>
+                      {post.published ? (
+                        <span className="badge badge-sm badge-success">Published</span>
+                      ) : post.scheduledAt ? (
+                        <span className="badge badge-sm badge-warning">
+                          Scheduled {new Date(post.scheduledAt).toLocaleString()}
+                        </span>
+                      ) : (
+                        <span className="badge badge-sm badge-ghost">Draft</span>
+                      )}
                     </td>
                     <td className="text-sm text-base-content/50">
-                      {post.publishedAt
+                      {post.published && post.publishedAt
                         ? new Date(post.publishedAt).toLocaleDateString()
+                        : post.scheduledAt
+                        ? new Date(post.scheduledAt).toLocaleDateString()
                         : '—'}
                     </td>
                     <td>

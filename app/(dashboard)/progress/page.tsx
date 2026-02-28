@@ -506,7 +506,7 @@ export default function ProgressPage() {
 
                             {/* View */}
                             <button
-                              onClick={() => router.push(`/progress/lesson/${session.lessonId}`)}
+                              onClick={() => router.push(`/progress/session/${session.id}`)}
                               className="btn btn-primary btn-sm gap-1.5"
                             >
                               <Eye className="w-4 h-4" />

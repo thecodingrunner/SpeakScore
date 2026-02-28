@@ -6,16 +6,27 @@ import { getUserByClerkId, upsertUser } from '@/lib/mongodb/users';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+// Server-side price ID lookup (env vars are safe here)
+const PLAN_PRICE_IDS: Record<string, string | undefined> = {
+  'pro-monthly': process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
+  'pro-annual': process.env.STRIPE_PRO_ANNUAL_PRICE_ID,
+  'premium-monthly': process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID,
+  'premium-annual': process.env.STRIPE_PREMIUM_ANNUAL_PRICE_ID,
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const { priceId, planId, planType } = await req.json();
+    const body = await req.json();
+    const { planId, planType } = body;
+    // priceId can be provided by client (legacy) or looked up server-side by planId
+    const priceId: string = body.priceId || PLAN_PRICE_IDS[planId] || '';
 
     console.log('📦 Received checkout request:', {
       priceId,
       planId,
       planType,
     });
-    
+
     const { userId } = await auth();
 
     if (!priceId || !planId || !planType) {

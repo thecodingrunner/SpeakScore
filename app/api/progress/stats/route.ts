@@ -67,19 +67,25 @@ export async function GET(request: NextRequest) {
     console.log(`   Found ${practiceHistory.length} practices in range`);
 
     // Calculate overall stats
-    const totalAttempts = practiceHistory.reduce((sum, h) => sum + h.attempts, 0);
     const totalAccuracy = practiceHistory.reduce((sum, h) => {
       const avgAccuracy = h.accuracyScores.reduce((a: number, b: number) => a + b, 0) / h.accuracyScores.length;
       return sum + avgAccuracy;
     }, 0);
-    const averageAccuracy = practiceHistory.length > 0 
+    const averageAccuracy = practiceHistory.length > 0
       ? Math.round(totalAccuracy / practiceHistory.length)
       : 0;
 
-    const totalPracticeTime = totalAttempts * 1.5;
+    // Use actual lesson session duration instead of estimates
+    const sessionsCollection = await getUserLessonSessionsCollection();
+    const lessonSessionsInRange = await sessionsCollection
+      .find({ userId, completedAt: { $gte: startDate } })
+      .toArray();
+    const totalPracticeTime = lessonSessionsInRange.reduce(
+      (sum, s) => sum + (s.totalDurationSeconds || 0), 0
+    ) / 60;
 
     // Calculate weekly data
-    const weeklyData = calculateWeeklyData(practiceHistory, timeRange);
+    const weeklyData = calculateWeeklyData(practiceHistory, lessonSessionsInRange, timeRange);
 
     // Calculate pronunciation breakdown
     const pronunciationBreakdown = calculatePhonemeBreakdown(practiceHistory);
@@ -111,7 +117,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function calculateWeeklyData(practiceHistory: any[], timeRange: string) {
+function calculateWeeklyData(practiceHistory: any[], lessonSessions: any[], timeRange: string) {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const weeklyData = [];
 
@@ -130,9 +136,15 @@ function calculateWeeklyData(practiceHistory: any[], timeRange: string) {
       return practiceDate >= date && practiceDate < nextDate;
     });
 
-    const attempts = dayPractice.reduce((sum, h) => sum + h.attempts, 0);
-    const minutes = Math.round(attempts * 1.5);
-    
+    // Use actual duration from lesson sessions for this day
+    const daySessions = lessonSessions.filter(s => {
+      const d = new Date(s.completedAt);
+      return d >= date && d < nextDate;
+    });
+    const minutes = Math.round(
+      daySessions.reduce((sum, s) => sum + (s.totalDurationSeconds || 0), 0) / 60
+    );
+
     let accuracy = 0;
     if (dayPractice.length > 0) {
       const totalAcc = dayPractice.reduce((sum, h) => {
@@ -147,7 +159,7 @@ function calculateWeeklyData(practiceHistory: any[], timeRange: string) {
       date: date.toISOString().split('T')[0],
       minutes,
       accuracy,
-      sessions: dayPractice.length
+      sessions: daySessions.length
     });
   }
 

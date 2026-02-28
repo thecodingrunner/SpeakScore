@@ -2,14 +2,17 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { getTierFromPlan, type PlanTier } from '@/lib/plan-config'
 
-type SubscriptionTier = 'free' | 'premium-monthly' | 'premium-yearly'
+type SubscriptionTier = 'free' | 'pro-monthly' | 'pro-annual' | 'premium-monthly' | 'premium-annual'
 
 interface SubscriptionContextType {
   subscriptionTier: SubscriptionTier
   subscriptionEndDate: string | null
   loading: boolean
   isPro: () => boolean
+  isPremium: () => boolean
+  getTier: () => PlanTier
   hasActiveSubscription: () => boolean
   refreshSubscription: () => Promise<void>
 }
@@ -56,10 +59,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     fetchSubscription()
   }, [isSignedIn, user?.id])
 
-  const isPro = () => {
-    return subscriptionTier === 'premium-monthly' || 
-           subscriptionTier === 'premium-yearly'
-  }
+  const isPro = () => subscriptionTier !== 'free'
+
+  const isPremium = () =>
+    subscriptionTier === 'premium-monthly' || subscriptionTier === 'premium-annual'
+
+  const getTier = (): PlanTier => getTierFromPlan(subscriptionTier)
 
   const hasActiveSubscription = () => {
     if (subscriptionTier === 'free') return false
@@ -74,6 +79,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         subscriptionEndDate,
         loading,
         isPro,
+        isPremium,
+        getTier,
         hasActiveSubscription,
         refreshSubscription: fetchSubscription
       }}
