@@ -1,0 +1,155 @@
+[    4711ms] [ERROR] [DecompressionWorkerManager] Failed to pre-warm WASM: TypeError: WebAssembly compilation aborted: Network error: Response body loading was aborted @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:517
+[    4727ms] [ERROR] {error: TypeError: Failed to fetch, reducerKey: summary, actionKey: loadSummary} @ https://app-static-prod.posthog.com/static/index-2HOXXKIY.js:11
+[    4792ms] [ERROR] Failed to load event ingestion restrictions: ey: TypeError: Failed to fetch
+    at Uln (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2544:76878)
+    at async Object.getResponse (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2545:27897)
+    at async Object.get (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2545:27730)
+    at async loadEventIngestionRestrictions (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:175849) @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2541
+[    4855ms] [ERROR] {error: TypeError: Cannot read properties of null (reading 'results')
+    at loadDashboards (https://app-st…, reducerKey: pagedDashboards, actionKey: loadDashboards} @ https://app-static-prod.posthog.com/static/index-2HOXXKIY.js:11
+[    4981ms] [ERROR] [KEA] Subscription Failed for action load saved filters success (scenes.session-recordings.filters.sessionRecordingSavedFiltersLogic) on logic layout.navigation-3000.navigationLogic. @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    4982ms] [ERROR] TypeError: Cannot read properties of null (reading 'count')
+    at nOe.navbarItems (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:185449)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10751
+    at l (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10838
+    at Object.l [as navbarItems] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as navbarItemIdMapping] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as activeNavbarItem] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.activeNavbarItem (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:188376
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as sidebarContentsFlattened] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.selector (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171989
+    at Set.forEach (<anonymous>)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171957
+    at Object.dispatch (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:25370)
+    at t.actions.<computed> [as loadSavedFiltersSuccess] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:15216)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:7:4423 @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    4983ms] [ERROR] {error: ey: TypeError: Failed to fetch
+    at Uln (https://app-static-prod.posthog.com/static/chunk-NJCAUGH…, reducerKey: billing, actionKey: loadBilling} @ https://app-static-prod.posthog.com/static/index-2HOXXKIY.js:11
+[    5014ms] [ERROR] [KEA] Subscription Failed for action load billing failure (scenes.billing.billingLogic) on logic layout.navigation-3000.navigationLogic. @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    5014ms] [ERROR] TypeError: Cannot read properties of null (reading 'count')
+    at nOe.navbarItems (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:185449)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10751
+    at l (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10838
+    at Object.l [as navbarItems] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as navbarItemIdMapping] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as activeNavbarItem] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.activeNavbarItem (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:188376
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as sidebarContentsFlattened] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.selector (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171989
+    at Set.forEach (<anonymous>)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171957
+    at Object.dispatch (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:25370)
+    at t.actions.<computed> [as loadBillingFailure] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:15216)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:7:4572 @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    5016ms] [ERROR] {error: TypeError: Cannot read properties of null (reading 'results')
+    at loadShortcuts (https://app-sta…, reducerKey: shortcutData, actionKey: loadShortcuts} @ https://app-static-prod.posthog.com/static/index-2HOXXKIY.js:11
+[    5048ms] [ERROR] [KEA] Subscription Failed for action load shortcuts failure (layout.panel-layout.ProjectTree.projectTreeDataLogic) on logic layout.navigation-3000.navigationLogic. @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    5048ms] [ERROR] TypeError: Cannot read properties of null (reading 'count')
+    at nOe.navbarItems (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:185449)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10751
+    at l (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10838
+    at Object.l [as navbarItems] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as navbarItemIdMapping] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as activeNavbarItem] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.activeNavbarItem (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:188376
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as sidebarContentsFlattened] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.selector (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171989
+    at Set.forEach (<anonymous>)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171957
+    at Object.dispatch (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:25370)
+    at t.actions.<computed> [as loadShortcutsFailure] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:15216)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:7:4572 @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    5050ms] [ERROR] {error: TypeError: Cannot read properties of null (reading 'results')
+    at loadUnfiledItems (https://app-…, reducerKey: unfiledItems, actionKey: loadUnfiledItems} @ https://app-static-prod.posthog.com/static/index-2HOXXKIY.js:11
+[    5100ms] [ERROR] [KEA] Subscription Failed for action load unfiled items failure (layout.panel-layout.ProjectTree.projectTreeDataLogic) on logic layout.navigation-3000.navigationLogic. @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    5100ms] [ERROR] TypeError: Cannot read properties of null (reading 'count')
+    at nOe.navbarItems (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:185449)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10751
+    at l (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10838
+    at Object.l [as navbarItems] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as navbarItemIdMapping] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as activeNavbarItem] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.activeNavbarItem (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:188376
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as sidebarContentsFlattened] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.selector (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171989
+    at Set.forEach (<anonymous>)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171957
+    at Object.dispatch (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:25370)
+    at t.actions.<computed> [as loadUnfiledItemsFailure] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:15216)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:7:4572 @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    5102ms] [ERROR] {error: TypeError: Cannot read properties of null (reading 'next')
+    at loadAnnotations (https://app-stat…, reducerKey: rawAnnotations, actionKey: loadAnnotations} @ https://app-static-prod.posthog.com/static/index-2HOXXKIY.js:11
+[    5138ms] [ERROR] [KEA] Subscription Failed for action load annotations failure (models.annotationsModel) on logic layout.navigation-3000.navigationLogic. @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[    5139ms] [ERROR] TypeError: Cannot read properties of null (reading 'count')
+    at nOe.navbarItems (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:185449)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10751
+    at l (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10838
+    at Object.l [as navbarItems] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as navbarItemIdMapping] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as activeNavbarItem] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.activeNavbarItem (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2542:188376
+    at _ca (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:4865)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10810
+    at Object.l [as sidebarContentsFlattened] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:2:10048)
+    at Object.selector (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:21008)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171989
+    at Set.forEach (<anonymous>)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:51:171957
+    at Object.dispatch (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:25370)
+    at t.actions.<computed> [as loadAnnotationsFailure] (https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:3:15216)
+    at https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:7:4572 @ https://app-static-prod.posthog.com/static/chunk-NJCAUGHO.js:50
+[   21009ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.gravatar.com/avatar/0ca872b1f204e7b11efb7cf63f187ce4?s=96&d=404:0
+[   66197ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.gravatar.com/avatar/0ca872b1f204e7b11efb7cf63f187ce4?s=96&d=404:0
+[  272431ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.gravatar.com/avatar/0ca872b1f204e7b11efb7cf63f187ce4?s=96&d=404:0

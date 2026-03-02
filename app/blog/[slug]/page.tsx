@@ -8,6 +8,7 @@ import { getPostBySlug, getAllPosts } from '@/lib/mongodb/blog';
 import { Navbar } from '@/components/landing/LandingPageSectionsNew';
 import Footer from '@/components/global/Footer';
 import { Calendar, Tag, ArrowLeft } from 'lucide-react';
+import { BlogPostViewTracker } from '@/components/blog/BlogAnalytics';
 
 export const revalidate = 60;
 
@@ -39,6 +40,7 @@ export default async function BlogPostPage({
 
   return (
     <div className="min-h-screen bg-base-100">
+      <BlogPostViewTracker slug={post.slug} title={post.title} />
       <Navbar />
 
       <main className="max-w-3xl mx-auto px-4 py-16">

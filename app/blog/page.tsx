@@ -4,6 +4,7 @@ import { getAllPosts } from '@/lib/mongodb/blog';
 import { Navbar } from '@/components/landing/LandingPageSectionsNew';
 import Footer from '@/components/global/Footer';
 import { Calendar, Tag } from 'lucide-react';
+import { BlogReadMoreLink } from '@/components/blog/BlogAnalytics';
 
 export const metadata = {
   title: 'Blog | SpeakScore',
@@ -71,12 +72,7 @@ export default async function BlogPage() {
                   )}
 
                   <div className="card-actions mt-3">
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="btn btn-primary btn-sm shadow-md shadow-primary/20"
-                    >
-                      Read more
-                    </Link>
+                    <BlogReadMoreLink slug={post.slug} title={post.title} />
                   </div>
                 </div>
               </article>

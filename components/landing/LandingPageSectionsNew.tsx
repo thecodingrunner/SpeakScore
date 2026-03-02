@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Mascot, MascotMini, SakuraPetal } from '@/components/global/Mascot';
 import { useTranslations } from 'next-intl';
+import { usePostHog } from 'posthog-js/react';
 
 /* ═══════════════════════════════════════════════════════════════
    NAVBAR — Warm, friendly, with Koko mini mascot as logo
@@ -21,6 +22,7 @@ const Navbar = () => {
   const { isSignedIn } = useAuth();
   const router = useRouter();
   const t = useTranslations('landing');
+  const posthog = usePostHog();
 
   return (
     <div className="navbar bg-base-100/90 backdrop-blur-xl border-b border-primary/10 px-4 lg:px-8 sticky top-0 z-40">
@@ -33,16 +35,27 @@ const Navbar = () => {
         </Link>
       </div>
       <div className="navbar-end gap-2">
-        <Link href="#pricing" className="btn btn-ghost btn-sm text-base-content/70 hover:text-primary">
+        <Link
+          href="#pricing"
+          className="btn btn-ghost btn-sm text-base-content/70 hover:text-primary"
+          onClick={() => posthog?.capture('pricing_link_clicked', { location: 'navbar' })}
+        >
           {t('nav.pricing')}
         </Link>
         {isSignedIn ? (
-          <Link href="/practice" className="btn btn-primary btn-sm shadow-md shadow-primary/20">
+          <Link
+            href="/practice"
+            className="btn btn-primary btn-sm shadow-md shadow-primary/20"
+            onClick={() => posthog?.capture('cta_clicked', { location: 'navbar' })}
+          >
             {t('nav.startPracticing')}
           </Link>
         ) : (
           <SignInButton mode="modal">
-            <button className="btn btn-primary btn-sm shadow-md shadow-primary/20">
+            <button
+              className="btn btn-primary btn-sm shadow-md shadow-primary/20"
+              onClick={() => posthog?.capture('cta_clicked', { location: 'navbar' })}
+            >
               {t('nav.startPracticing')}
             </button>
           </SignInButton>
@@ -58,6 +71,7 @@ const Navbar = () => {
    ═══════════════════════════════════════════════════════════════ */
 const HeroSection = () => {
   const t = useTranslations('landing');
+  const posthog = usePostHog();
   return (
     <div className="relative min-h-[88vh] overflow-hidden flex items-center justify-center bg-sakura-gradient">
       {/* Dot pattern overlay */}
@@ -129,11 +143,18 @@ const HeroSection = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-          <Link href="/practice" className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all">
+          <Link
+            href="/practice"
+            className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+            onClick={() => posthog?.capture('cta_clicked', { location: 'hero' })}
+          >
             {t('hero.cta1')}
             <ArrowRight className="w-5 h-5" />
           </Link>
-          <button className="btn btn-ghost btn-lg border-2 border-base-content/10 hover:border-primary/30 gap-2">
+          <button
+            className="btn btn-ghost btn-lg border-2 border-base-content/10 hover:border-primary/30 gap-2"
+            onClick={() => posthog?.capture('demo_clicked', { location: 'hero' })}
+          >
             <Play className="w-4 h-4" />
             {t('hero.watchDemo')}
           </button>
@@ -310,6 +331,7 @@ const PronounciationChallengesSection = () => {
    ═══════════════════════════════════════════════════════════════ */
 const HowItWorksSection = () => {
   const t = useTranslations('landing');
+  const posthog = usePostHog();
   const steps = [
     { num: 1, title: t('howItWorks.s1title'), desc: t('howItWorks.s1desc'), icon: <BookOpen className="w-6 h-6" />, time: t('howItWorks.s1time') },
     { num: 2, title: t('howItWorks.s2title'), desc: t('howItWorks.s2desc'), icon: <Mic className="w-6 h-6" />, time: t('howItWorks.s2time') },
@@ -361,7 +383,11 @@ const HowItWorksSection = () => {
         </div>
 
         <div className="text-center mt-10">
-          <Link href="/practice" className="btn btn-primary btn-md gap-2 shadow-md shadow-primary/20">
+          <Link
+            href="/practice"
+            className="btn btn-primary btn-md gap-2 shadow-md shadow-primary/20"
+            onClick={() => posthog?.capture('cta_clicked', { location: 'how_it_works' })}
+          >
             {t('howItWorks.cta')}
             <ChevronRight className="w-4 h-4" />
           </Link>
@@ -645,6 +671,7 @@ const TestimonialsSection = () => {
    ═══════════════════════════════════════════════════════════════ */
 const FaqSection = () => {
   const t = useTranslations('landing');
+  const posthog = usePostHog();
   const faqs = [
     { q: t('faq.q1'), a: t('faq.a1') },
     { q: t('faq.q2'), a: t('faq.a2') },
@@ -674,7 +701,12 @@ const FaqSection = () => {
               key={idx}
               className="collapse collapse-arrow bg-base-100 border border-base-content/8 rounded-2xl hover:border-primary/15 transition-colors"
             >
-              <input type="radio" name="faq-accordion" defaultChecked={idx === 0} />
+              <input
+                type="radio"
+                name="faq-accordion"
+                defaultChecked={idx === 0}
+                onChange={() => posthog?.capture('faq_opened', { question: faq.q })}
+              />
               <div className="collapse-title font-bold text-sm pr-10">
                 {faq.q}
               </div>
@@ -727,6 +759,7 @@ const TrustBadgesSection = () => {
    ═══════════════════════════════════════════════════════════════ */
 const FinalCTASection = () => {
   const t = useTranslations('landing');
+  const posthog = usePostHog();
   return (
     <div className="relative py-20 px-4 lg:px-8 overflow-hidden bg-sakura-gradient">
       <div className="absolute inset-0 bg-dots-pattern opacity-30 pointer-events-none" />
@@ -750,11 +783,18 @@ const FinalCTASection = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-          <Link href="/practice" className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/25">
+          <Link
+            href="/practice"
+            className="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/25"
+            onClick={() => posthog?.capture('cta_clicked', { location: 'final_cta' })}
+          >
             {t('finalCta.cta1')}
             <ArrowRight className="w-5 h-5" />
           </Link>
-          <button className="btn btn-ghost btn-lg border-2 border-base-content/10 hover:border-primary/30 gap-2">
+          <button
+            className="btn btn-ghost btn-lg border-2 border-base-content/10 hover:border-primary/30 gap-2"
+            onClick={() => posthog?.capture('demo_clicked', { location: 'final_cta' })}
+          >
             <Play className="w-4 h-4" />
             {t('finalCta.watchDemo')}
           </button>

@@ -12,6 +12,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 import { Mascot } from '@/components/global/Mascot'
 import { SCENARIO_TIERS, type PlanTier } from '@/lib/plan-config'
 import { useTranslations } from 'next-intl'
+import { usePostHog } from 'posthog-js/react'
 
 /* ═══════════════════════════════════════════
    TYPES
@@ -65,6 +66,7 @@ export default function PracticePage() {
   const { isPro, getTier, loading: subscriptionLoading } = useSubscription()
   const t = useTranslations('practicePage')
   const ts = useTranslations('scenarios')
+  const posthog = usePostHog()
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [loading, setLoading] = useState(true)
   const [dailyGoal, setDailyGoal] = useState<DailyGoal>({ practiced: 0, goal: 10, percentage: 0, remaining: 10 })
@@ -156,6 +158,7 @@ export default function PracticePage() {
               <Link
                 href={atLimit ? '/pricing?limit=true' : '/practice/daily_drill'}
                 className="btn btn-primary lg:btn-lg gap-2 shadow-md shadow-primary/15 flex-shrink-0"
+                onClick={() => posthog?.capture('quick_start_clicked', { atLimit })}
               >
                 {t('start')} <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
               </Link>
@@ -283,7 +286,11 @@ export default function PracticePage() {
                 <Star className="w-6 h-6 text-primary mb-1" />
                 <h3 className="font-extrabold text-base text-base-content">{t('unlockPro')}</h3>
                 <p className="text-sm text-base-content/50 mb-4">{t('unlockProDesc')}</p>
-                <Link href="/pricing" className="btn btn-primary shadow-sm shadow-primary/15">{t('upgradeNow')}</Link>
+                <Link
+                  href="/pricing"
+                  className="btn btn-primary shadow-sm shadow-primary/15"
+                  onClick={() => posthog?.capture('upgrade_cta_clicked', { location: 'practice_hub_sidebar' })}
+                >{t('upgradeNow')}</Link>
               </div>
             </div>
           )}
@@ -372,10 +379,18 @@ function LessonUsageBanner({ lessonStatus, t }: { lessonStatus: LessonStatus | n
 function ScenarioCard({ scenario, hasAccess, atLimit, t, ts }: { scenario: typeof scenarios[0]; hasAccess: boolean; atLimit: boolean; t: (key: string, values?: Record<string, any>) => string; ts: (key: string) => string }) {
   const blocked = !hasAccess || atLimit
   const href = !hasAccess ? '/pricing' : atLimit ? '/pricing?limit=true' : `/practice/${scenario.id}`
+  const posthog = usePostHog()
 
   return (
     <Link
       href={href}
+      onClick={() => posthog?.capture('scenario_selected', {
+        scenarioId: scenario.id,
+        scenarioName: scenario.title,
+        tier: scenario.tier,
+        hasAccess,
+        atLimit,
+      })}
       className={`card bg-base-100 border transition-all duration-200 ${
         !blocked ? 'border-base-content/6 card-glow hover:border-primary/15 hover:-translate-y-0.5 active:scale-[0.99]' : 'border-base-content/5 opacity-60 hover:opacity-80'
       }`}

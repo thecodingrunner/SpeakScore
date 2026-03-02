@@ -1,0 +1,2 @@
+[   26655ms] [ERROR] Access to script at 'https://internal-j.posthog.com/static/tracing-headers.js?v=1.356.0' from origin 'https://us.posthog.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://us.posthog.com/project/326551/dashboard/1316909:0
+[   26655ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://internal-j.posthog.com/static/tracing-headers.js?v=1.356.0:0
