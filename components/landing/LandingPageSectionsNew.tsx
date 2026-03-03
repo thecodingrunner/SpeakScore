@@ -114,7 +114,7 @@ const HeroSection = () => {
           <div className="relative">
             <Mascot size={140} expression="waving" className="animate-float drop-shadow-lg" />
             {/* Speech bubble */}
-            <div className="absolute -top-2 -right-16 bg-base-100 rounded-2xl rounded-bl-sm px-4 py-2 shadow-lg border border-primary/15 animate-bounce-gentle" style={{ animationDelay: '0.5s' }}>
+            <div className="absolute -top-2 -right-14 sm:-right-16 bg-base-100 rounded-2xl rounded-bl-sm px-3 sm:px-4 py-2 shadow-lg border border-primary/15 animate-bounce-gentle whitespace-nowrap" style={{ animationDelay: '0.5s' }}>
               <span className="text-sm font-bold text-primary">{t('hero.speechBubble')}</span>
             </div>
           </div>
@@ -186,7 +186,7 @@ const SocialProofBar = () => {
   const t = useTranslations('landing');
   return (
     <div className="bg-base-200/80 border-y border-base-content/5 py-5 px-4">
-      <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-8 text-sm text-base-content/50">
+      <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-4 lg:gap-8 text-sm text-base-content/50">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-primary" />
           <span><strong className="text-base-content">5,000+</strong> {t('social.learners')}</span>

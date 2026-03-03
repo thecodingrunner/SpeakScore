@@ -100,11 +100,12 @@ export async function GET(request: NextRequest) {
       overallAccuracy = Math.round(totalAcc / allPractices.length);
     }
 
-    // Calculate XP to next level
-    const currentLevel = userProgress.level || 'beginner';
-    let xpToNextLevel = 500;
-    if (currentLevel === 'intermediate') xpToNextLevel = 2000;
-    else if (currentLevel === 'advanced') xpToNextLevel = 5000;
+    // Calculate XP to next milestone — always above the user's current total XP
+    // (levels are accuracy/completions-based, not XP-gated, so fixed level thresholds
+    //  would go negative once a user's XP exceeds them)
+    const totalXp = userProgress.xp || 0;
+    const XP_MILESTONES = [100, 250, 500, 1000, 2000, 3500, 5000, 7500, 10000, 15000, 20000, 30000, 50000];
+    const xpToNextLevel = XP_MILESTONES.find(m => m > totalXp) ?? Math.ceil((totalXp + 500) / 500) * 500;
 
     // Get recent achievements (last 3 unlocked)
     const recentAchievements = [];

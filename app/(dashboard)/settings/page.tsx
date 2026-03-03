@@ -400,7 +400,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Feature comparison */}
-                    <div className="grid grid-cols-3 gap-2 lg:gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 lg:gap-3">
                       {[
                         { label: t('plan.sessions'), free: '5/mo', proVal: '∞' },
                         { label: t('plan.scenarios'), free: '5', proVal: 'All 11' },

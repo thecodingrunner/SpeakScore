@@ -100,8 +100,8 @@ export default function PricingPage() {
   ]
 
   return (
-    <div className="h-screen bg-gradient-to-b from-base-100 to-base-200 overflow-hidden">
-      <div className="h-full max-w-7xl mx-auto px-6 py-4 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-base-100 to-base-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col">
         
         {/* Header */}
         <div className="text-center mb-8">
@@ -110,7 +110,7 @@ export default function PricingPage() {
             <span className="text-sm font-medium text-primary">Upgrade to Premium</span>
           </div>
           
-          <h1 className="text-4xl lg:text-5xl font-bold mb-3">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3">
             Unlock Your{' '}
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Full Potential
@@ -123,7 +123,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto mb-8 flex-1">
+        <div className="grid md:grid-cols-2 gap-4 lg:gap-8 max-w-6xl mx-auto mb-8">
           {plans.map((plan, idx) => {
             const isPopular = plan.highlighted
             
@@ -151,7 +151,7 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <div className="p-8 flex flex-col flex-1">
+                <div className="p-5 sm:p-8 flex flex-col flex-1">
                   
                   {/* Header */}
                   <div className="mb-6">
@@ -160,7 +160,7 @@ export default function PricingPage() {
                     </h3>
                     
                     <div className="flex items-baseline gap-2 mb-3">
-                      <span className="text-5xl font-black text-base-content">
+                      <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-base-content">
                         £{plan.price}
                       </span>
                       <div className="flex flex-col">
@@ -233,7 +233,7 @@ export default function PricingPage() {
 
         {/* Footer */}
         <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-8 text-sm text-base-content/70">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-8 text-sm text-base-content/70">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-primary" />
               <span>Cancel anytime</span>

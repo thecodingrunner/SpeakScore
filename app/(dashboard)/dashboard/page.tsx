@@ -669,7 +669,7 @@ export default function DashboardPage() {
       {/* ═══════════════════════════════════════════
           QUICK STATS ROW
           ═══════════════════════════════════════════ */}
-      <div className="grid grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
         {[
           { label: t('statTime'), value: `${stats.todayStats.practiceTime}m`, icon: Mic, color: 'text-primary', bg: 'bg-primary/8' },
           { label: t('statAccuracy'), value: stats.todayStats.accuracy > 0 ? `${stats.todayStats.accuracy}%` : '—', icon: Target, color: 'text-success', bg: 'bg-success/8' },
@@ -702,7 +702,7 @@ export default function DashboardPage() {
           {/* Quick Practice CTA */}
           <div className="card bg-gradient-to-br from-primary/10 to-accent/8 border border-primary/12">
             <div className="card-body p-5 lg:p-6 flex-row items-center gap-4">
-              <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-primary/12 flex items-center justify-center flex-shrink-0">
+              <div className="hidden w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-primary/12 sm:flex items-center justify-center flex-shrink-0">
                 <Zap className="w-7 h-7 lg:w-8 lg:h-8 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
@@ -880,10 +880,10 @@ function LessonCard({ lesson, t, ts }: { lesson: typeof LESSON_DEFS[0] & { locke
         ? 'border-base-content/5 opacity-55'
         : 'border-base-content/6 card-glow hover:border-primary/15 hover:-translate-y-0.5 active:scale-[0.99]'
     }`}>
-      <div className="card-body p-4 lg:p-5">
-        <div className="flex items-center gap-4">
+      <div className="card-body p-3 sm:p-4 lg:p-5">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Icon */}
-          <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl lg:text-3xl ${
+          <div className={`w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 text-xl sm:text-2xl lg:text-3xl ${
             lesson.locked ? 'bg-base-200' : 'bg-primary/6'
           }`}>
             {lesson.icon}
@@ -891,27 +891,28 @@ function LessonCard({ lesson, t, ts }: { lesson: typeof LESSON_DEFS[0] & { locke
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <h3 className="font-bold text-base lg:text-lg text-base-content truncate">{ts(`${lesson.id}.title`)}</h3>
-              {lesson.locked && <Lock className="w-3.5 h-3.5 text-base-content/25 flex-shrink-0" />}
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <h3 className="font-bold text-sm sm:text-base lg:text-lg text-base-content truncate">{ts(`${lesson.id}.title`)}</h3>
+              {lesson.locked && <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-base-content/25 flex-shrink-0" />}
             </div>
-            <p className="text-sm text-base-content/45 truncate">{ts(`${lesson.id}.description`)}</p>
-            <div className="flex items-center gap-2.5 mt-1.5">
-              <span className={`badge badge-sm ${difficultyColor(lesson.difficulty)} font-semibold`}>{ts(`difficulties.${lesson.difficulty}`)}</span>
-              <span className="text-xs text-base-content/30 font-medium">{t('sentenceCount', { count: lesson.lessons })}</span>
+            <p className="text-xs sm:text-sm text-base-content/45 truncate">{ts(`${lesson.id}.description`)}</p>
+            <div className="flex items-center gap-1.5 sm:gap-2.5 mt-1 sm:mt-1.5">
+              <span className={`badge badge-xs sm:badge-sm ${difficultyColor(lesson.difficulty)} font-semibold`}>{ts(`difficulties.${lesson.difficulty}`)}</span>
+              <span className="text-[10px] sm:text-xs text-base-content/30 font-medium">{t('sentenceCount', { count: lesson.lessons })}</span>
             </div>
           </div>
 
           {/* Action */}
           <div className="flex-shrink-0">
             {lesson.locked ? (
-              <div className="flex flex-col items-center gap-1">
-                <Lock className="w-5 h-5 text-base-content/20" />
-                <span className="text-[9px] lg:text-xs font-bold text-primary/60 bg-primary/8 px-2 py-0.5 rounded-full">PRO</span>
+              <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-base-content/20" />
+                <span className="text-[9px] lg:text-xs font-bold text-primary/60 bg-primary/8 px-1.5 sm:px-2 py-0.5 rounded-full">PRO</span>
               </div>
             ) : (
-              <Link href={`/practice/${lesson.scenario}`} className="btn btn-primary btn-sm lg:btn-md gap-1.5 shadow-sm shadow-primary/10">
-                {t('start')} <ChevronRight className="w-4 h-4" />
+              <Link href={`/practice/${lesson.scenario}`} className="btn btn-primary btn-xs sm:btn-sm lg:btn-md gap-1 sm:gap-1.5 shadow-sm shadow-primary/10">
+                <span className="hidden sm:inline">{t('start')}</span>
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Link>
             )}
           </div>

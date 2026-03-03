@@ -213,7 +213,7 @@ function PricingCard({ plan, billing }: { plan: PlanDef; billing: BillingCycle }
     <div
       className={`relative card bg-base-100 overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
         plan.popular
-          ? 'border-2 border-primary/40 card-glow shadow-xl shadow-primary/10 sm:scale-105 z-10'
+          ? 'border-2 border-primary/40 card-glow shadow-xl shadow-primary/10 md:scale-105 z-10'
           : 'border border-base-content/8 card-glow'
       }`}
     >
@@ -238,10 +238,10 @@ function PricingCard({ plan, billing }: { plan: PlanDef; billing: BillingCycle }
 
           <div className="flex items-baseline gap-1.5 mb-2">
             {isFree ? (
-              <span className="text-4xl font-black text-success">Free</span>
+              <span className="text-3xl sm:text-4xl font-black text-success">Free</span>
             ) : (
               <>
-                <span className="text-4xl font-black text-base-content">£{displayPrice}</span>
+                <span className="text-3xl sm:text-4xl font-black text-base-content">£{displayPrice}</span>
                 <span className="text-sm text-base-content/45">/{billing === 'monthly' ? 'mo' : 'year'}</span>
               </>
             )}

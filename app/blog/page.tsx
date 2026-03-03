@@ -22,7 +22,7 @@ export default async function BlogPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-base-content mb-3">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-base-content mb-3">
             Speak<span className="text-primary">Score</span> Blog
           </h1>
           <p className="text-base-content/60 text-lg">

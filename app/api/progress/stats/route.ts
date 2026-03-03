@@ -263,7 +263,7 @@ async function getLessonSessions(userId: string, limit: number) {
     else if (diffDays > 1) dateLabel = `${diffDays} days ago`;
 
     return {
-      id: session.lessonSessionId,
+      id: session._id!.toString(),
       lessonId: session.lessonId,
       lessonName: extractLessonName(session.lessonId),
       date: dateLabel,

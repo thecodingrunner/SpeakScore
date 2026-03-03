@@ -478,7 +478,7 @@ export default function AchievementsPage() {
         )}
 
         {/* Stats Overview — 3 cards */}
-        <div className="grid grid-cols-3 gap-3 lg:gap-4 mb-6 lg:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:gap-4 mb-6 lg:mb-8">
           {[
             { icon: Trophy, value: stats.totalAchievements, label: t('unlocked'), sub: t('ofTotal', { total: stats.totalPossible }), color: 'text-primary', bg: 'bg-primary/8', progress: completionPercent },
             { icon: CheckCircle, value: stats.recentlyUnlocked, label: t('thisWeek'), sub: t('recently'), color: 'text-success', bg: 'bg-success/8' },
@@ -486,7 +486,7 @@ export default function AchievementsPage() {
           ].map((s, i) => {
             const Icon = s.icon
             return (
-              <div key={i} className="card bg-base-100 border border-base-content/5 card-glow">
+              <div key={i} className={`card bg-base-100 border border-base-content/5 card-glow ${i === 2 ? 'col-span-2 sm:col-span-1' : ''}`}>
                 <div className="card-body p-4 lg:p-6 items-center text-center gap-2">
                   <div className={`w-11 h-11 lg:w-14 lg:h-14 rounded-xl ${s.bg} flex items-center justify-center`}>
                     <Icon className={`w-5 h-5 lg:w-7 lg:h-7 ${s.color}`} />
