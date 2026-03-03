@@ -6,7 +6,7 @@ async function testTTS() {
   
   const audio = await generateTTS({
     text: 'I really like learning English.',
-    voice: 'female',
+    gender: 'female',
     speed: 1.0
   });
 
