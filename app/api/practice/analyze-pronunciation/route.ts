@@ -1056,12 +1056,12 @@ function createAudioConfig(audioBuffer: Buffer): sdk.AudioConfig {
     const pushStream = sdk.AudioInputStream.createPushStream(
       sdk.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
     );
-    pushStream.write(audioBuffer);
+    pushStream.write(audioBuffer.buffer.slice(audioBuffer.byteOffset, audioBuffer.byteOffset + audioBuffer.byteLength) as ArrayBuffer);
     pushStream.close();
     return sdk.AudioConfig.fromStreamInput(pushStream);
   } else {
     const pushStream = sdk.AudioInputStream.createPushStream();
-    pushStream.write(audioBuffer);
+    pushStream.write(audioBuffer.buffer.slice(audioBuffer.byteOffset, audioBuffer.byteOffset + audioBuffer.byteLength) as ArrayBuffer);
     pushStream.close();
     return sdk.AudioConfig.fromStreamInput(pushStream);
   }
