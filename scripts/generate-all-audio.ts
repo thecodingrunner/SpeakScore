@@ -59,7 +59,7 @@ async function generateAllAudio() {
 
       try {
         // Check if audio already exists
-        const exists = await audioExists(sentence.id, 'normal');
+        const exists = await audioExists(sentence.id, 'female', 'american', 'normal');
         
         if (exists) {
           console.log(`${progress} ⏭️  Skipping ${sentence.id} (already exists)`);
