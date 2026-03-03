@@ -1,14 +1,15 @@
 // app/api/blog/[slug]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { getPostBySlug, updatePost, deletePost, slugify } from '@/lib/mongodb/blog';
+import { getPostBySlug, updatePost, deletePost } from '@/lib/mongodb/blog';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const post = await getPostBySlug(params.slug);
+    const { slug } = await params;
+    const post = await getPostBySlug(slug);
     if (!post || !post.published) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
@@ -26,7 +27,7 @@ async function requireAdmin() {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const email = await requireAdmin();
@@ -34,10 +35,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { slug } = await params;
     const body = await request.json();
-    const { title, slug, excerpt, content, tags, published, scheduledAt } = body;
+    const { title, slug: newSlug, excerpt, content, tags, published, scheduledAt } = body;
 
-    const existing = await getPostBySlug(params.slug);
+    const existing = await getPostBySlug(slug);
     if (!existing) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
@@ -48,7 +50,7 @@ export async function PUT(
 
     const updates: Record<string, unknown> = {};
     if (title !== undefined) updates.title = title;
-    if (slug !== undefined) updates.slug = slug;
+    if (newSlug !== undefined) updates.slug = newSlug;
     if (excerpt !== undefined) updates.excerpt = excerpt;
     if (content !== undefined) updates.content = content;
     if (tags !== undefined) updates.tags = tags;
@@ -65,7 +67,7 @@ export async function PUT(
       }
     }
 
-    await updatePost(params.slug, updates);
+    await updatePost(slug, updates);
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });
@@ -74,7 +76,7 @@ export async function PUT(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const email = await requireAdmin();
@@ -82,7 +84,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await deletePost(params.slug);
+    const { slug } = await params;
+    await deletePost(slug);
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
