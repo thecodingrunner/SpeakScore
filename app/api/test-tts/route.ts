@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     console.log(`📊 Size: ${(audioBuffer.length / 1024).toFixed(2)} KB`);
 
     // Return audio file
-    return new NextResponse(audioBuffer, {
+    return new NextResponse(new Uint8Array(audioBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'audio/mpeg',
