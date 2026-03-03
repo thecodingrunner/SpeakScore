@@ -17,7 +17,8 @@
       "Bash(echo $p:*)",
       "Bash(python3:*)",
       "Bash(curl:*)",
-      "mcp__plugin_playwright_playwright__browser_resize"
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "Bash(xargs grep:*)"
     ]
   }
 }
